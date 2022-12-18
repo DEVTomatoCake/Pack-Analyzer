@@ -6,6 +6,15 @@
 use tauri::{CustomMenuItem, Menu, Submenu};
 
 fn main() {
+	let submenu = Submenu::new("App", Menu::new()
+		.add_item(CustomMenuItem::new("selectfolder", "Select Folder"))
+		.add_item(CustomMenuItem::new("rescan", "Scan Folder again"))
+		.add_item(CustomMenuItem::new("clear", "Clear results"))
+	);
+
+	let menu = Menu::new()
+		.add_submenu(submenu);
+
 	sentry_tauri::init(
 		sentry::release_name!(),
 		|_| {
@@ -20,32 +29,9 @@ fn main() {
 		|sentry_plugin| {
 			tauri::Builder::default()
 				.plugin(sentry_plugin)
+				.menu(menu)
 				.run(tauri::generate_context!())
 				.expect("error while running tauri application");
 		},
 	);
-
-	let submenu = Submenu::new("File", Menu::new()
-		.add_item(CustomMenuItem::new("selectfolder", "Select Folder"))
-		.add_item(CustomMenuItem::new("rescan", "Rescan"))
-	);
-
-	let menu = Menu::new()
-		.add_submenu(submenu);
-
-	tauri::Builder::default()
-		.menu(menu)
-		.on_menu_event(|event| {
-			match event.menu_item_id() {
-				"selectfolder" => {
-					std::process::exit(0);
-				}
-				"rescan" => {
-					event.window().close().unwrap();
-				}
-				_ => {}
-			}
-		})
-		.run(tauri::generate_context!())
-		.expect("error while running tauri application");
 }
