@@ -1,0 +1,71 @@
+{
+	"build": {
+		"devPath": "../src",
+		"distDir": "../src",
+		"withGlobalTauri": true
+	},
+	"package": {
+		"productName": "datapack-analyzer",
+		"version": "../package.json"
+	},
+	"tauri": {
+		"allowlist": {
+			"fs": {
+				"readDir": true,
+				"readFile": true
+			},
+			"dialog": {
+			  	"open": true
+			},
+			"path": {
+			  	"all": true
+			}
+		},
+		"bundle": {
+			"active": true,
+			"category": "DeveloperTool",
+			"publisher": "TomatoCake",
+			"icon": [
+				"icons/32x32.png",
+				"icons/128x128.png",
+				"icons/128x128@2x.png",
+				"icons/icon.icns",
+				"icons/icon.ico"
+			],
+			"identifier": "eu.tomatenkuchen.tomatocake.datapack-analyzer",
+			"macOS": {
+				"entitlements": null,
+				"providerShortName": null,
+				"signingIdentity": null
+			},
+			"shortDescription": "Analyze Minecraft Datapacks",
+			"longDescription": "This app allows you to analyze Minecraft Datapacks and generate stats from them.",
+			"targets": "all",
+			"windows": {
+				"allowDowngrades": false
+			}
+		},
+		"security": {
+			"csp": "default-src 'none'"
+		},
+		"updater": {
+			"active": true,
+			"endpoints": [
+				"https://tauri-update-server.tomatocake.workers.dev/"
+			],
+			"pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDVEQUYwNUNEQ0EzMkM3RApSV1I5TEtQY1hQRGFCWStYdTZWbEhjQll1QXlYOTJwK01Vc1BYZFV6TFovd1VlWWZ1TzBvY0dETgo=",
+			"windows": {
+				"installMode": "quiet"
+			}
+		},
+		"windows": [
+			{
+				"title": "Minecraft Datapack Analyzer",
+				"center": true,
+				"width": 1200,
+				"height": 800,
+				"url": "analyzer.html"
+			}
+		]
+	}
+}
