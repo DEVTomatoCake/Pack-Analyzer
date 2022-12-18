@@ -12,13 +12,25 @@
 		"allowlist": {
 			"fs": {
 				"readDir": true,
-				"readFile": true
+				"readFile": true,
+				"writeFile": true,
+				"exists": true,
+				"scope": [
+					"$APPCACHE/versions.json"
+				]
 			},
 			"dialog": {
-			  	"open": true
+			  	"open": true,
+				"message": true
 			},
 			"path": {
 			  	"all": true
+			},
+			"http": {
+				"request": true,
+				"scope": [
+					"https://github.com/misode/mcmeta/raw/summary/versions/data.json"
+				]
 			}
 		},
 		"bundle": {
@@ -46,7 +58,7 @@
 			}
 		},
 		"security": {
-			"csp": "default-src 'none'"
+			"csp": null
 		},
 		"updater": {
 			"active": true,

@@ -1,7 +1,8 @@
 const { readDir, readTextFile } = window.__TAURI__.fs
-const { open } = window.__TAURI__.dialog
+const { open, message } = window.__TAURI__.dialog
 const { dataDir } = window.__TAURI__.path
 const { listen } = window.__TAURI__.event
+const { getVersion, getTauriVersion } = window.__TAURI__.app
 
 var interval
 var files = 0
@@ -11,16 +12,18 @@ var selected = null
 
 var filetypes = {
 	mcfunction: 0,
-	mcmeta: 0,
-	json: 0
+	json: 0,
+	nbt: 0,
+	mcmeta: 0
 }
+var packFiles = []
 var commands = {}
 var cmdsBehindExecute = {}
 
 async function processEntries(entries) {
 	for (const entry of entries) {
 		if (entry.children) processEntries(entry.children)
-		else if (entry.path.endsWith(".mcfunction") || entry.path.endsWith(".mcmeta") || entry.path.endsWith(".json")) {
+		else if (entry.path.endsWith(".mcfunction") || entry.path.endsWith(".mcmeta")) {
 			files++
 			try {
 				var contents = await readTextFile(entry.path)
@@ -32,6 +35,7 @@ async function processEntries(entries) {
 			done++
 
 			if (entry.path.endsWith(".mcfunction")) {
+				filetypes.mcfunction++
 				const lines = contents.split("\n")
 				for (let line of lines) {
 					line = line.trim()
@@ -49,8 +53,19 @@ async function processEntries(entries) {
 						else commands[cmdBehind]++
 					}
 				}
+			} else if (entry.path.endsWith(".mcmeta")) {
+				filetypes.mcmeta++
+				if (entry.path.endsWith("\\pack.mcmeta")) {
+					try {
+						packFiles.push(JSON.parse(contents))
+					} catch (e) {
+						console.warn("Could not parse pack.mcmeta: " + entry.path, e)
+						error++
+					}
+				}
 			}
-		}
+		} else if (entry.path.endsWith(".json")) filetypes.json++
+		else if (entry.path.endsWith(".nbt")) filetypes.nbt++
 	}
 }
 
@@ -64,9 +79,11 @@ async function mainScan() {
 
 	filetypes = {
 		mcfunction: 0,
-		mcmeta: 0,
-		json: 0
+		json: 0,
+		nbt: 0,
+		mcmeta: 0
 	}
+	packFiles = []
 	commands = {}
 	cmdsBehindExecute = {}
 
@@ -74,11 +91,26 @@ async function mainScan() {
 	processEntries(entries)
 
 	interval = setInterval(() => {
-		document.getElementById("progress").innerText = Math.round(done / files * 100) + "%" + " scanned (" + done + "/" + files + ")" + (error > 0 ? " - " + error + " errors" : "")
+		document.getElementById("progress").innerText = Math.round(done / files * 100) + "%" + " scanned" + (error > 0 ? " - " + error + " errors" : "")
 		if (done + error == files) {
 			clearInterval(interval)
-			var html = "<strong>Total amount of commands: " + Object.keys(commands).reduce((a, b) => a + commands[b], 0) + "</strong><br>" +
-				"<span style='padding-left: 25px;'>Unique commands: " + Object.keys(commands).length + "</span><br><br>"
+			if (error == 0) document.getElementById("progress").innerText = ""
+
+			var html = "<strong>Datapacks found:</strong><br>" +
+				packFiles.map(pack => "<span style='padding-left: 25px;'>" + pack.pack.description +
+				(window.data.versions.some(ver => ver.datapack_version == pack.pack.pack_format) ?
+					" (Supported versions: " +
+					(window.data.versions.findLast(ver => ver.datapack_version == pack.pack.pack_format)?.name || "?") + "<strong>-</strong>" +
+					(window.data.versions.find(ver => ver.datapack_version == pack.pack.pack_format)?.name || "?") +
+					")</span>"
+				: "")).join("<br>") + "<br>" +
+				"<strong>Total amount of commands: " + Object.keys(commands).reduce((a, b) => a + commands[b], 0) + "</strong><br>" +
+				"<span style='padding-left: 25px;'>Unique commands: " + Object.keys(commands).length + "</span><br>" +
+				"<strong>Scannable file types found:</strong><br>" +
+				"<span style='padding-left: 25px;'>.mcfunction: " + filetypes.mcfunction + "</span><br>" +
+				"<span style='padding-left: 25px;'>.json: " + filetypes.json + "</span><br>" +
+				"<span style='padding-left: 25px;'>.nbt: " + filetypes.nbt + "</span><br>" +
+				"<span style='padding-left: 25px;'>.mcmeta: " + filetypes.mcmeta + "</span><br><br>"
 
 			commands = Object.fromEntries(Object.entries(commands).sort(([, a], [, b]) => b - a))
 			Object.keys(commands).forEach(cmd => {
@@ -87,9 +119,10 @@ async function mainScan() {
 			})
 			document.getElementById("result").innerHTML = html
 		}
-	}, 90)
+	}, 100)
 }
 async function selectFolder() {
+	getData("versions.json")
 	if (interval) clearInterval(interval)
 
 	selected = null
@@ -102,15 +135,12 @@ async function selectFolder() {
 	if (selected) mainScan()
 }
 
-listen("tauri://menu", res => {
+listen("tauri://menu", async res => {
   	if (res.payload == "selectfolder") selectFolder()
   	else if (res.payload == "rescan") mainScan()
   	else if (res.payload == "clear") {
-		document.getElementById("progress").innerHTML = ""
+		document.getElementById("progress").innerText = ""
 		document.getElementById("result").innerHTML = ""
 		if (interval) clearInterval(interval)
-	}
-})
-listen("tauri://update-status", res => {
-  	console.warn("New update status: ", res)
+	} else if (res.payload == "about") message("Version: " + await getVersion() + "\nTauri version: " + await getTauriVersion() + "\nDeveloper: TomatoCake\nInspired by: ErrorCraft's FunctionAnalyser\nSource: github.com/DEVTomatoCake/Datapack-Analyzer", "About this app")
 })

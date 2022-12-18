@@ -10,6 +10,7 @@ fn main() {
 		.add_item(CustomMenuItem::new("selectfolder", "Select Folder"))
 		.add_item(CustomMenuItem::new("rescan", "Scan Folder again"))
 		.add_item(CustomMenuItem::new("clear", "Clear results"))
+		.add_item(CustomMenuItem::new("about", "About"))
 	);
 
 	let menu = Menu::new()
@@ -23,7 +24,7 @@ fn main() {
 				sentry::ClientOptions {
 					release: sentry::release_name!(),
 					..Default::default()
-				},
+				}
 			))
 		},
 		|sentry_plugin| {
@@ -32,6 +33,6 @@ fn main() {
 				.menu(menu)
 				.run(tauri::generate_context!())
 				.expect("error while running tauri application");
-		},
+		}
 	);
 }

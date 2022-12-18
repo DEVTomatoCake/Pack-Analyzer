@@ -1,9 +1,14 @@
 {
   "name": "datapack-analyzer",
-  "version": "1.0.0",
+  "version": "1.0.1",
+  "author": "TomatoCake",
   "type": "module",
   "scripts": {
     "tauri": "tauri"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/DEVTomatoCake/Datapack-Analyzer"
   },
   "devDependencies": {
     "@tauri-apps/cli": "^1.2.2"
