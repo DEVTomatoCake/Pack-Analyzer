@@ -1,11 +1,76 @@
-* {
+.light-theme {
+	--background: #FFF;
+	--dialog-bg: #EEE;
+	--dialog-text: #111;
+	--dialog-shadow: rgba(0, 0, 0, 0.25);
+	--code-bg: #EEE;
+}
+.dark-theme {
+	--background: #222;
+	--dialog-bg: #222;
+	--dialog-text: #FFF;
+	--dialog-shadow: rgba(0, 0, 0, 0.75);
+	--code-bg: #111;
+}
+
+body {
 	font-family: Arial, Helvetica, sans-serif;
+	background-color: var(--background);
+	color: var(--dialog-text);
+	transition: .3s;
 }
 
 button {
-	padding: 8px;
+	padding: 10px;
+	font-size: 20px;
 }
-
 p {
 	font-size: 18px;
+}
+.indented {
+	margin-left: 25px;
+}
+code {
+	background-color: var(--code-bg);
+}
+
+.dialog {
+	position: fixed;
+	display: none;
+	z-index: 1;
+	left: 0;
+	top: 0;
+	padding-top: 100px;
+	width: 100%;
+	height: 100%;
+	overflow: auto;
+	background-color: var(--dialog-shadow);
+	transition: .3;
+}
+
+.dialog-content {
+	position: relative;
+	margin: auto;
+	width: 70%;
+	padding: 20px;
+	box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+	animation-name: animateDialog;
+	animation-duration: 0.4s;
+	background-color: var(--dialog-bg);
+}
+
+@keyframes animateDialog {
+	from {width: 0; opacity: 0}
+	to {width: 70%; opacity: 1}
+}
+
+.close {
+	color: #aaa;
+	float: right;
+	font-size: 28px;
+	font-weight: bold;
+}
+.close:hover, .close:focus {
+	color: black;
+	cursor: pointer;
 }

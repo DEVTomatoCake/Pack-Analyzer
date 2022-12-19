@@ -13,10 +13,14 @@
 			"fs": {
 				"readDir": true,
 				"readFile": true,
+				"createDir": true,
 				"writeFile": true,
 				"exists": true,
 				"scope": [
-					"$APPCACHE/versions.json"
+					"$APPCACHE",
+					"$APPCACHE/versions.json",
+					"$APPCONFIG",
+					"$APPCONFIG/settings.json"
 				]
 			},
 			"dialog": {

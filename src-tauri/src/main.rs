@@ -10,6 +10,7 @@ fn main() {
 		.add_item(CustomMenuItem::new("selectfolder", "Select Folder"))
 		.add_item(CustomMenuItem::new("rescan", "Scan Folder again"))
 		.add_item(CustomMenuItem::new("clear", "Clear results"))
+		.add_item(CustomMenuItem::new("settings", "Settings"))
 		.add_item(CustomMenuItem::new("about", "About"))
 	);
 

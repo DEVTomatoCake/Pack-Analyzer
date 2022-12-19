@@ -71,6 +71,7 @@ async function processEntries(entries) {
 
 async function mainScan() {
 	if (interval) clearInterval(interval)
+	document.getElementById("selfolbutton").hidden = true
 	document.getElementById("result").innerHTML = ""
 
 	files = 0
@@ -122,7 +123,9 @@ async function mainScan() {
 	}, 100)
 }
 async function selectFolder() {
-	getData("versions.json")
+	getData().then(() => {
+		if (window.data.settings.theme == "light") document.body.classList = "light-theme"
+	})
 	if (interval) clearInterval(interval)
 
 	selected = null

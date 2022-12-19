@@ -9,11 +9,33 @@
 		<script src="./analyzer.js"></script>
 		<script src="./script.js"></script>
 	</head>
-	<body onload="selectFolder()">
+	<body class="dark-theme" onload="selectFolder()">
 		<center>
-			<button onclick="selectFolder()">Select Folder</button>
+			<button id="selfolbutton" onclick="selectFolder()">Select Folder</button>
 			<h1 id="progress"></h1>
 		</center>
 		<p id="result"></p>
+
+		<div id="settingsDialog" class="dialog">
+			<div class="dialog-content">
+				<span class="close">&times;</span>
+				<h1>Settings</h1>
+
+				<label for="setTheme">Theme</label>
+				<br>
+				<select id="setTheme" name="theme">
+					<option value="light">Light</option>
+					<option value="dark">Dark</option>
+				</select>
+
+				<br><br>
+				<label for="setLang">Language (affects only numbers currently)</label>
+				<br>
+				<select id="setLang" name="lang">
+					<option value="de-DE">German</option>
+					<option value="en-US">English</option>
+				</select>
+			</div>
+		</div>
 	</body>
 </html>
