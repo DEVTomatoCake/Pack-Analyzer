@@ -64,5 +64,5 @@ function openSettingsDialog() {
 }
 
 listen("tauri://update-status", res => {
-  	console.warn("New update status: ", res)
+	console.warn("New update status: ", res)
 })

@@ -126,7 +126,7 @@ async function mainScan() {
 	processEntries(entries)
 
 	interval = setInterval(() => {
-		document.getElementById("progress").innerText = Math.round(done / files * 100) + "%" + " scanned" + (error > 0 ? " - " + error + " errors" : "")
+		document.getElementById("progress").innerText = Math.round(done / files * 100) + "% scanned" + (error > 0 ? " - " + error + " errors" : "")
 		if (done + error == files) {
 			clearInterval(interval)
 			if (error == 0) document.getElementById("progress").innerText = ""
@@ -189,9 +189,9 @@ async function selectFolder() {
 }
 
 listen("tauri://menu", async res => {
-  	if (res.payload == "selectfolder") selectFolder()
-  	else if (res.payload == "rescan") mainScan()
-  	else if (res.payload == "clear") {
+	if (res.payload == "selectfolder") selectFolder()
+	else if (res.payload == "rescan") mainScan()
+	else if (res.payload == "clear") {
 		document.getElementById("progress").innerText = ""
 		document.getElementById("result").innerHTML = ""
 		if (interval) clearInterval(interval)
