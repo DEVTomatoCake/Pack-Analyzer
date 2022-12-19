@@ -58,7 +58,11 @@
 			"longDescription": "This app allows you to analyze Minecraft Datapacks and generate stats from them.",
 			"targets": "all",
 			"windows": {
-				"allowDowngrades": false
+				"allowDowngrades": false,
+				"wix": {
+					"language": ["en-US", "de-DE"],
+					"dialogImagePath": "icons/dialogImage.bmp"
+				}
 			}
 		},
 		"security": {
@@ -69,10 +73,7 @@
 			"endpoints": [
 				"https://tauri-update-server.tomatocake.workers.dev/v1/{{target}}/{{arch}}/{{current_version}}"
 			],
-			"pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDVEQUYwNUNEQ0EzMkM3RApSV1I5TEtQY1hQRGFCWStYdTZWbEhjQll1QXlYOTJwK01Vc1BYZFV6TFovd1VlWWZ1TzBvY0dETgo=",
-			"windows": {
-				"installMode": "quiet"
-			}
+			"pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDVEQUYwNUNEQ0EzMkM3RApSV1I5TEtQY1hQRGFCWStYdTZWbEhjQll1QXlYOTJwK01Vc1BYZFV6TFovd1VlWWZ1TzBvY0dETgo="
 		},
 		"windows": [
 			{

@@ -1,9 +1,9 @@
 [package]
 name = "datapack-analyzer"
-version = "1.0.1"
+version = "1.0.2"
 description = "An app used to analyze Minecraft Datapacks and generate stats"
 authors = ["TomatoCake"]
-license = ""
+license = "CC BY-NC-SA 4.0"
 repository = ""
 edition = "2021"
 rust-version = "1.57"

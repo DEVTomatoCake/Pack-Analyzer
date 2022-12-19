@@ -58,11 +58,13 @@ async function processEntries(entries) {
 					else commands[cmd]++
 
 					if (cmd == "execute") {
-						const cmdBehind = splitted[splitted.lastIndexOf("run") + 1]
-						if (!cmdsBehindExecute[cmdBehind]) cmdsBehindExecute[cmdBehind] = 1
-						else cmdsBehindExecute[cmdBehind]++
-						if (!commands[cmdBehind]) commands[cmdBehind] = 1
-						else commands[cmdBehind]++
+						line.match(/ run [a-z_:]{2,}/g)?.forEach(match => {
+							const cmdBehind = match.replace(" run ", "")
+							if (!cmdsBehindExecute[cmdBehind]) cmdsBehindExecute[cmdBehind] = 1
+							else cmdsBehindExecute[cmdBehind]++
+							if (!commands[cmdBehind]) commands[cmdBehind] = 1
+							else commands[cmdBehind]++
+						})
 					}
 
 					splitted.forEach(arg => {
@@ -134,7 +136,7 @@ async function mainScan() {
 			}
 
 			var html = "" +
-				(packFiles.length > 0 ? "<strong>Datapacks found:</strong><br>" +
+				(packFiles.length > 0 ? "<strong>Datapack" + (packFiles.length == 1 ? "" : "s") + " found:</strong><br>" +
 				packFiles.map(pack => "<span class='indented'>" + pack.pack.description.replace(/§[a-f0-9]/g, "") +
 					(window.data.versions.some(ver => ver.datapack_version == pack.pack.pack_format) ?
 						" (Supported versions: " +
@@ -147,18 +149,18 @@ async function mainScan() {
 				"<strong>Total amount of commands: " + localize(Object.keys(commands).reduce((a, b) => a + commands[b], 0)) + "</strong><br>" +
 				"<span class='indented'>Unique commands: " + localize(Object.keys(commands).length) + "</span><br>" +
 				"<span class='indented'>Comments: " + localize(comments) + "</span><br>" +
-				"<span class='indented'>Empty lines: " + localize(empty) + "</span><br>" +
+				(empty > 0 ? "<span class='indented'>Empty lines: " + localize(empty) + "</span><br>" : "") +
 				"<strong>Datapack file types found:</strong><br>" +
 				(filetypes.mcfunction > 0 ? "<span class='indented'>.mcfunction: " + localize(filetypes.mcfunction) + "</span><br>" : "") +
 				(filetypes.json > 0 ? "<span class='indented'>.json: " + localize(filetypes.json) + "</span><br>" : "") +
 				(filetypes.nbt > 0 ? "<span class='indented'>.nbt: " + localize(filetypes.nbt) + "</span><br>" : "") +
 				(filetypes.mcmeta > 0 ? "<span class='indented'>.mcmeta: " + localize(filetypes.mcmeta) + "</span><br>": "") +
-				"<strong>Selectors used:</strong><br>" +
+				(selectors.a + selectors.e + selectors.p + selectors.r + selectors.s != 0 ? "<strong>Selectors used:</strong><br>" : "") +
 				(selectors.a > 0 ? "<span class='indented'>@a: " + localize(selectors.a) + "</span><br>" : "") +
 				(selectors.e > 0 ? "<span class='indented'>@e: " + localize(selectors.e) + "</span><br>" : "") +
 				(selectors.p > 0 ? "<span class='indented'>@p: " + localize(selectors.p) + "</span><br>" : "") +
 				(selectors.r > 0 ? "<span class='indented'>@r: " + localize(selectors.r) + "</span><br>" : "") +
-				(selectors.s > 0 ? "<span class='indented'>@s: " + localize(selectors.s) + "</span><br>" : "")
+				(selectors.s > 0 ? "<span class='indented'>@s: " + localize(selectors.s) + "</span><br>" : "") + "<br>"
 
 			commands = Object.fromEntries(Object.entries(commands).sort(([, a], [, b]) => b - a))
 			Object.keys(commands).forEach(cmd => {
