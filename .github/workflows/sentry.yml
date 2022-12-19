@@ -1,0 +1,20 @@
+name: Sentry
+
+on:
+  release:
+    types: [published, prereleased]
+
+jobs:
+  SentryRelease:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Create Sentry release
+        uses: tclindner/sentry-releases-action@v1.0.0
+        env:
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+          SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
+          SENTRY_PROJECT: ${{ secrets.SENTRY_PROJECT }}
+        with:
+          tagName: ${{ github.ref }}
+          environment: production
