@@ -16,9 +16,18 @@ var filetypes = {
 	nbt: 0,
 	mcmeta: 0
 }
+var selectors = {
+	a: 0,
+	e: 0,
+	p: 0,
+	r: 0,
+	s: 0
+}
 var packFiles = []
 var commands = {}
 var cmdsBehindExecute = {}
+var comments = 0
+var empty = 0
 
 async function processEntries(entries) {
 	for (const entry of entries) {
@@ -39,19 +48,33 @@ async function processEntries(entries) {
 				const lines = contents.split("\n")
 				for (let line of lines) {
 					line = line.trim()
+					if (line.startsWith("#")) comments++
+					if (line == "") empty++
 					if (line.startsWith("#") || line == "") continue
+					const splitted = line.split(" ")
 
-					const cmd = line.split(" ")[0]
+					const cmd = splitted[0]
 					if (!commands[cmd]) commands[cmd] = 1
 					else commands[cmd]++
 
 					if (cmd == "execute") {
-						const cmdBehind = line.split(" ")[line.split(" ").indexOf("run") + 1]
+						const cmdBehind = splitted[splitted.lastIndexOf("run") + 1]
 						if (!cmdsBehindExecute[cmdBehind]) cmdsBehindExecute[cmdBehind] = 1
 						else cmdsBehindExecute[cmdBehind]++
 						if (!commands[cmdBehind]) commands[cmdBehind] = 1
 						else commands[cmdBehind]++
 					}
+
+					splitted.forEach(arg => {
+						if (arg.startsWith("@")) {
+							arg = arg.slice(1)
+							if (arg.startsWith("a")) selectors.a++
+							else if (arg.startsWith("e")) selectors.e++
+							else if (arg.startsWith("p")) selectors.p++
+							else if (arg.startsWith("r")) selectors.r++
+							else if (arg.startsWith("s")) selectors.s++
+						}
+					})
 				}
 			} else if (entry.path.endsWith(".mcmeta")) {
 				filetypes.mcmeta++
@@ -84,9 +107,18 @@ async function mainScan() {
 		nbt: 0,
 		mcmeta: 0
 	}
+	selectors = {
+		a: 0,
+		e: 0,
+		p: 0,
+		r: 0,
+		s: 0
+	}
 	packFiles = []
 	commands = {}
 	cmdsBehindExecute = {}
+	comments = 0
+	empty = 0
 
 	const entries = await readDir(selected, { recursive: true })
 	processEntries(entries)
@@ -96,27 +128,43 @@ async function mainScan() {
 		if (done + error == files) {
 			clearInterval(interval)
 			if (error == 0) document.getElementById("progress").innerText = ""
+			if (filetypes.mcfunction + filetypes.json + filetypes.nbt + filetypes.mcmeta == 0) {
+				document.getElementById("progress").innerHTML = "No datapack files found!"
+				return document.getElementById("selfolbutton").hidden = false
+			}
 
-			var html = "<strong>Datapacks found:</strong><br>" +
-				packFiles.map(pack => "<span style='padding-left: 25px;'>" + pack.pack.description +
-				(window.data.versions.some(ver => ver.datapack_version == pack.pack.pack_format) ?
-					" (Supported versions: " +
-					(window.data.versions.findLast(ver => ver.datapack_version == pack.pack.pack_format)?.name || "?") + "<strong>-</strong>" +
-					(window.data.versions.find(ver => ver.datapack_version == pack.pack.pack_format)?.name || "?") +
-					")</span>"
-				: "")).join("<br>") + "<br>" +
-				"<strong>Total amount of commands: " + Object.keys(commands).reduce((a, b) => a + commands[b], 0) + "</strong><br>" +
-				"<span style='padding-left: 25px;'>Unique commands: " + Object.keys(commands).length + "</span><br>" +
-				"<strong>Scannable file types found:</strong><br>" +
-				"<span style='padding-left: 25px;'>.mcfunction: " + filetypes.mcfunction + "</span><br>" +
-				"<span style='padding-left: 25px;'>.json: " + filetypes.json + "</span><br>" +
-				"<span style='padding-left: 25px;'>.nbt: " + filetypes.nbt + "</span><br>" +
-				"<span style='padding-left: 25px;'>.mcmeta: " + filetypes.mcmeta + "</span><br><br>"
+			var html = "" +
+				(packFiles.length > 0 ? "<strong>Datapacks found:</strong><br>" +
+				packFiles.map(pack => "<span class='indented'>" + pack.pack.description.replace(/§[a-f0-9]/g, "") +
+					(window.data.versions.some(ver => ver.datapack_version == pack.pack.pack_format) ?
+						" (Supported versions: " +
+						(window.data.versions.findLast(ver => ver.datapack_version == pack.pack.pack_format)?.name || "?") + "<strong>-</strong>" +
+						(window.data.versions.find(ver => ver.datapack_version == pack.pack.pack_format)?.name || "?") +
+						")</span>"
+					: "")
+				).join("<br>") + "<br>"
+				: "") +
+				"<strong>Total amount of commands: " + localize(Object.keys(commands).reduce((a, b) => a + commands[b], 0)) + "</strong><br>" +
+				"<span class='indented'>Unique commands: " + localize(Object.keys(commands).length) + "</span><br>" +
+				"<span class='indented'>Comments: " + localize(comments) + "</span><br>" +
+				"<span class='indented'>Empty lines: " + localize(empty) + "</span><br>" +
+				"<strong>Datapack file types found:</strong><br>" +
+				(filetypes.mcfunction > 0 ? "<span class='indented'>.mcfunction: " + localize(filetypes.mcfunction) + "</span><br>" : "") +
+				(filetypes.json > 0 ? "<span class='indented'>.json: " + localize(filetypes.json) + "</span><br>" : "") +
+				(filetypes.nbt > 0 ? "<span class='indented'>.nbt: " + localize(filetypes.nbt) + "</span><br>" : "") +
+				(filetypes.mcmeta > 0 ? "<span class='indented'>.mcmeta: " + localize(filetypes.mcmeta) + "</span><br>": "") +
+				"<strong>Selectors used:</strong><br>" +
+				(selectors.a > 0 ? "<span class='indented'>@a: " + localize(selectors.a) + "</span><br>" : "") +
+				(selectors.e > 0 ? "<span class='indented'>@e: " + localize(selectors.e) + "</span><br>" : "") +
+				(selectors.p > 0 ? "<span class='indented'>@p: " + localize(selectors.p) + "</span><br>" : "") +
+				(selectors.r > 0 ? "<span class='indented'>@r: " + localize(selectors.r) + "</span><br>" : "") +
+				(selectors.s > 0 ? "<span class='indented'>@s: " + localize(selectors.s) + "</span><br>" : "")
 
 			commands = Object.fromEntries(Object.entries(commands).sort(([, a], [, b]) => b - a))
 			Object.keys(commands).forEach(cmd => {
-				html += cmd + ": " + commands[cmd] + "<br>"
-				if (cmdsBehindExecute[cmd]) html += "<span style='padding-left: 25px;'>Behind execute: " + cmdsBehindExecute[cmd] + "</span><br>"
+				html += cmd + ": " + localize(commands[cmd]) + "<br>"
+				if (cmdsBehindExecute[cmd]) html += "<span class='indented'>Behind execute: " + localize(cmdsBehindExecute[cmd]) +
+					(cmd == "execute" ? " <small>(<code>... run execute ...</code> equals <code>... ...</code>)</small>" : "") + "</span><br>"
 			})
 			document.getElementById("result").innerHTML = html
 		}
@@ -146,4 +194,5 @@ listen("tauri://menu", async res => {
 		document.getElementById("result").innerHTML = ""
 		if (interval) clearInterval(interval)
 	} else if (res.payload == "about") message("Version: " + await getVersion() + "\nTauri version: " + await getTauriVersion() + "\nDeveloper: TomatoCake\nInspired by: ErrorCraft's FunctionAnalyser\nSource: github.com/DEVTomatoCake/Datapack-Analyzer", "About this app")
+	else if (res.payload == "settings") openSettingsDialog()
 })
