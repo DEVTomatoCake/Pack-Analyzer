@@ -50,8 +50,8 @@ function openSettingsDialog() {
 	if (window.data.settings.theme == "light") dialog.querySelector("option[value='light']").selected = true
 	else dialog.querySelector("option[value='dark']").selected = true
 
-	if (window.data.settings.language == "en-US") dialog.querySelector("option[value='en-US']").selected = true
-	else dialog.querySelector("option[value='de-DE']").selected = true
+	if (window.data.settings.language == "de-DE") dialog.querySelector("option[value='de-DE']").selected = true
+	else dialog.querySelector("option[value='en-US']").selected = true
 
 	for (let select of dialog.getElementsByTagName("select")) {
 		select.onchange = () => {

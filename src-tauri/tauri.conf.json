@@ -54,13 +54,14 @@
 				"providerShortName": null,
 				"signingIdentity": null
 			},
-			"shortDescription": "Analyze Minecraft Datapacks",
+			"shortDescription": "Analyze Minecraft data- and resourcepacks",
 			"longDescription": "This app allows you to analyze Minecraft Datapacks and generate stats from them.",
 			"targets": "all",
 			"windows": {
 				"allowDowngrades": false,
 				"wix": {
 					"language": ["en-US", "de-DE"],
+					"enableElevatedUpdateTask": true,
 					"dialogImagePath": "icons/dialogImage.bmp"
 				}
 			}
@@ -73,11 +74,14 @@
 			"endpoints": [
 				"https://tauri-update-server.tomatocake.workers.dev/v1/{{target}}/{{arch}}/{{current_version}}"
 			],
-			"pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDVEQUYwNUNEQ0EzMkM3RApSV1I5TEtQY1hQRGFCWStYdTZWbEhjQll1QXlYOTJwK01Vc1BYZFV6TFovd1VlWWZ1TzBvY0dETgo="
+			"pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDVEQUYwNUNEQ0EzMkM3RApSV1I5TEtQY1hQRGFCWStYdTZWbEhjQll1QXlYOTJwK01Vc1BYZFV6TFovd1VlWWZ1TzBvY0dETgo=",
+			"windows": {
+				"installMode": "quiet"
+			}
 		},
 		"windows": [
 			{
-				"title": "Minecraft Datapack Analyzer",
+				"title": "Minecraft Data- and Resourcepack Analyzer",
 				"center": true,
 				"width": 1200,
 				"height": 800,

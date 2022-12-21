@@ -3,7 +3,6 @@
 	<head>
 		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-		<title>Minecraft Datapack Analyzer</title>
 
 		<link rel="stylesheet" href="./style.css" />
 		<script src="./analyzer.js"></script>
@@ -11,6 +10,11 @@
 	</head>
 	<body class="dark-theme" onload="selectFolder()">
 		<center>
+			<label for="radiodp">Datapack</label>
+			<input type="radio" id="radiodp" name="packType" onchange="document.getElementById('selfolbutton').hidden = false" checked>
+			<label for="radiorp">Resourcepack</label>
+			<input type="radio" id="radiorp" name="packType" onchange="document.getElementById('selfolbutton').hidden = false"><br>
+
 			<button id="selfolbutton" onclick="selectFolder()">Select Folder</button>
 			<h1 id="progress"></h1>
 		</center>

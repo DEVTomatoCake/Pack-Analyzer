@@ -1,5 +1,5 @@
 # Minecraft Datapack Analyzer
-Allows you to analyze and generate stats for Minecraft Datapacks.
+Allows you to analyze and generate stats for [Minecraft](https://minecraft.net) Java Edition data- and resourcepacks.
 
 Inspired by [ErrorCraft's FunctionAnalyser](https://github.com/ErrorCraft/FunctionAnalyser) - this is basically the same, but written in JS using [Tauri](https://tauri.app), hopefully more modern and with more features.
 <br>Uses [misode's mcmeta](https://github.com/misode/mcmeta) for Minecraft version data.
@@ -18,6 +18,5 @@ Feel free to leave a star, create a feature request or bug report issue, or even
 - Add more statistics: scoreboards
 - Warn on invalid/outdated commands
 - Image render of datapack function connections?
-- Add resourcepack functionality
 - Multi language support
 - Share, copy and export buttons

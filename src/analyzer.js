@@ -9,6 +9,7 @@ var files = 0
 var done = 0
 var error = 0
 var selected = null
+var rpMode = false
 
 var filetypes = {
 	mcfunction: 0,
@@ -102,6 +103,7 @@ async function mainScan() {
 	files = 0
 	done = 0
 	error = 0
+	rpMode = document.getElementById("radiorp").checked
 
 	filetypes = {
 		mcfunction: 0,
@@ -136,21 +138,23 @@ async function mainScan() {
 			}
 
 			var html = "" +
-				(packFiles.length > 0 ? "<strong>Datapack" + (packFiles.length == 1 ? "" : "s") + " found:</strong><br>" +
+				(packFiles.length > 0 ? "<strong>" + (rpMode ? "Resource" : "Data") + "pack" + (packFiles.length == 1 ? "" : "s") + " found:</strong><br>" +
 				packFiles.map(pack => "<span class='indented'>" + pack.pack.description.replace(/§[a-f0-9]/g, "") +
-					(window.data.versions.some(ver => ver.datapack_version == pack.pack.pack_format) ?
+					(window.data.versions.some(ver => (rpMode ? ver.resourcepack_version : ver.datapack_version) == pack.pack.pack_format) ?
 						" (Supported versions: " +
-						(window.data.versions.findLast(ver => ver.datapack_version == pack.pack.pack_format)?.name || "?") + "<strong>-</strong>" +
-						(window.data.versions.find(ver => ver.datapack_version == pack.pack.pack_format)?.name || "?") +
+						(window.data.versions.findLast(ver => (rpMode ? ver.resourcepack_version : ver.datapack_version) == pack.pack.pack_format)?.name || "?") + "<strong>-</strong>" +
+						(window.data.versions.find(ver => (rpMode ? ver.resourcepack_version : ver.datapack_version) == pack.pack.pack_format)?.name || "?") +
 						")</span>"
 					: "")
 				).join("<br>") + "<br>"
 				: "") +
-				"<strong>Total amount of commands: " + localize(Object.keys(commands).reduce((a, b) => a + commands[b], 0)) + "</strong><br>" +
-				"<span class='indented'>Unique commands: " + localize(Object.keys(commands).length) + "</span><br>" +
-				"<span class='indented'>Comments: " + localize(comments) + "</span><br>" +
+				(Object.keys(commands).length > 0 ?
+					"<strong>Total amount of commands: " + localize(Object.keys(commands).reduce((a, b) => a + commands[b], 0)) + "</strong><br>" +
+					"<span class='indented'>Unique commands: " + localize(Object.keys(commands).length) + "</span><br>" +
+					(comments > 0 ? "<span class='indented'>Comments: " + localize(comments) + "</span><br>" : "")
+				: "") +
 				(empty > 0 ? "<span class='indented'>Empty lines: " + localize(empty) + "</span><br>" : "") +
-				"<strong>Datapack file types found:</strong><br>" +
+				"<strong>Pack file types found:</strong><br>" +
 				(filetypes.mcfunction > 0 ? "<span class='indented'>.mcfunction: " + localize(filetypes.mcfunction) + "</span><br>" : "") +
 				(filetypes.json > 0 ? "<span class='indented'>.json: " + localize(filetypes.json) + "</span><br>" : "") +
 				(filetypes.nbt > 0 ? "<span class='indented'>.nbt: " + localize(filetypes.nbt) + "</span><br>" : "") +
@@ -179,9 +183,10 @@ async function selectFolder() {
 	if (interval) clearInterval(interval)
 
 	selected = null
+	rpMode = document.getElementById("radiorp").checked
 	selected = await open({
 		title: "Select a Minecraft Java Edition Datapack or world folder",
-		defaultPath: await dataDir() + ".minecraft\\saves",
+		defaultPath: await dataDir() + ".minecraft\\" + (rpMode ? "resourcepacks" : "saves"),
 		directory: true,
 		recursive: true
 	})
