@@ -11,12 +11,7 @@ var error = 0
 var selected = null
 var rpMode = false
 
-var filetypes = {
-	mcfunction: 0,
-	json: 0,
-	nbt: 0,
-	mcmeta: 0
-}
+var filetypes = {}
 var selectors = {
 	a: 0,
 	e: 0,
@@ -32,8 +27,22 @@ var empty = 0
 
 async function processEntries(entries) {
 	for (const entry of entries) {
-		if (entry.children) processEntries(entry.children)
-		else if (entry.path.endsWith(".mcfunction") || entry.path.endsWith(".mcmeta")) {
+		if (entry.children) {
+			processEntries(entry.children)
+			continue
+		}
+
+		const ext = entry.path.split(".").pop()
+		if (
+			ext == "mcmeta" || ext == "json" ||
+			(!rpMode && (ext == "mcfunction" || ext == "nbt")) ||
+			(rpMode && (ext == "png" || ext == "icns" || ext == "txt" || ext == "ogg" || ext == "fsh" || ext == "vsh"))
+		) {
+			if (!filetypes[ext]) filetypes[ext] = 1
+			else filetypes[ext]++
+		} else continue
+
+		if (ext == "mcfunction" || ext == "mcmeta") {
 			files++
 			try {
 				var contents = await readTextFile(entry.path)
@@ -44,8 +53,7 @@ async function processEntries(entries) {
 			}
 			done++
 
-			if (entry.path.endsWith(".mcfunction")) {
-				filetypes.mcfunction++
+			if (!rpMode && ext == "mcfunction") {
 				const lines = contents.split("\n")
 				for (let line of lines) {
 					line = line.trim()
@@ -79,8 +87,7 @@ async function processEntries(entries) {
 						}
 					})
 				}
-			} else if (entry.path.endsWith(".mcmeta")) {
-				filetypes.mcmeta++
+			} else if (ext == "mcmeta") {
 				if (entry.path.endsWith("\\pack.mcmeta")) {
 					try {
 						packFiles.push(JSON.parse(contents))
@@ -90,8 +97,7 @@ async function processEntries(entries) {
 					}
 				}
 			}
-		} else if (entry.path.endsWith(".json")) filetypes.json++
-		else if (entry.path.endsWith(".nbt")) filetypes.nbt++
+		}
 	}
 }
 
@@ -105,12 +111,7 @@ async function mainScan() {
 	error = 0
 	rpMode = document.getElementById("radiorp").checked
 
-	filetypes = {
-		mcfunction: 0,
-		json: 0,
-		nbt: 0,
-		mcmeta: 0
-	}
+	filetypes = {}
 	selectors = {
 		a: 0,
 		e: 0,
@@ -132,7 +133,7 @@ async function mainScan() {
 		if (done + error == files) {
 			clearInterval(interval)
 			if (error == 0) document.getElementById("progress").innerText = ""
-			if (filetypes.mcfunction + filetypes.json + filetypes.nbt + filetypes.mcmeta == 0) {
+			if (Object.values(filetypes).reduce((a, b) => a + b) == 0) {
 				document.getElementById("progress").innerHTML = "No datapack files found!"
 				return document.getElementById("selfolbutton").hidden = false
 			}
@@ -148,17 +149,14 @@ async function mainScan() {
 					: "")
 				).join("<br>") + "<br>"
 				: "") +
-				(Object.keys(commands).length > 0 ?
+				(!rpMode && Object.keys(commands).length > 0 ?
 					"<strong>Total amount of commands: " + localize(Object.keys(commands).reduce((a, b) => a + commands[b], 0)) + "</strong><br>" +
 					"<span class='indented'>Unique commands: " + localize(Object.keys(commands).length) + "</span><br>" +
 					(comments > 0 ? "<span class='indented'>Comments: " + localize(comments) + "</span><br>" : "")
 				: "") +
 				(empty > 0 ? "<span class='indented'>Empty lines: " + localize(empty) + "</span><br>" : "") +
 				"<strong>Pack file types found:</strong><br>" +
-				(filetypes.mcfunction > 0 ? "<span class='indented'>.mcfunction: " + localize(filetypes.mcfunction) + "</span><br>" : "") +
-				(filetypes.json > 0 ? "<span class='indented'>.json: " + localize(filetypes.json) + "</span><br>" : "") +
-				(filetypes.nbt > 0 ? "<span class='indented'>.nbt: " + localize(filetypes.nbt) + "</span><br>" : "") +
-				(filetypes.mcmeta > 0 ? "<span class='indented'>.mcmeta: " + localize(filetypes.mcmeta) + "</span><br>": "") +
+				Object.keys(filetypes).sort((a, b) => filetypes[b] - filetypes[a]).map(type => "<span class='indented'>." + type + ": " + localize(filetypes[type]) + "</span><br>").join("") +
 				(selectors.a + selectors.e + selectors.p + selectors.r + selectors.s != 0 ? "<strong>Selectors used:</strong><br>" : "") +
 				(selectors.a > 0 ? "<span class='indented'>@a: " + localize(selectors.a) + "</span><br>" : "") +
 				(selectors.e > 0 ? "<span class='indented'>@e: " + localize(selectors.e) + "</span><br>" : "") +
@@ -199,6 +197,7 @@ listen("tauri://menu", async res => {
 	else if (res.payload == "clear") {
 		document.getElementById("progress").innerText = ""
 		document.getElementById("result").innerHTML = ""
+		document.getElementById("selfolbutton").hidden = false
 		if (interval) clearInterval(interval)
 	} else if (res.payload == "about") message("Version: " + await getVersion() + "\nTauri version: " + await getTauriVersion() + "\nDeveloper: TomatoCake\nInspired by: ErrorCraft's FunctionAnalyser\nSource: github.com/DEVTomatoCake/Datapack-Analyzer", "About this app")
 	else if (res.payload == "settings") openSettingsDialog()
