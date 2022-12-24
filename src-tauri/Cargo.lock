@@ -515,7 +515,7 @@ dependencies = [
 
 [[package]]
 name = "datapack-analyzer"
-version = "1.0.2"
+version = "1.1.0"
 dependencies = [
  "sentry",
  "sentry-tauri",

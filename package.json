@@ -1,8 +1,9 @@
 {
   "name": "datapack-analyzer",
-  "version": "1.0.2",
+  "version": "1.1.0",
   "author": "TomatoCake",
   "type": "module",
+  "license": "CC BY-NC-SA 4.0",
   "scripts": {
     "tauri": "tauri",
     "lint": "npx eslint . --report-unused-disable-directives"
@@ -11,10 +12,10 @@
     "type": "git",
     "url": "https://github.com/DEVTomatoCake/Datapack-Analyzer"
   },
-  "devDependencies": {
-    "@tauri-apps/cli": "^1.2.2"
-  },
   "dependencies": {
     "@tauri-apps/api": "^1.2.0"
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "^1.2.2"
   }
 }

@@ -61,7 +61,6 @@
 				"allowDowngrades": false,
 				"wix": {
 					"language": ["en-US", "de-DE"],
-					"enableElevatedUpdateTask": true,
 					"dialogImagePath": "icons/dialogImage.bmp"
 				}
 			}
