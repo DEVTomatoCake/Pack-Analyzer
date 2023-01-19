@@ -138,7 +138,7 @@ async function mainScan() {
 				return document.getElementById("selfolbutton").hidden = false
 			}
 
-			var html = "" +
+			var html =
 				(packFiles.length > 0 ? "<strong>" + (rpMode ? "Resource" : "Data") + "pack" + (packFiles.length == 1 ? "" : "s") + " found:</strong><br>" +
 				packFiles.map(pack => "<span class='indented'>" + pack.pack.description.replace(/§[a-f0-9]/g, "") +
 					(window.data.versions.some(ver => (rpMode ? ver.resourcepack_version : ver.datapack_version) == pack.pack.pack_format) ?
