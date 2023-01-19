@@ -134,7 +134,7 @@ async function mainScan() {
 			clearInterval(interval)
 			if (error == 0) document.getElementById("progress").innerText = ""
 			if (Object.values(filetypes).reduce((a, b) => a + b) == 0) {
-				document.getElementById("progress").innerHTML = "No datapack files found!"
+				document.getElementById("progress").innerHTML = "No " + (rpMode ? "resource" : "data") + "pack files found!"
 				return document.getElementById("selfolbutton").hidden = false
 			}
 
@@ -183,7 +183,7 @@ async function selectFolder() {
 	selected = null
 	rpMode = document.getElementById("radiorp").checked
 	selected = await open({
-		title: "Select a Minecraft Java Edition Datapack or world folder",
+		title: "Select a Minecraft " + (rpMode ? "resource" : "data") + "pack folder",
 		defaultPath: await dataDir() + ".minecraft\\" + (rpMode ? "resourcepacks" : "saves"),
 		directory: true,
 		recursive: true
