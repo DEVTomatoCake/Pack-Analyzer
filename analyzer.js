@@ -1,9 +1,3 @@
-const { readDir, readTextFile } = window.__TAURI__.fs
-const { open, message } = window.__TAURI__.dialog
-const { dataDir } = window.__TAURI__.path
-const { listen } = window.__TAURI__.event
-const { getVersion, getTauriVersion } = window.__TAURI__.app
-
 var interval
 var files = 0
 var done = 0
@@ -141,10 +135,10 @@ async function mainScan() {
 			var html =
 				(packFiles.length > 0 ? "<strong>" + (rpMode ? "Resource" : "Data") + "pack" + (packFiles.length == 1 ? "" : "s") + " found:</strong><br>" +
 				packFiles.map(pack => "<span class='indented'>" + pack.pack.description.replace(/§[a-f0-9]/g, "") +
-					(window.data.versions.some(ver => (rpMode ? ver.resourcepack_version : ver.datapack_version) == pack.pack.pack_format) ?
+					(window.versions.some(ver => (rpMode ? ver.resourcepack_version : ver.datapack_version) == pack.pack.pack_format) ?
 						" (Supported versions: " +
-						(window.data.versions.findLast(ver => (rpMode ? ver.resourcepack_version : ver.datapack_version) == pack.pack.pack_format)?.name || "?") + "<strong>-</strong>" +
-						(window.data.versions.find(ver => (rpMode ? ver.resourcepack_version : ver.datapack_version) == pack.pack.pack_format)?.name || "?") +
+						(window.versions.findLast(ver => (rpMode ? ver.resourcepack_version : ver.datapack_version) == pack.pack.pack_format)?.name || "?") + "<strong>-</strong>" +
+						(window.versions.find(ver => (rpMode ? ver.resourcepack_version : ver.datapack_version) == pack.pack.pack_format)?.name || "?") +
 						")</span>"
 					: "")
 				).join("<br>") + "<br>"
@@ -175,23 +169,19 @@ async function mainScan() {
 	}, 100)
 }
 async function selectFolder() {
-	getData().then(() => {
-		if (window.data.settings.theme == "light") document.body.classList = "light-theme"
-	})
+	if (getCookie("theme") == "light") document.body.classList = "light-theme"
 	if (interval) clearInterval(interval)
 
 	selected = null
 	rpMode = document.getElementById("radiorp").checked
-	selected = await open({
-		title: "Select a Minecraft " + (rpMode ? "resource" : "data") + "pack folder",
-		defaultPath: await dataDir() + ".minecraft\\" + (rpMode ? "resourcepacks" : "saves"),
-		directory: true,
-		recursive: true
+	selected = await window.showDirectoryPicker({
+		id: rpMode ? "rp" : "dp",
+		startIn: ".minecraft\\" + (rpMode ? "resourcepacks" : "saves")
 	})
 	if (selected) mainScan()
 }
 
-listen("tauri://menu", async res => {
+/*listen("tauri://menu", async res => {
 	if (res.payload == "selectfolder") selectFolder()
 	else if (res.payload == "rescan") mainScan()
 	else if (res.payload == "clear") {
@@ -201,4 +191,4 @@ listen("tauri://menu", async res => {
 		if (interval) clearInterval(interval)
 	} else if (res.payload == "about") message("Version: " + await getVersion() + "\nTauri version: " + await getTauriVersion() + "\nDeveloper: TomatoCake\nInspired by: ErrorCraft's FunctionAnalyser\nSource: github.com/DEVTomatoCake/Datapack-Analyzer", "About this app")
 	else if (res.payload == "settings") openSettingsDialog()
-})
+})*/
