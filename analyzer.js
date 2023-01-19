@@ -176,7 +176,7 @@ async function selectFolder() {
 	rpMode = document.getElementById("radiorp").checked
 	selected = await window.showDirectoryPicker({
 		id: rpMode ? "rp" : "dp",
-		startIn: ".minecraft\\" + (rpMode ? "resourcepacks" : "saves")
+		//startIn: "%appdata%\\.minecraft\\" + (rpMode ? "resourcepacks" : "saves")
 	})
 	if (selected) mainScan()
 }

@@ -26,7 +26,8 @@ function deleteCookie(name) {
 
 const requestVersions = async () => {
 	const res = await fetch("https://raw.githubusercontent.com/misode/mcmeta/summary/versions/data.json")
-	windows.versions = res.data.map(ver => {
+	const json = await res.json()
+	window.versions = json.map(ver => {
 		return {
 			name: ver.id,
 			datapack_version: ver.data_pack_version,
@@ -35,11 +36,6 @@ const requestVersions = async () => {
 	})
 }
 requestVersions()
-
-const defaultSettings = {
-	theme: "dark",
-	language: "en"
-}
 
 const localize = string => string.toLocaleString(getCookie("lang") || "en-US")
 
@@ -53,7 +49,10 @@ function openDialog(dialog) {
 	}
 }
 
-function openSettingsDialog() {
+async function openSettingsDialog() {
+	const status = await window.requestPermission({mode: "read"})
+	console.log(status)
+
 	var dialog = document.getElementById("settingsDialog")
 	openDialog(dialog)
 
