@@ -22,7 +22,9 @@ function getCookie(name) {
 function deleteCookie(name) {
 	document.cookie = name + "=;Max-Age=-99999999;path=/;"
 }
-if (getCookie("theme") == "light") document.body.classList = "light-theme"
+window.addEventListener("load", () => {
+	if (getCookie("theme") == "light") document.body.classList = "light-theme"
+})
 
 const requestVersions = async () => {
 	const res = await fetch("https://raw.githubusercontent.com/misode/mcmeta/summary/versions/data.json")

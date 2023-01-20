@@ -185,7 +185,7 @@ async function selectFolder() {
 	if (!getCookie("dismiss-system-folders")) {
 		openDialog(document.getElementById("systemFoldersDialog"))
 		setCookie("dismiss-system-folders", true, 365)
-		await new Promise(resolve => setTimeout(resolve, 6000))
+		await new Promise(resolve => setTimeout(resolve, 4000))
 	}
 
 	selected = null
@@ -194,5 +194,8 @@ async function selectFolder() {
 		id: rpMode ? "rp" : "dp",
 		startIn: "desktop"
 	})
-	if (selected) mainScan()
+	if (selected) {
+		document.getElementById("systemFoldersDialog").style.display = "none"
+		mainScan()
+	}
 }
