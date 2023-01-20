@@ -180,8 +180,13 @@ async function mainScan() {
 }
 
 async function selectFolder() {
-	if (getCookie("theme") == "light") document.body.classList = "light-theme"
 	if (interval) clearInterval(interval)
+
+	if (!getCookie("dismiss-system-folders")) {
+		openDialog(document.getElementById("systemFoldersDialog"))
+		setCookie("dismiss-system-folders", true, 365)
+		await new Promise(resolve => setTimeout(resolve, 6000))
+	}
 
 	selected = null
 	rpMode = document.getElementById("radiorp").checked

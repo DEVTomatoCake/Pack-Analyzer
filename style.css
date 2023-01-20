@@ -1,5 +1,6 @@
 .light-theme {
 	--background: #FFF;
+	--header-bg: #8be0c0;
 	--dialog-bg: #EEE;
 	--dialog-text: #111;
 	--dialog-shadow: rgba(0, 0, 0, 0.25);
@@ -7,6 +8,7 @@
 }
 .dark-theme {
 	--background: #222;
+	--header-bg: #216e4a;
 	--dialog-bg: #222;
 	--dialog-text: #FFF;
 	--dialog-shadow: rgba(0, 0, 0, 0.75);
@@ -18,14 +20,20 @@ body {
 	background-color: var(--background);
 	color: var(--dialog-text);
 	transition: .3s;
+	margin: 0;
 }
 
 button {
 	padding: 10px;
 	font-size: 20px;
+	border: none;
+	border-radius: 5px;
 }
 p {
-	font-size: 18px;
+	font-size: 19px;
+}
+#result {
+	margin: 0 25px;
 }
 .indented {
 	margin-left: 25px;
@@ -33,6 +41,19 @@ p {
 code {
 	background-color: var(--code-bg);
 	border-radius: 5px;
+}
+
+header {
+	background-color: var(--header-bg);
+	padding: 20px;
+	margin-bottom: 30px;
+}
+header h1 {
+	margin: 15px 0;
+}
+header button {
+	padding: 5px;
+	font-size: 15px;
 }
 
 .dialog {
@@ -58,6 +79,7 @@ code {
 	animation-name: animateDialog;
 	animation-duration: 0.4s;
 	background-color: var(--dialog-bg);
+	border-radius: 5px;
 }
 
 @keyframes animateDialog {
@@ -66,10 +88,11 @@ code {
 }
 
 .close {
-	color: #aaa;
+	color: #AAA;
 	float: right;
 	font-size: 28px;
 	font-weight: bold;
+	transition: .2s;
 }
 .close:hover, .close:focus {
 	color: black;

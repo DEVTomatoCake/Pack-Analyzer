@@ -1,6 +1,5 @@
 // Cookie code from https://github.com/DEVTomatoCake/dashboard/blob/0ad2ba278373244f05025dc6554e4ebb86868e8a/assets/js/script.js#L1-L26
 function setCookie(name, value, days) {
-	if (!getCookie("cookie-dismiss") && name != "token" && name != "user" && name != "cookie-dismiss") return console.warn("Skipping cookie " + name)
 	let cookie = name + "=" + (value || "") + ";path=/;"
 	if (days) {
 		const date = new Date()
@@ -23,6 +22,7 @@ function getCookie(name) {
 function deleteCookie(name) {
 	document.cookie = name + "=;Max-Age=-99999999;path=/;"
 }
+if (getCookie("theme") == "light") document.body.classList = "light-theme"
 
 const requestVersions = async () => {
 	const res = await fetch("https://raw.githubusercontent.com/misode/mcmeta/summary/versions/data.json")
@@ -42,6 +42,7 @@ window.addEventListener("dragover", event => {
 	event.preventDefault()
 	event.dataTransfer.dropEffect = "copy"
 })
+
 const localize = string => string.toLocaleString(getCookie("lang") || "en-US")
 
 function openDialog(dialog) {
@@ -67,8 +68,14 @@ async function openSettingsDialog() {
 	for (let select of dialog.getElementsByTagName("select")) {
 		select.onchange = () => {
 			setCookie(select.name, select.value, 365)
-
 			if (select.name == "theme") document.body.classList = select.value + "-theme"
 		}
 	}
+}
+
+function clear() {
+	document.getElementById("progress").innerText = ""
+	document.getElementById("result").innerHTML = ""
+	document.getElementById("selfolbutton").hidden = false
+	if (interval) clearInterval(interval)
 }

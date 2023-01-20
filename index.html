@@ -12,6 +12,16 @@
 		<script src="./script.js"></script>
 	</head>
 	<body class="dark-theme">
+		<header>
+			<h1>Minecraft Datapack and Resourcepack analyzer</h1>
+			<div class="menu">
+				<button onclick="selectFolder()">Select Folder</button>
+				<button onclick="mainScan()">Scan again</button>
+				<button onclick="openSettingsDialog()">Settings</button>
+				<button onclick="clear()">Clear results</button>
+				<button onclick="openDialog(document.getElementById('aboutDialog'))">About</button>
+			</div>
+		</header>
 		<center>
 			<label for="radiodp">Datapack</label>
 			<input type="radio" id="radiodp" name="packType" onchange="document.getElementById('selfolbutton').hidden = false" checked>
@@ -42,6 +52,27 @@
 					<option value="de-DE">German</option>
 					<option value="en-US">English</option>
 				</select>
+			</div>
+		</div>
+
+		<div id="aboutDialog" class="dialog">
+			<div class="dialog-content">
+				<span class="close">&times;</span>
+				<h1>About</h1>
+
+				<p>Developed by: TomatoCake</p>
+				<p>Inspired by: <a href="https://github.com/ErrorCraft/FunctionAnalyser">ErrorCraft's FunctionAnalyser</a></p>
+				<p>GitHub: <a href="https://github.com/DEVTomatoCake/Datapack-Analyzer">https://github.com/DEVTomatoCake/Datapack-Analyzer</a></p>
+				<p>Support/Feedback: <a href="https://discord.gg/JXVDQFf">German Vanilla Minigames Discord</a> or on GitHub</p>
+			</div>
+		</div>
+		<div id="systemFoldersDialog" class="dialog">
+			<div class="dialog-content">
+				<span class="close">&times;</span>
+				<h1>A note on "system files"</h1>
+
+				<p>Due to some web developers being <s>idiotic</s> cautious, you can't select files or folders in specific paths - e.g. %AppData% on Windows.</p>
+				<p>You can either upload a .zip file once that functionality is implemented, or you copy the file/folder to an accessible path, such as your desktop or documents folder.</p>
 			</div>
 		</div>
 	</body>
