@@ -19,14 +19,15 @@ var cmdsBehindExecute = {}
 var comments = 0
 var empty = 0
 
-async function processEntries(entries) {
-	for (const entry of entries) {
-		if (entry.children) {
-			processEntries(entry.children)
+async function processEntries(entries, path) {
+	for await (const entry of entries.values()) {
+		const filePath = path + "/" + entry.name
+		if (entry.kind == "directory") {
+			processEntries(entry, filePath)
 			continue
 		}
 
-		const ext = entry.path.split(".").pop()
+		const ext = entry.name.split(".").pop()
 		if (
 			ext == "mcmeta" || ext == "json" ||
 			(!rpMode && (ext == "mcfunction" || ext == "nbt")) ||
@@ -36,60 +37,70 @@ async function processEntries(entries) {
 			else filetypes[ext]++
 		} else continue
 
+		const status = await entry.requestPermission({mode: "read"})
+		if (status != "granted") {
+			error++
+			continue
+		}
+
 		if (ext == "mcfunction" || ext == "mcmeta") {
 			files++
 			try {
-				var contents = await readTextFile(entry.path)
+				const reader = new FileReader()
+				reader.readAsText(await entry.getFile())
+
+				reader.onload = function() {
+					done++
+
+					if (!rpMode && ext == "mcfunction") {
+						const lines = reader.result.split("\n")
+						for (let line of lines) {
+							line = line.trim()
+							if (line.startsWith("#")) comments++
+							if (line == "") empty++
+							if (line.startsWith("#") || line == "") continue
+							const splitted = line.split(" ")
+
+							const cmd = splitted[0]
+							if (!commands[cmd]) commands[cmd] = 1
+							else commands[cmd]++
+
+							if (cmd == "execute") {
+								line.match(/ run [a-z_:]{2,}/g)?.forEach(match => {
+									const cmdBehind = match.replace(" run ", "")
+									if (!cmdsBehindExecute[cmdBehind]) cmdsBehindExecute[cmdBehind] = 1
+									else cmdsBehindExecute[cmdBehind]++
+									if (!commands[cmdBehind]) commands[cmdBehind] = 1
+									else commands[cmdBehind]++
+								})
+							}
+
+							splitted.forEach(arg => {
+								if (arg.startsWith("@")) {
+									arg = arg.slice(1)
+									if (arg.startsWith("a")) selectors.a++
+									else if (arg.startsWith("e")) selectors.e++
+									else if (arg.startsWith("p")) selectors.p++
+									else if (arg.startsWith("r")) selectors.r++
+									else if (arg.startsWith("s")) selectors.s++
+								}
+							})
+						}
+					} else if (ext == "mcmeta") {
+						if (entry.name == "pack.mcmeta") {
+							try {
+								packFiles.push(JSON.parse(reader.result))
+							} catch (e) {
+								console.warn("Could not parse pack.mcmeta: " + filePath, e)
+								error++
+							}
+						}
+					}
+				}
 			} catch (e) {
-				console.warn("Could not read file: " + entry.path, e)
+				console.warn("Could not read file: " + filePath, e)
 				error++
 				continue
-			}
-			done++
-
-			if (!rpMode && ext == "mcfunction") {
-				const lines = contents.split("\n")
-				for (let line of lines) {
-					line = line.trim()
-					if (line.startsWith("#")) comments++
-					if (line == "") empty++
-					if (line.startsWith("#") || line == "") continue
-					const splitted = line.split(" ")
-
-					const cmd = splitted[0]
-					if (!commands[cmd]) commands[cmd] = 1
-					else commands[cmd]++
-
-					if (cmd == "execute") {
-						line.match(/ run [a-z_:]{2,}/g)?.forEach(match => {
-							const cmdBehind = match.replace(" run ", "")
-							if (!cmdsBehindExecute[cmdBehind]) cmdsBehindExecute[cmdBehind] = 1
-							else cmdsBehindExecute[cmdBehind]++
-							if (!commands[cmdBehind]) commands[cmdBehind] = 1
-							else commands[cmdBehind]++
-						})
-					}
-
-					splitted.forEach(arg => {
-						if (arg.startsWith("@")) {
-							arg = arg.slice(1)
-							if (arg.startsWith("a")) selectors.a++
-							else if (arg.startsWith("e")) selectors.e++
-							else if (arg.startsWith("p")) selectors.p++
-							else if (arg.startsWith("r")) selectors.r++
-							else if (arg.startsWith("s")) selectors.s++
-						}
-					})
-				}
-			} else if (ext == "mcmeta") {
-				if (entry.path.endsWith("\\pack.mcmeta")) {
-					try {
-						packFiles.push(JSON.parse(contents))
-					} catch (e) {
-						console.warn("Could not parse pack.mcmeta: " + entry.path, e)
-						error++
-					}
-				}
 			}
 		}
 	}
@@ -119,8 +130,7 @@ async function mainScan() {
 	comments = 0
 	empty = 0
 
-	const entries = await readDir(selected, { recursive: true })
-	processEntries(entries)
+	processEntries(selected, selected.name)
 
 	interval = setInterval(() => {
 		document.getElementById("progress").innerText = Math.round(done / files * 100) + "% scanned" + (error > 0 ? " - " + error + " errors" : "")
@@ -168,6 +178,7 @@ async function mainScan() {
 		}
 	}, 100)
 }
+
 async function selectFolder() {
 	if (getCookie("theme") == "light") document.body.classList = "light-theme"
 	if (interval) clearInterval(interval)
@@ -176,19 +187,7 @@ async function selectFolder() {
 	rpMode = document.getElementById("radiorp").checked
 	selected = await window.showDirectoryPicker({
 		id: rpMode ? "rp" : "dp",
-		//startIn: "%appdata%\\.minecraft\\" + (rpMode ? "resourcepacks" : "saves")
+		startIn: "desktop"
 	})
 	if (selected) mainScan()
 }
-
-/*listen("tauri://menu", async res => {
-	if (res.payload == "selectfolder") selectFolder()
-	else if (res.payload == "rescan") mainScan()
-	else if (res.payload == "clear") {
-		document.getElementById("progress").innerText = ""
-		document.getElementById("result").innerHTML = ""
-		document.getElementById("selfolbutton").hidden = false
-		if (interval) clearInterval(interval)
-	} else if (res.payload == "about") message("Version: " + await getVersion() + "\nTauri version: " + await getTauriVersion() + "\nDeveloper: TomatoCake\nInspired by: ErrorCraft's FunctionAnalyser\nSource: github.com/DEVTomatoCake/Datapack-Analyzer", "About this app")
-	else if (res.payload == "settings") openSettingsDialog()
-})*/

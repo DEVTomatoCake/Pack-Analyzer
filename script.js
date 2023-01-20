@@ -37,6 +37,11 @@ const requestVersions = async () => {
 }
 requestVersions()
 
+window.addEventListener("dragover", event => {
+	event.stopPropagation()
+	event.preventDefault()
+	event.dataTransfer.dropEffect = "copy"
+})
 const localize = string => string.toLocaleString(getCookie("lang") || "en-US")
 
 function openDialog(dialog) {
@@ -50,9 +55,6 @@ function openDialog(dialog) {
 }
 
 async function openSettingsDialog() {
-	const status = await window.requestPermission({mode: "read"})
-	console.log(status)
-
 	var dialog = document.getElementById("settingsDialog")
 	openDialog(dialog)
 
