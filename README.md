@@ -20,7 +20,9 @@ Feel free to leave a star, create a feature request or bug report issue, or even
 
 ## Ideas/TODO
 
-- Add more statistics: scoreboards
+- Add more statistics: amount of scoreboards, predicates, loot tables, tags (split up in item, block, ... tags), dimensions, dimension types
+- Display pack filters
+- Feature to compare two or more datapacks
 - Warn on invalid/outdated commands
 - Image render of datapack function connections?
-- Share, copy and export buttons
+- Share (as image and link) and export (as .txt and .json) buttons
