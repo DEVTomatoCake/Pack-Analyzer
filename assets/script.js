@@ -121,3 +121,28 @@ function clearResults() {
 	document.getElementById("resultButtons").hidden = true
 	if (interval) clearInterval(interval)
 }
+
+function share(type) {
+	var content = ""
+	if (type == "txt") content = document.getElementById("result").innerText
+	else if (type == "json") content = JSON.stringify({
+		files,
+		done,
+		error,
+		rpMode,
+
+		filetypes,
+		selectors,
+		packFiles,
+		commands,
+		cmdsBehindExecute,
+		comments,
+		empty,
+		dpExclusive
+	}, null, 4)
+
+	const download = document.createElement("a")
+	download.href = "data:application/" + type + "," + encodeURIComponent(content)
+	download.download = "export." + type
+	download.click()
+}
