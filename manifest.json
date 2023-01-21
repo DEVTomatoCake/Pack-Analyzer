@@ -1,6 +1,6 @@
 {
-	"short_name": "Datapack Analyzer",
 	"name": "Minecraft Datapack and Resourcepack Analyzer",
+	"short_name": "MC Pack Analyzer",
 	"icons": [
 		{
 			"src": "/assets/images/icon_512.png",
