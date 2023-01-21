@@ -23,13 +23,14 @@
 	"display_override": ["window-control-overlay"],
 	"display": "standalone",
 	"scope": "/",
+	"theme_color": "#216E4A",
 	"lang": "en",
 	"description": "A tool which allows you to analyze Minecraft Java datapacks and resourcepacks, and generate stats from them.",
 	"screenshots": [
 		{
 			"src": "/assets/screen_result.png",
 			"type": "image/png",
-			"sizes": ""
+			"sizes": "751x357"
 		}
 	]
 }
