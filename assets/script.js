@@ -24,6 +24,8 @@ function deleteCookie(name) {
 }
 window.addEventListener("load", () => {
 	if (getCookie("theme") == "light") document.body.classList = "light-theme"
+
+	if ("serviceWorker" in navigator) navigator.serviceWorker.register("/serviceworker.js")
 })
 
 const requestVersions = async () => {
