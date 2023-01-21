@@ -45,6 +45,19 @@ window.addEventListener("dragover", event => {
 	event.dataTransfer.dropEffect = "copy"
 })
 
+window.addEventListener("drop", event => {
+	event.stopPropagation()
+	event.preventDefault()
+	const fileList = event.dataTransfer.files
+	console.log(fileList)
+})
+window.addEventListener("paste", async e => {
+	e.preventDefault()
+	if (!e.clipboardData.files.length) return
+	const file = e.clipboardData.files[0]
+	console.log(await file.text())
+})
+
 const localize = string => string.toLocaleString(getCookie("lang") || "en-US")
 
 function openDialog(dialog) {

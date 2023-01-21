@@ -20,7 +20,7 @@ var comments = 0
 var empty = 0
 
 async function processEntries(entries, path) {
-	for await (const entry of entries.values()) {
+	for await (const entry of entries) {
 		const filePath = path + "/" + entry.name
 		if (entry.kind == "directory") {
 			processEntries(entry, filePath)
@@ -37,70 +37,70 @@ async function processEntries(entries, path) {
 			else filetypes[ext]++
 		} else continue
 
-		const status = await entry.requestPermission({mode: "read"})
-		if (status != "granted") {
-			error++
-			continue
-		}
-
 		if (ext == "mcfunction" || ext == "mcmeta") {
 			files++
-			try {
-				const reader = new FileReader()
-				reader.readAsText(await entry.getFile())
 
-				reader.onload = function() {
-					done++
+			function processFile(result) {
+				done++
 
-					if (!rpMode && ext == "mcfunction") {
-						const lines = reader.result.split("\n")
-						for (let line of lines) {
-							line = line.trim()
-							if (line.startsWith("#")) comments++
-							if (line == "") empty++
-							if (line.startsWith("#") || line == "") continue
-							const splitted = line.split(" ")
+				if (!rpMode && ext == "mcfunction") {
+					const lines = result.split("\n")
+					for (let line of lines) {
+						line = line.trim()
+						if (line.startsWith("#")) comments++
+						if (line == "") empty++
+						if (line.startsWith("#") || line == "") continue
+						const splitted = line.split(" ")
 
-							const cmd = splitted[0]
-							if (!commands[cmd]) commands[cmd] = 1
-							else commands[cmd]++
+						const cmd = splitted[0]
+						if (!commands[cmd]) commands[cmd] = 1
+						else commands[cmd]++
 
-							if (cmd == "execute") {
-								line.match(/ run [a-z_:]{2,}/g)?.forEach(match => {
-									const cmdBehind = match.replace(" run ", "")
-									if (!cmdsBehindExecute[cmdBehind]) cmdsBehindExecute[cmdBehind] = 1
-									else cmdsBehindExecute[cmdBehind]++
-									if (!commands[cmdBehind]) commands[cmdBehind] = 1
-									else commands[cmdBehind]++
-								})
-							}
-
-							splitted.forEach(arg => {
-								if (arg.startsWith("@")) {
-									arg = arg.slice(1)
-									if (arg.startsWith("a")) selectors.a++
-									else if (arg.startsWith("e")) selectors.e++
-									else if (arg.startsWith("p")) selectors.p++
-									else if (arg.startsWith("r")) selectors.r++
-									else if (arg.startsWith("s")) selectors.s++
-								}
+						if (cmd == "execute") {
+							line.match(/ run [a-z_:]{2,}/g)?.forEach(match => {
+								const cmdBehind = match.replace(" run ", "")
+								if (!cmdsBehindExecute[cmdBehind]) cmdsBehindExecute[cmdBehind] = 1
+								else cmdsBehindExecute[cmdBehind]++
+								if (!commands[cmdBehind]) commands[cmdBehind] = 1
+								else commands[cmdBehind]++
 							})
 						}
-					} else if (ext == "mcmeta") {
-						if (entry.name == "pack.mcmeta") {
-							try {
-								packFiles.push(JSON.parse(reader.result))
-							} catch (e) {
-								console.warn("Could not parse pack.mcmeta: " + filePath, e)
-								error++
+
+						splitted.forEach(arg => {
+							if (arg.startsWith("@")) {
+								arg = arg.slice(1)
+								if (arg.startsWith("a")) selectors.a++
+								else if (arg.startsWith("e")) selectors.e++
+								else if (arg.startsWith("p")) selectors.p++
+								else if (arg.startsWith("r")) selectors.r++
+								else if (arg.startsWith("s")) selectors.s++
 							}
+						})
+					}
+				} else if (ext == "mcmeta") {
+					if (entry.name == "pack.mcmeta") {
+						try {
+							packFiles.push(JSON.parse(result))
+						} catch (e) {
+							console.warn("Could not parse pack.mcmeta: " + filePath, e)
+							error++
 						}
 					}
 				}
-			} catch (e) {
-				console.warn("Could not read file: " + filePath, e)
-				error++
-				continue
+			}
+
+			if (entry.content) processFile(entry.content)
+			else {
+				const reader = new FileReader()
+				reader.readAsText(entry)
+
+				reader.onload = function() {
+					processFile(reader.result)
+				}
+				reader.onerror = function(e) {
+					console.warn("Could not read file: " + filePath, e)
+					error++
+				}
 			}
 		}
 	}
@@ -182,20 +182,41 @@ async function mainScan() {
 async function selectFolder() {
 	if (interval) clearInterval(interval)
 
-	if (!getCookie("dismiss-system-folders")) {
-		openDialog(document.getElementById("systemFoldersDialog"))
-		setCookie("dismiss-system-folders", true, 365)
-		await new Promise(resolve => setTimeout(resolve, 4000))
-	}
-
 	selected = null
 	rpMode = document.getElementById("radiorp").checked
-	selected = await window.showDirectoryPicker({
-		id: rpMode ? "rp" : "dp",
-		startIn: "desktop"
-	})
-	if (selected) {
-		document.getElementById("systemFoldersDialog").style.display = "none"
+
+	const input = document.createElement("input")
+	input.type = "file"
+	input.webkitdirectory = true
+	input.onchange = e => {
+		selected = e.target.files
 		mainScan()
 	}
+	if ("showPicker" in HTMLInputElement.prototype) input.showPicker()
+	else input.click()
+}
+
+async function selectZip() {
+	if (interval) clearInterval(interval)
+
+	selected = []
+	rpMode = document.getElementById("radiorp").checked
+
+	const input = document.createElement("input")
+	input.type = "file"
+	input.accept = ".zip"
+	input.onchange = e => {
+		new JSZip().loadAsync(e.target.files[0]).then(async zip => {
+			console.log(zip.files)
+			for await (const file of Object.values(zip.files)) {
+				selected.push({
+					name: file.name,
+					content: await file.async("text")
+				})
+			}
+			mainScan()
+		})
+	}
+	if ("showPicker" in HTMLInputElement.prototype) input.showPicker()
+	else input.click()
 }
