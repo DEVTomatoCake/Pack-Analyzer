@@ -6,26 +6,21 @@ var selected = null
 var rpMode = false
 
 var filetypes = {}
-var selectors = {
-	a: 0,
-	e: 0,
-	p: 0,
-	r: 0,
-	s: 0
-}
 var packFiles = []
 var commands = {}
 var cmdsBehindExecute = {}
 var comments = 0
 var empty = 0
 var dpExclusive = {
-	advancements: 0,
-	loot_tables: 0,
-	recipes: 0,
-	predicates: 0,
-	dimension: 0,
-	dimension_type: 0,
-	worldgen: 0,
+	folders: {
+		advancements: 0,
+		loot_tables: 0,
+		recipes: 0,
+		predicates: 0,
+		dimension: 0,
+		dimension_type: 0,
+		worldgen: 0
+	},
 	tags: {
 		banner_pattern: 0,
 		blocks: 0,
@@ -39,7 +34,27 @@ var dpExclusive = {
 		painting_variant: 0,
 		point_of_interest_type: 0,
 		worldgen: 0
+	},
+	scoreboards: 0,
+	selectors: {
+		a: 0,
+		e: 0,
+		p: 0,
+		r: 0,
+		s: 0
 	}
+}
+var rpExclusive = {
+	atlases: 0,
+	blockstates: 0,
+	font: 0,
+	lang: 0,
+	models: 0,
+	particles: 0,
+	shaders: 0,
+	sounds: 0,
+	texts: 0,
+	textures: 0
 }
 
 async function processEntries(entries) {
@@ -89,14 +104,16 @@ async function processEntries(entries) {
 							})
 						}
 
+						if (line.match(/scoreboard objectives add \w+ \w+( [ \S]+)?$/)) dpExclusive.scoreboards++
+
 						splitted.forEach(arg => {
 							if (arg.startsWith("@")) {
 								arg = arg.slice(1)
-								if (arg.startsWith("a")) selectors.a++
-								else if (arg.startsWith("e")) selectors.e++
-								else if (arg.startsWith("p")) selectors.p++
-								else if (arg.startsWith("r")) selectors.r++
-								else if (arg.startsWith("s")) selectors.s++
+								if (arg.startsWith("a")) dpExclusive.selectors.a++
+								else if (arg.startsWith("e")) dpExclusive.selectors.e++
+								else if (arg.startsWith("p")) dpExclusive.selectors.p++
+								else if (arg.startsWith("r")) dpExclusive.selectors.r++
+								else if (arg.startsWith("s")) dpExclusive.selectors.s++
 							}
 						})
 					}
@@ -125,14 +142,14 @@ async function processEntries(entries) {
 					error++
 				}
 			}
-		} else if (ext == "json") {
-			if (filePath.includes("/advancements/")) dpExclusive.advancements++
-			else if (filePath.includes("/loot_tables/")) dpExclusive.loot_tables++
-			else if (filePath.includes("/recipes/")) dpExclusive.recipes++
-			else if (filePath.includes("/predicates/")) dpExclusive.predicates++
-			else if (filePath.includes("/dimension/")) dpExclusive.dimension++
-			else if (filePath.includes("/dimension_type/")) dpExclusive.dimension_type++
-			else if (filePath.includes("/worldgen/")) dpExclusive.worldgen++
+		} else if (!rpMode && ext == "json") {
+			if (filePath.includes("/advancements/")) dpExclusive.folders.advancements++
+			else if (filePath.includes("/loot_tables/")) dpExclusive.folders.loot_tables++
+			else if (filePath.includes("/recipes/")) dpExclusive.folders.recipes++
+			else if (filePath.includes("/predicates/")) dpExclusive.folders.predicates++
+			else if (filePath.includes("/dimension/")) dpExclusive.folders.dimension++
+			else if (filePath.includes("/dimension_type/")) dpExclusive.folders.dimension_type++
+			else if (filePath.includes("/worldgen/")) dpExclusive.folders.worldgen++
 
 			else if (filePath.includes("/tags/banner_pattern/")) dpExclusive.tags.banner_pattern++
 			else if (filePath.includes("/tags/blocks/")) dpExclusive.tags.blocks++
@@ -146,6 +163,17 @@ async function processEntries(entries) {
 			else if (filePath.includes("/tags/painting_variant/")) dpExclusive.tags.painting_variant++
 			else if (filePath.includes("/tags/point_of_interest_type/")) dpExclusive.tags.point_of_interest_type++
 			else if (filePath.includes("/tags/worldgen/")) dpExclusive.tags.worldgen++
+		} else if (rpMode) {
+			if (filePath.includes("/atlases/")) rpExclusive.atlases++
+			else if (filePath.includes("/blockstates/")) rpExclusive.blockstates++
+			else if (filePath.includes("/font/")) rpExclusive.font++
+			else if (filePath.includes("/lang/")) rpExclusive.lang++
+			else if (filePath.includes("/models/")) rpExclusive.models++
+			else if (filePath.includes("/particles/")) rpExclusive.particles++
+			else if (filePath.includes("/shaders/")) rpExclusive.shaders++
+			else if (filePath.includes("/sounds/")) rpExclusive.sounds++
+			else if (filePath.includes("/texts/")) rpExclusive.texts++
+			else if (filePath.includes("/textures/")) rpExclusive.textures++
 		}
 	}
 }
@@ -160,26 +188,21 @@ async function mainScan() {
 	rpMode = document.getElementById("radiorp").checked
 
 	filetypes = {}
-	selectors = {
-		a: 0,
-		e: 0,
-		p: 0,
-		r: 0,
-		s: 0
-	}
 	packFiles = []
 	commands = {}
 	cmdsBehindExecute = {}
 	comments = 0
 	empty = 0
 	dpExclusive = {
-		advancements: 0,
-		loot_tables: 0,
-		recipes: 0,
-		predicates: 0,
-		dimension: 0,
-		dimension_type: 0,
-		worldgen: 0,
+		folders: {
+			advancements: 0,
+			loot_tables: 0,
+			recipes: 0,
+			predicates: 0,
+			dimension: 0,
+			dimension_type: 0,
+			worldgen: 0
+		},
 		tags: {
 			banner_pattern: 0,
 			blocks: 0,
@@ -193,7 +216,27 @@ async function mainScan() {
 			painting_variant: 0,
 			point_of_interest_type: 0,
 			worldgen: 0
+		},
+		scoreboards: 0,
+		selectors: {
+			a: 0,
+			e: 0,
+			p: 0,
+			r: 0,
+			s: 0
 		}
+	}
+	rpExclusive = {
+		atlases: 0,
+		blockstates: 0,
+		font: 0,
+		lang: 0,
+		models: 0,
+		particles: 0,
+		shaders: 0,
+		sounds: 0,
+		texts: 0,
+		textures: 0
 	}
 
 	processEntries(selected)
@@ -233,23 +276,28 @@ async function mainScan() {
 				(empty > 0 ? "<span class='indented'>Empty lines: " + localize(empty) + "</span><br>" : "") +
 				"<strong>Pack file types found:</strong><br>" +
 				Object.keys(filetypes).sort((a, b) => filetypes[b] - filetypes[a]).map(type => "<span class='indented'>." + type + ": " + localize(filetypes[type]) + "</span><br>").join("") +
-				(Object.values(selectors).reduce((a, b) => a + b) != 0 ? "<strong>Selectors used:</strong><br>" : "") +
-				Object.keys(selectors).filter(i => selectors[i] > 0).sort((a, b) => selectors[b] - selectors[a])
-					.map(type => "<span class='indented'>@" + type + ": " + localize(selectors[type]) + "</span><br>").join("") +
 
-				(!rpMode && Object.values(dpExclusive).reduce((a, b) => a + b) != 0 ? "<br><strong>Datapack features used:</strong><br>" : "") +
-				Object.keys(dpExclusive).filter(i => !isNaN(dpExclusive[i]) && dpExclusive[i] > 0).sort((a, b) => dpExclusive[b] - dpExclusive[a])
+				(dpExclusive.scoreboards > 0 ? "<strong>Scoreboards created: " + localize(dpExclusive.scoreboards) + "</strong><br>" : "") +
+				(!rpMode && Object.values(dpExclusive.selectors).reduce((a, b) => a + b) != 0 ? "<strong>Selectors used:</strong><br>" : "") +
+				Object.keys(dpExclusive.selectors).filter(i => dpExclusive.selectors[i] > 0).sort((a, b) => dpExclusive.selectors[b] - dpExclusive.selectors[a])
+					.map(type => "<span class='indented'>@" + type + ": " + localize(dpExclusive.selectors[type]) + "</span><br>").join("") +
+				(!rpMode && Object.values(dpExclusive.folders).reduce((a, b) => a + b) != 0 ? "<strong>Datapack features used:</strong><br>" : "") +
+				Object.keys(dpExclusive.folders).filter(i => i > 0).sort((a, b) => dpExclusive[b] - dpExclusive[a])
 					.map(type => "<span class='indented'>" + type + ": " + localize(dpExclusive[type]) + "</span><br>").join("") +
 				(!rpMode && Object.values(dpExclusive.tags).reduce((a, b) => a + b) != 0 ? "<strong>Tags used:</strong><br>" : "") +
 				Object.keys(dpExclusive.tags).filter(i => dpExclusive.tags[i] > 0).sort((a, b) => dpExclusive.tags[b] - dpExclusive.tags[a])
-					.map(type => "<span class='indented'>" + type + ": " + localize(dpExclusive.tags[type]) + "</span><br>").join("")
+					.map(type => "<span class='indented'>" + type + ": " + localize(dpExclusive.tags[type]) + "</span><br>").join("") +
+
+				(rpMode && Object.values(rpExclusive).reduce((a, b) => a + b) != 0 ? "<br><strong>Resourcepack features used:</strong><br>" : "") +
+				Object.keys(rpExclusive).filter(i => !isNaN(i) && rpExclusive[i] > 0).sort((a, b) => rpExclusive[b] - rpExclusive[a])
+					.map(type => "<span class='indented'>" + type + ": " + localize(rpExclusive[type]) + "</span><br>").join("")
 
 			html += "<br>"
 			commands = Object.fromEntries(Object.entries(commands).sort(([, a], [, b]) => b - a))
 			Object.keys(commands).forEach(cmd => {
 				html += cmd + ": " + localize(commands[cmd]) + "<br>"
 				if (cmdsBehindExecute[cmd]) html += "<span class='indented'>Behind execute: " + localize(cmdsBehindExecute[cmd]) +
-					(cmd == "execute" ? " <small>(<code>... run execute ...</code> equals <code>... ...</code>)</small>" : "") + "</span><br>"
+					(cmd == "execute" ? "⚠️ <small>(<code>... run execute ...</code> equals <code>... ...</code>)</small>" : "") + "</span><br>"
 			})
 			document.getElementById("result").innerHTML = html
 		}

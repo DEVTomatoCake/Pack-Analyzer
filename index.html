@@ -34,19 +34,20 @@
 	<body class="dark-theme">
 		<header>
 			<h1>Minecraft Datapack and Resourcepack analyzer</h1>
+			<h2>Drop/Paste a .zip file or select a folder below to start analyzing!</h2>
 			<div>
 				<button onclick="selectFolder()">Select folder</button>
 				<button onclick="selectZip()">Select .zip</button>
-				<button onclick="mainScan()">Scan again</button>
 				<button onclick="openSettingsDialog()">Settings</button>
 				<button onclick="openDialog(document.getElementById('aboutDialog'))">About</button>
 			</div>
 			<div id="resultButtons" hidden>
+				<button onclick="mainScan()">Scan again</button>
 				<button onclick="clearResults()">Clear results</button>
 				<button onclick="share('txt')">Export as txt</button>
 				<button onclick="share('json')">Export as json</button>
-				<button onclick="share()" disabled>Share as link</button>
-				<button onclick="share()" disabled>Share as image</button>
+				<button onclick="share('link')" disabled>Share as link</button>
+				<button onclick="share('png')" disabled>Share as image</button>
 			</div>
 
 			<br>

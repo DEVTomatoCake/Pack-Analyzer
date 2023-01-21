@@ -20,8 +20,7 @@ Feel free to leave a star, create a feature request or bug report issue, or even
 
 ## Ideas/TODO
 
-- Add more statistics: amount of scoreboards
 - Feature to compare two or more datapacks
 - Warn on invalid/outdated commands
 - Image render of datapack function connections?
-- Share (as image and link) and export (as .txt and .json) buttons
+- Share result as image and link

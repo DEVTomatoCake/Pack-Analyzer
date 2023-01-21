@@ -24,7 +24,11 @@ function deleteCookie(name) {
 }
 
 window.addEventListener("load", () => {
-	if (getCookie("theme") == "light" || window.matchMedia("(prefers-color-scheme: light)").matches) document.body.classList = "light-theme"
+	if (getCookie("theme") == "light") document.body.classList = "light-theme"
+	else if (window.matchMedia("(prefers-color-scheme: light)").matches) {
+		document.body.classList = "light-theme"
+		setCookie("theme", "light", 365)
+	}
 	if (!getCookie("lang")) setCookie("lang", getLanguage(), 365)
 
 	if ("serviceWorker" in navigator) navigator.serviceWorker.register("/serviceworker.js")
@@ -138,7 +142,8 @@ function share(type) {
 		cmdsBehindExecute,
 		comments,
 		empty,
-		dpExclusive
+		dpExclusive,
+		rpExclusive
 	}, null, 4)
 
 	const download = document.createElement("a")
