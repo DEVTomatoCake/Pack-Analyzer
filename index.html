@@ -25,8 +25,9 @@
 		<script>
 			Sentry.init({
 				dsn: "https://129f67e4b4264ea6b0f20be3f61cd385@o1070850.ingest.sentry.io/4504543403835392",
-				integrations: [new Sentry.BrowserTracing()],
-  				replaysSessionSampleRate: 1,
+				integrations: [new Sentry.BrowserTracing(), new Sentry.Integrations.Replay()],
+  				replaysSessionSampleRate: 0.1,
+				replaysOnErrorSampleRate: 1,
 				tracesSampleRate: 1
 			})
 		</script>
@@ -34,7 +35,7 @@
 	<body class="dark-theme">
 		<header>
 			<h1>Minecraft Datapack and Resourcepack analyzer</h1>
-			<h2>Drop/Paste a .zip file or select a folder below to start analyzing!</h2>
+			<h2>Drop/paste a .zip file or select a folder below to start analyzing!</h2>
 			<div>
 				<button onclick="selectFolder()">Select folder</button>
 				<button onclick="selectZip()">Select .zip</button>

@@ -282,8 +282,8 @@ async function mainScan() {
 				Object.keys(dpExclusive.selectors).filter(i => dpExclusive.selectors[i] > 0).sort((a, b) => dpExclusive.selectors[b] - dpExclusive.selectors[a])
 					.map(type => "<span class='indented'>@" + type + ": " + localize(dpExclusive.selectors[type]) + "</span><br>").join("") +
 				(!rpMode && Object.values(dpExclusive.folders).reduce((a, b) => a + b) != 0 ? "<strong>Datapack features used:</strong><br>" : "") +
-				Object.keys(dpExclusive.folders).filter(i => i > 0).sort((a, b) => dpExclusive[b] - dpExclusive[a])
-					.map(type => "<span class='indented'>" + type + ": " + localize(dpExclusive[type]) + "</span><br>").join("") +
+				Object.keys(dpExclusive.folders).filter(i => i > 0).sort((a, b) => dpExclusive.folders[b] - dpExclusive.folders[a])
+					.map(type => "<span class='indented'>" + type + ": " + localize(dpExclusive.folders[type]) + "</span><br>").join("") +
 				(!rpMode && Object.values(dpExclusive.tags).reduce((a, b) => a + b) != 0 ? "<strong>Tags used:</strong><br>" : "") +
 				Object.keys(dpExclusive.tags).filter(i => dpExclusive.tags[i] > 0).sort((a, b) => dpExclusive.tags[b] - dpExclusive.tags[a])
 					.map(type => "<span class='indented'>" + type + ": " + localize(dpExclusive.tags[type]) + "</span><br>").join("") +
