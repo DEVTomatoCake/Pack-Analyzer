@@ -20,19 +20,17 @@
 				<button onclick="selectZip()">Select .zip</button>
 				<button onclick="mainScan()">Scan again</button>
 				<button onclick="openSettingsDialog()">Settings</button>
-				<button onclick="clear()">Clear results</button>
+				<button onclick="clearResults()">Clear results</button>
 				<button onclick="openDialog(document.getElementById('aboutDialog'))">About</button>
 			</div>
-		</header>
-		<center>
-			<label for="radiodp">Datapack</label>
-			<input type="radio" id="radiodp" name="packType" onchange="document.getElementById('selfolbutton').hidden = false" checked>
-			<label for="radiorp">Resourcepack</label>
-			<input type="radio" id="radiorp" name="packType" onchange="document.getElementById('selfolbutton').hidden = false"><br>
 
-			<button id="selfolbutton" onclick="selectFolder()">Select Folder</button>
-			<h1 id="progress"></h1>
-		</center>
+			<br>
+			<label for="radiodp">Datapack</label>
+			<input type="radio" id="radiodp" name="packType" checked>
+			<label for="radiorp">Resourcepack</label>
+			<input type="radio" id="radiorp" name="packType"><br>
+		</header>
+		<center><h1 id="progress"></h1></center>
 		<p id="result"></p>
 
 		<div id="settingsDialog" class="dialog">

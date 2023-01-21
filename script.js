@@ -88,9 +88,8 @@ async function openSettingsDialog() {
 	}
 }
 
-function clear() {
+function clearResults() {
 	document.getElementById("progress").innerText = ""
 	document.getElementById("result").innerHTML = ""
-	document.getElementById("selfolbutton").hidden = false
 	if (interval) clearInterval(interval)
 }

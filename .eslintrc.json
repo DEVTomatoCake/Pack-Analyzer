@@ -6,6 +6,7 @@
 		"browser": true,
 		"es6": true
 	},
+	"ignorePatterns": ["jszip.min.js"],
 	"rules": {
 		"prefer-arrow-callback": 2,
 		"no-useless-concat": 2,
@@ -35,7 +36,7 @@
 		"no-unreachable": 1,
 		"no-unreachable-loop": 2,
 		"no-unsafe-finally": 2,
-		"no-unused-vars": [1, { "varsIgnorePattern": "localize|openSettingsDialog|deleteCookie|selectFolder" }],
+		"no-unused-vars": [1, { "varsIgnorePattern": "clearResults|localize|openSettingsDialog|deleteCookie|selectFolder|selectZip" }],
 		"use-isnan": 2,
 		"no-invalid-this": 2,
 		"no-useless-computed-key": 2,

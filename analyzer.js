@@ -108,7 +108,6 @@ async function processEntries(entries, path) {
 
 async function mainScan() {
 	if (interval) clearInterval(interval)
-	document.getElementById("selfolbutton").hidden = true
 	document.getElementById("result").innerHTML = ""
 
 	files = 0
@@ -137,10 +136,7 @@ async function mainScan() {
 		if (done + error == files) {
 			clearInterval(interval)
 			if (error == 0) document.getElementById("progress").innerText = ""
-			if (Object.values(filetypes).reduce((a, b) => a + b) == 0) {
-				document.getElementById("progress").innerHTML = "No " + (rpMode ? "resource" : "data") + "pack files found!"
-				return document.getElementById("selfolbutton").hidden = false
-			}
+			if (Object.values(filetypes).reduce((a, b) => a + b) == 0) document.getElementById("progress").innerHTML = "No " + (rpMode ? "resource" : "data") + "pack files found!"
 
 			var html =
 				(packFiles.length > 0 ? "<strong>" + (rpMode ? "Resource" : "Data") + "pack" + (packFiles.length == 1 ? "" : "s") + " found:</strong><br>" +
@@ -181,9 +177,7 @@ async function mainScan() {
 
 async function selectFolder() {
 	if (interval) clearInterval(interval)
-
 	selected = null
-	rpMode = document.getElementById("radiorp").checked
 
 	const input = document.createElement("input")
 	input.type = "file"
@@ -198,9 +192,7 @@ async function selectFolder() {
 
 async function selectZip() {
 	if (interval) clearInterval(interval)
-
 	selected = []
-	rpMode = document.getElementById("radiorp").checked
 
 	const input = document.createElement("input")
 	input.type = "file"
