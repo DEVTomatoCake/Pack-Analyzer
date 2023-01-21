@@ -44,18 +44,34 @@ window.addEventListener("dragover", event => {
 	event.preventDefault()
 	event.dataTransfer.dropEffect = "copy"
 })
-
-window.addEventListener("drop", event => {
+window.addEventListener("drop", async event => {
 	event.stopPropagation()
 	event.preventDefault()
 	const fileList = event.dataTransfer.files
-	console.log(fileList)
+	if (fileList[0].name.endsWith(".zip")) handleZip(fileList[0])
+	else {
+		selected = []
+		for await (const file of Object.values(fileList)) {
+			selected.push({
+				name: file.name,
+				content: await file.text()
+			})
+		}
+		mainScan()
+	}
 })
 window.addEventListener("paste", async e => {
 	e.preventDefault()
 	if (!e.clipboardData.files.length) return
 	const file = e.clipboardData.files[0]
-	console.log(await file.text())
+	if (file.name.endsWith(".zip")) handleZip(file)
+	else {
+		selected = [{
+			name: file.name,
+			content: await file.text()
+		}]
+		mainScan()
+	}
 })
 
 const localize = string => string.toLocaleString(getCookie("lang") || "en-US")

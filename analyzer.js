@@ -192,23 +192,26 @@ async function selectFolder() {
 
 async function selectZip() {
 	if (interval) clearInterval(interval)
-	selected = []
 
 	const input = document.createElement("input")
 	input.type = "file"
 	input.accept = ".zip"
-	input.onchange = e => {
-		new JSZip().loadAsync(e.target.files[0]).then(async zip => {
-			console.log(zip.files)
-			for await (const file of Object.values(zip.files)) {
-				selected.push({
-					name: file.name,
-					content: await file.async("text")
-				})
-			}
-			mainScan()
-		})
-	}
+	input.onchange = e => handleZip(e.target.files[0])
+
 	if ("showPicker" in HTMLInputElement.prototype) input.showPicker()
 	else input.click()
+}
+
+function handleZip(file) {
+	selected = []
+
+	new JSZip().loadAsync(file).then(async zip => {
+		for await (const file of Object.values(zip.files)) {
+			selected.push({
+				name: file.name,
+				content: await file.async("text")
+			})
+		}
+		mainScan()
+	})
 }
