@@ -16,17 +16,37 @@
 		<script src="./assets/analyzer.js"></script>
 		<script src="./assets/script.js"></script>
 		<script src="./assets/jszip.min.js"></script>
+
+		<script
+  			src="https://browser.sentry-cdn.com/7.31.1/bundle.tracing.replay.min.js"
+			integrity="sha384-U/eKWKK8IVhgd1+aG4JYFyFiGLCeOclQT0KB3Hqv1u9j2AwkXPEwey8Xew7GkTCW"
+			crossorigin="anonymous"
+		></script>
+		<script>
+			Sentry.init({
+				dsn: "https://129f67e4b4264ea6b0f20be3f61cd385@o1070850.ingest.sentry.io/4504543403835392",
+				integrations: [new Sentry.BrowserTracing()],
+  				replaysSessionSampleRate: 1,
+				tracesSampleRate: 1
+			})
+		</script>
 	</head>
 	<body class="dark-theme">
 		<header>
 			<h1>Minecraft Datapack and Resourcepack analyzer</h1>
-			<div class="menu">
+			<div>
 				<button onclick="selectFolder()">Select folder</button>
 				<button onclick="selectZip()">Select .zip</button>
 				<button onclick="mainScan()">Scan again</button>
 				<button onclick="openSettingsDialog()">Settings</button>
-				<button onclick="clearResults()">Clear results</button>
 				<button onclick="openDialog(document.getElementById('aboutDialog'))">About</button>
+			</div>
+			<div id="resultButtons" hidden>
+				<button onclick="clearResults()">Clear results</button>
+				<button onclick="share()" disabled>Share as link</button>
+				<button onclick="share()" disabled>Share as image</button>
+				<button onclick="share()" disabled>Export as txt</button>
+				<button onclick="share()" disabled>Export as json</button>
 			</div>
 
 			<br>

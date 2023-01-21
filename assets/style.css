@@ -35,12 +35,23 @@ p {
 #result {
 	margin: 0 25px;
 }
-.indented {
-	margin-left: 25px;
+#resultButtons {
+	margin-top: 10px;
 }
+
 code {
 	background-color: var(--code-bg);
 	border-radius: 5px;
+}
+
+.indented {
+	margin-left: 25px;
+}
+.indented2 {
+	margin-left: 50px;
+}
+.indented3 {
+	margin-left: 75px;
 }
 
 header {

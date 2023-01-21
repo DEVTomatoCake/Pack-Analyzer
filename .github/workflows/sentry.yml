@@ -1,8 +1,7 @@
 name: Sentry
 
 on:
-  release:
-    types: [published, prereleased]
+  push:
 
 jobs:
   SentryRelease:

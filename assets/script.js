@@ -1,4 +1,4 @@
-// Cookie code from https://github.com/DEVTomatoCake/dashboard/blob/0ad2ba278373244f05025dc6554e4ebb86868e8a/assets/js/script.js#L1-L26
+// Cookie/"load"/getLanguage() code modified from https://github.com/DEVTomatoCake/dashboard/blob/0ad2ba278373244f05025dc6554e4ebb86868e8a/assets/js/script.js#L1-L26 and language.js
 function setCookie(name, value, days) {
 	let cookie = name + "=" + (value || "") + ";path=/;"
 	if (days) {
@@ -22,11 +22,20 @@ function getCookie(name) {
 function deleteCookie(name) {
 	document.cookie = name + "=;Max-Age=-99999999;path=/;"
 }
+
 window.addEventListener("load", () => {
-	if (getCookie("theme") == "light") document.body.classList = "light-theme"
+	if (getCookie("theme") == "light" || window.matchMedia("(prefers-color-scheme: light)").matches) document.body.classList = "light-theme"
+	if (!getCookie("lang")) setCookie("lang", getLanguage(), 365)
 
 	if ("serviceWorker" in navigator) navigator.serviceWorker.register("/serviceworker.js")
 })
+
+const getLanguage = () => {
+	if (getCookie("lang")) return getCookie("lang")
+
+	const userLang = navigator.language || navigator.userLanguage
+	return userLang ? (userLang.split("-")[0] == "de" ? "de" : "en") : "en"
+}
 
 const requestVersions = async () => {
 	const res = await fetch("https://raw.githubusercontent.com/misode/mcmeta/summary/versions/data.json")
@@ -109,5 +118,6 @@ async function openSettingsDialog() {
 function clearResults() {
 	document.getElementById("progress").innerText = ""
 	document.getElementById("result").innerHTML = ""
+	document.getElementById("resultButtons").hidden = true
 	if (interval) clearInterval(interval)
 }
