@@ -1,17 +1,17 @@
 # Minecraft Datapack Analyzer
 Allows you to analyze and generate stats for [Minecraft](https://minecraft.net) Java Edition data- and resourcepacks.
 
-Inspired by [ErrorCraft's FunctionAnalyser](https://github.com/ErrorCraft/FunctionAnalyser) - this is basically the same, but written in JS using [Tauri](https://tauri.app), hopefully more modern and with more features.
+Inspired by [ErrorCraft's FunctionAnalyser](https://github.com/ErrorCraft/FunctionAnalyser) - this is basically the same, but written in JS and with more features.
 <br>Uses [misode's mcmeta](https://github.com/misode/mcmeta) for Minecraft version data.
 
 ## Note on v1
-v1 uses Tauri to make this app installable on Windows - this is annoying and scary, especially for one-time use.
+v1 used Tauri to make this app installable on Windows - this is annoying and scary, especially for one-time use.
 
-As such, v2+ instead uses a website, with almost the same code. You'll still be able to install it as a [Progressive Web App](https://en.wikipedia.org/wiki/Progressive_web_app).
+As such, v2+ instead uses a website, with almost the same code. You're now able to install it as a [Progressive Web App](https://en.wikipedia.org/wiki/Progressive_web_app).
 
 ## Like this project?
 Feel free to leave a star, create a feature request or bug report issue, or even contribute to the code!
-<br>Coordination on the german Vanilla Minigames discord:
+<br>Coordination on the german Vanilla Minigames Discord:
 <br><a href="https://discord.gg/JXVDQFf"><img src="https://discord.com/api/guilds/608640398595719170/widget.png?style=banner2" /></a>
 
 ## License
