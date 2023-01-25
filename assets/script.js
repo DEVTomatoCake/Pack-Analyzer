@@ -151,9 +151,9 @@ async function share(type) {
 				headers: {
 					"Content-Type": "application/json"
 				},
-				body: {
+				body: JSON.stringify({
 					url: location.href + "?data=" + encodeURIComponent(content)
-				}
+				})
 			})
 			const json = await res.json()
 			console.log(json)
