@@ -3,6 +3,9 @@
 	--header-bg: #8be0c0;
 	--dialog-bg: #EEE;
 	--dialog-text: #111;
+	--dialog-link: #0000EE;
+	--dialog-visited: #551A8B;
+	--dialog-active: #FF0000;
 	--dialog-shadow: rgba(0, 0, 0, 0.25);
 	--code-bg: #EEE;
 }
@@ -11,6 +14,9 @@
 	--header-bg: #216E4A;
 	--dialog-bg: #222;
 	--dialog-text: #FFF;
+	--dialog-link: #00EE00;
+	--dialog-visited: #009900;
+	--dialog-active: #FF0000;
 	--dialog-shadow: rgba(0, 0, 0, 0.75);
 	--code-bg: #111;
 }
@@ -104,4 +110,14 @@ header h1 {
 .close:hover, .close:focus {
 	color: black;
 	cursor: pointer;
+}
+
+a:link {
+	color: var(--dialog-link);
+}
+a:visited {
+	color: var(--dialog-visited);
+}
+a:active {
+	color: var(--dialog-active);
 }
