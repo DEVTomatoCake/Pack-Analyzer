@@ -2,7 +2,10 @@
 	--background: #FFF;
 	--header-bg: #8be0c0;
 	--dialog-bg: #EEE;
-	--dialog-text: #111;
+	--text: #111;
+	--link: #0000EE;
+	--visited: #551A8B;
+	--active: #FF0000;
 	--dialog-shadow: rgba(0, 0, 0, 0.25);
 	--code-bg: #EEE;
 }
@@ -10,7 +13,10 @@
 	--background: #222;
 	--header-bg: #216E4A;
 	--dialog-bg: #222;
-	--dialog-text: #FFF;
+	--text: #FFF;
+	--link: #00EE00;
+	--visited: #009900;
+	--active: #FF0000;
 	--dialog-shadow: rgba(0, 0, 0, 0.75);
 	--code-bg: #111;
 }
@@ -18,7 +24,7 @@
 body {
 	font-family: Arial, Helvetica, sans-serif;
 	background-color: var(--background);
-	color: var(--dialog-text);
+	color: var(--text);
 	transition: .3s;
 	margin: 0;
 }
@@ -104,4 +110,36 @@ header h1 {
 .close:hover, .close:focus {
 	color: black;
 	cursor: pointer;
+}
+
+a:link {
+	color: var(--link);
+}
+a:visited {
+	color: var(--visited);
+}
+a:active {
+	color: var(--active);
+}
+
+#drop {
+	position: fixed;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%) scale(0);
+	opacity: 0;
+	border: #00000021 3px solid;
+	animation: animateDrop 1.5s;
+	padding: 7px;
+	border-radius: 50%;
+}
+@keyframes animateDrop {
+	from {
+		opacity: 1;
+	}
+	to {
+		transform: translate(-50%, -50%) scale(7);
+		border-width: 1px;
+		opacity: 0;
+	}
 }
