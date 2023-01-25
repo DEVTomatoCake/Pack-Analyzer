@@ -7,6 +7,7 @@ var rpMode = false
 
 var filetypes = {}
 var packFiles = []
+var packImages = []
 var commands = {}
 var cmdsBehindExecute = {}
 var comments = 0
@@ -75,7 +76,7 @@ async function processEntries(entries) {
 			else filetypes[ext]++
 		} else continue
 
-		if (ext == "mcfunction" || ext == "mcmeta") {
+		if (ext == "mcfunction" || ext == "mcmeta" || entry.name.endsWith("pack.png")) {
 			files++
 
 			function processFile(result) {
@@ -126,13 +127,14 @@ async function processEntries(entries) {
 							error++
 						}
 					}
-				}
+				} else if (entry.name.endsWith("pack.png")) packImages.push(result)
 			}
 
 			if (entry.content) processFile(entry.content)
 			else {
 				const reader = new FileReader()
-				reader.readAsText(entry)
+				if (ext == "png") reader.readAsDataURL(entry)
+				else reader.readAsText(entry)
 
 				reader.onload = function() {
 					processFile(reader.result)
@@ -190,6 +192,7 @@ async function mainScan(hasData = false) {
 
 		filetypes = {}
 		packFiles = []
+		packImages = []
 		commands = {}
 		cmdsBehindExecute = {}
 		comments = 0
@@ -252,6 +255,7 @@ async function mainScan(hasData = false) {
 			if (Object.values(filetypes).reduce((a, b) => a + b) == 0) document.getElementById("progress").innerHTML = "No " + (rpMode ? "resource" : "data") + "pack files found!"
 
 			var html =
+				(packImages.length > 0 ? "<div style='display: flex;'>" + packImages.map(img => "<img src='" + img + "' width='64' height='64'>") + "</div>" : "") +
 				(packFiles.length > 0 ? "<strong>" + (rpMode ? "Resource" : "Data") + "pack" + (packFiles.length == 1 ? "" : "s") + " found:</strong><br>" +
 					packFiles.map(pack => "<span class='indented'>" + (pack.pack?.description?.replace(/§[a-f0-9]/gi, "") || "<i>No description</i>") +
 						(window.versions.some(ver => (rpMode ? ver.resourcepack_version : ver.datapack_version) == pack.pack.pack_format) ?
@@ -291,7 +295,7 @@ async function mainScan(hasData = false) {
 					.map(type => "<span class='indented'>" + type + ": " + localize(dpExclusive.tags[type]) + "</span><br>").join("") +
 
 				(rpMode && Object.values(rpExclusive).reduce((a, b) => a + b) != 0 ? "<br><strong>Resourcepack features used:</strong><br>" : "") +
-				Object.keys(rpExclusive).filter(i => !isNaN(i) && rpExclusive[i] > 0).sort((a, b) => rpExclusive[b] - rpExclusive[a])
+				Object.keys(rpExclusive).filter(i => rpExclusive[i] > 0).sort((a, b) => rpExclusive[b] - rpExclusive[a])
 					.map(type => "<span class='indented'>" + type + ": " + localize(rpExclusive[type]) + "</span><br>").join("")
 
 			html += "<br>"

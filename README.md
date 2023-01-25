@@ -23,4 +23,3 @@ Feel free to leave a star, create a feature request or bug report issue, or even
 - Feature to compare two or more datapacks
 - Warn on invalid/outdated commands
 - Image render of datapack function connections?
-- Share result as image and link
