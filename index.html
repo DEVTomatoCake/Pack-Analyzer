@@ -47,7 +47,7 @@
 				<button onclick="clearResults()">Clear results</button>
 				<button onclick="share('txt')">Export as txt</button>
 				<button onclick="share('json')">Export as json</button>
-				<button onclick="share('link')" disabled>Share as link</button>
+				<button onclick="share('link')">Share as link</button>
 				<button onclick="share('png')">Share as image</button>
 			</div>
 
@@ -57,7 +57,9 @@
 			<label for="radiorp">Resourcepack</label>
 			<input type="radio" id="radiorp" name="packType"><br>
 		</header>
-		<center><h1 id="progress"></h1></center>
+
+		<h1 id="progress"></h1>
+		<canvas id="shareImage" width="955" height="500" style="display: none;"></canvas>
 		<p id="result"></p>
 
 		<div id="settingsDialog" class="dialog">

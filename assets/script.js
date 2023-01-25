@@ -126,17 +126,17 @@ function clearResults() {
 	if (interval) clearInterval(interval)
 }
 
-function share(type) {
+async function share(type) {
 	var content = ""
 	if (type == "txt") content = document.getElementById("result").innerText
-	else if (type == "json") content = JSON.stringify({
+	else if (type == "json" || type == "link") {
+		content = JSON.stringify({
 			files,
 			done,
 			error,
 			rpMode,
 
 			filetypes,
-			selectors,
 			packFiles,
 			commands,
 			cmdsBehindExecute,
@@ -144,101 +144,105 @@ function share(type) {
 			empty,
 			dpExclusive,
 			rpExclusive
-		}, null, 4)
-	else if (type == "png") return createImage()
+		}, null, type == "json" ? 4 : undefined)
+		if (type == "link") {
+			const res = await fetch("https://api.tomatenkuchen.eu/short", {
+				method: "post",
+				headers: {
+					"Content-Type": "application/json"
+				},
+				body: JSON.stringify({
+					url: location.href + "?data=" + encodeURIComponent(content)
+				})
+			})
+			const json = await res.json()
+			console.log(json)
+			return
+		}
+	} else if (type == "png") return createImage()
 
 	const download = document.createElement("a")
 	download.download = "export." + type
-	download.href = type == "png" ? content : "data:application/" + type + "," + encodeURIComponent(content)
+	download.href = "data:application/" + type + "," + encodeURIComponent(content)
 	download.click()
 }
 function createImage() {
-	var canvas = document.createElement("canvas")
-	canvas.width = 800
-	canvas.height = 500
+	var canvas = document.getElementById("shareImage")
+	canvas.style.display = "block"
 	var ctx = canvas.getContext("2d")
+	ctx.clearRect(0, 0, canvas.width, canvas.height)
 	ctx.fillStyle = "white"
 	ctx.fillRect(0, 0, canvas.width, canvas.height)
 
 	drawing = new Image()
-	drawing.src = "./assets/images/novaskin-wallpaper.png"
+	drawing.src = "./assets/images/generated_background.png"
 	drawing.onload = () => {
 		ctx.globalAlpha = 0.3
 		ctx.drawImage(drawing, 0, 0)
 		ctx.globalAlpha = 1
 
-		const x = 20
-		var y = 2
+		var x = 20
+		var y = 1
 		const lineHeight = 21
+		const maxWidth = 400
 		ctx.font = lineHeight - 1 + "px Arial"
 		ctx.fillStyle = "black"
 
-		/*(packFiles.length > 0 ? "<strong>" + (rpMode ? "Resource" : "Data") + "pack" + (packFiles.length == 1 ? "" : "s") + " found:</strong><br>" +
-			packFiles.map(pack => "<span class='indented'>" + (pack.pack?.description?.replace(/§[a-f0-9]/gi, "") || "<i>No description</i>") +
-				(window.versions.some(ver => (rpMode ? ver.resourcepack_version : ver.datapack_version) == pack.pack.pack_format) ?
-					" <small>(Supported versions: " +
-					(window.versions.findLast(ver => (rpMode ? ver.resourcepack_version : ver.datapack_version) == pack.pack.pack_format)?.name || "?") + "<strong>-</strong>" +
-					(window.versions.find(ver => (rpMode ? ver.resourcepack_version : ver.datapack_version) == pack.pack.pack_format)?.name || "?") +
-					")</small>"
-				: "") +
-				"</span>" +
-				(pack.features?.enabled?.length > 0 ? "<br><span class='indented'>Selected internal features:<br>" + pack.features.enabled.map(feature => "<span class='indented'>" + feature + "</span>").join("<br>") + "</span>" : "") +
-				(pack.filter?.block?.length > 0 ? "<br><span class='indented2'>Pack filters:</span><br><small>" + pack.filter.block.map(filter => {
-					return "<span class='indented3'>" +
-					(filter.namespace ? "Namespace: <code>" + filter.namespace + "</code>" : "") +
-					(filter.namespace && filter.path ? ", " : "") +
-					(filter.path ? "Path: <code>" + filter.path + "</code>" : "") + "</span>"
-				}).join("<br>") + "</small>" : "")
-			).join("<br>") + "<br>"
-		: "") +
-		(!rpMode && Object.keys(commands).length > 0 ?
-			"Total amount of commands: " + localize(Object.keys(commands).reduce((a, b) => a + commands[b], 0)) + "</strong><br>"
-			"<span class='indented'>Unique commands: " + localize(Object.keys(commands).length)
-			(comments > 0 ? "<span class='indented'>Comments: " + localize(comments) : "")
-		: "")
-		(empty > 0 ? "<span class='indented'>Empty lines: " + localize(empty) : "")
-		"Pack file types found:</strong><br>"
-		Object.keys(filetypes).sort((a, b) => filetypes[b] - filetypes[a]).map(type => "<span class='indented'>." + type + ": " + localize(filetypes[type])).join("") +*/
+		if (packFiles.length > 0) {
+			ctx.fillText(packFiles.length + " " + (rpMode ? "Resource" : "Data") + "pack" + (packFiles.length == 1 ? "" : "s") + " found", x, y++ * lineHeight, maxWidth)
+			packFiles.forEach(pack => {
+				if (pack.features?.enabled?.length > 0) {
+					ctx.fillText("Selected internal features:", x + 30, y++ * lineHeight, maxWidth)
+					pack.features.enabled.forEach(feature => ctx.fillText(feature, x + 60, y++ * lineHeight, maxWidth))
+				}
+				if (pack.filter?.block?.length > 0) {
+					ctx.fillText("Pack filters:", x + 60, y++ * lineHeight, maxWidth)
+					pack.filter.block.forEach(filter => {
+						if (filter.namespace) ctx.fillText("Namespace: " + filter.namespace, x + 90, y++ * lineHeight, maxWidth)
+						if (filter.path) ctx.fillText("Path: " + filter.path, x + 90, y++ * lineHeight, maxWidth)
+					})
+				}
+			})
+		}
+		if (!rpMode && Object.keys(commands).length > 0) {
+			ctx.fillText("Total amount of commands: " + localize(Object.keys(commands).reduce((a, b) => a + commands[b], 0)), x, y++ * lineHeight, maxWidth)
+			ctx.fillText("Unique commands: " + localize(Object.keys(commands).length), x + 30, y++ * lineHeight, maxWidth)
+		}
+		if (comments > 0) ctx.fillText("Comments: " + localize(comments), x + 30, y++ * lineHeight, maxWidth)
+		if (empty > 0) ctx.fillText("Empty lines: " + localize(empty), x + 30, y++ * lineHeight, maxWidth)
+		ctx.fillText((Object.keys(filetypes).length > 2 ? "Top 3 p" : "P") + "ack file types found:", x, y++ * lineHeight, maxWidth)
+		Object.keys(filetypes).slice(0, 3).sort((a, b) => filetypes[b] - filetypes[a]).forEach(type => ctx.fillText("." + type + ": " + localize(filetypes[type]), x + 30, y++ * lineHeight, maxWidth))
 
-		if (dpExclusive.scoreboards > 0) ctx.fillText("Scoreboards created: " + localize(dpExclusive.scoreboards), x, y++ * lineHeight, 200)
+		if (dpExclusive.scoreboards > 0) ctx.fillText("Scoreboards created: " + localize(dpExclusive.scoreboards), x, y++ * lineHeight, maxWidth)
 		if (!rpMode && Object.values(dpExclusive.selectors).reduce((a, b) => a + b) != 0) {
-			ctx.fillText("Selectors used:", x, y++ * lineHeight, 200)
-			Object.keys(dpExclusive.selectors).filter(i => dpExclusive.selectors[i] > 0).sort((a, b) => dpExclusive.selectors[b] - dpExclusive.selectors[a])
-				.forEach(type => ctx.fillText("@" + type + ": " + localize(dpExclusive.selectors[type]), x + 30, y++ * lineHeight, 200))
+			ctx.fillText((Object.keys(dpExclusive.selectors).length > 2 ? "Top 3 s" : "S") + "electors used:", x, y++ * lineHeight, maxWidth)
+			Object.keys(dpExclusive.selectors).slice(0, 3).filter(i => dpExclusive.selectors[i] > 0).sort((a, b) => dpExclusive.selectors[b] - dpExclusive.selectors[a])
+				.forEach(type => ctx.fillText("@" + type + ": " + localize(dpExclusive.selectors[type]), x + 30, y++ * lineHeight, maxWidth))
 		}
 		if (!rpMode && Object.values(dpExclusive.folders).reduce((a, b) => a + b) != 0) {
-			ctx.fillText("Datapack features used:", x, y++ * lineHeight, 200)
-			Object.keys(dpExclusive.folders).filter(i => i > 0).sort((a, b) => dpExclusive.folders[b] - dpExclusive.folders[a])
-				.forEach(type => ctx.fillText(type + ": " + localize(dpExclusive.folders[type]), x + 30, y++ * lineHeight, 200))
+			ctx.fillText("Datapack features used:", x, y++ * lineHeight, maxWidth)
+			Object.keys(dpExclusive.folders).filter(i => dpExclusive.folders[i] > 0).sort((a, b) => dpExclusive.folders[b] - dpExclusive.folders[a])
+				.forEach(type => ctx.fillText(type + ": " + localize(dpExclusive.folders[type]), x + 30, y++ * lineHeight, maxWidth))
 		}
-		if (!rpMode && Object.values(dpExclusive.tags).reduce((a, b) => a + b) != 0) {
-			ctx.fillText("Tags used:", x, y++ * lineHeight, 200)
-			Object.keys(dpExclusive.tags).filter(i => dpExclusive.tags[i] > 0).sort((a, b) => dpExclusive.tags[b] - dpExclusive.tags[a])
-				.forEach(type => ctx.fillText(type + ": " + localize(dpExclusive.tags[type]), x + 30, y++ * lineHeight, 200))
-		}
-
 		if (rpMode && Object.values(rpExclusive).reduce((a, b) => a + b) != 0) {
-			ctx.fillText("Resourcepack features used:", x, y++ * lineHeight, 200)
+			ctx.fillText("Resourcepack features used:", x, y++ * lineHeight, maxWidth)
 			Object.keys(rpExclusive).filter(i => !isNaN(i) && rpExclusive[i] > 0).sort((a, b) => rpExclusive[b] - rpExclusive[a])
-				.forEach(type => ctx.fillText(type + ": " + localize(rpExclusive[type]), x + 30, y++ * lineHeight, 200))
+				.forEach(type => ctx.fillText(type + ": " + localize(rpExclusive[type]), x + 30, y++ * lineHeight, maxWidth))
 		}
 
-		ctx.font = "30px Arial"
-		ctx.fillText("Commands", 350, 40, 200)
+		x = 450
+		y = 2
+		ctx.font = "28px Arial"
+		ctx.fillText("Commands", x, 40, maxWidth)
 		ctx.font = "20px Arial"
 
 		commands = Object.fromEntries(Object.entries(commands).sort(([, a], [, b]) => b - a))
-		y = 2
-		Object.keys(commands).forEach(cmd => {
-			y++
-			ctx.fillText(cmd + ": " + localize(commands[cmd]), 350, y * lineHeight, 200)
+		Object.keys(commands).slice(0, 5).forEach(cmd => {
+			ctx.fillText(cmd + ": " + localize(commands[cmd]), x, y++ * lineHeight, maxWidth)
 			if (cmdsBehindExecute[cmd]) {
-				y++
-				ctx.fillText("Behind execute: " + localize(cmdsBehindExecute[cmd]), 380, y * lineHeight, 200)
-				// (cmd == "execute" ? "⚠️ <small>(<code>... run execute ...</code> equals <code>... ...</code>)</small>" : "")
+				ctx.fillText("Behind execute: " + localize(cmdsBehindExecute[cmd]), x + 30, y++ * lineHeight, maxWidth)
+				if (cmd == "execute") ctx.fillText("⚠️ (\"... run execute ...\" equals \"... ...\")", x + 30, y++ * lineHeight, maxWidth)
 			}
 		})
-
-		document.body.appendChild(canvas)
 	}
 }
