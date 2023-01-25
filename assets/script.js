@@ -47,6 +47,8 @@ window.addEventListener("load", () => {
 		empty = parsed.empty
 		dpExclusive = parsed.dpExclusive
 		rpExclusive = parsed.rpExclusive
+
+		mainScan(true)
 	}
 
 	if ("serviceWorker" in navigator) navigator.serviceWorker.register("/serviceworker.js")
