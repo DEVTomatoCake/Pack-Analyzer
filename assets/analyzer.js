@@ -178,72 +178,74 @@ async function processEntries(entries) {
 	}
 }
 
-async function mainScan() {
+async function mainScan(hasData = false) {
 	if (interval) clearInterval(interval)
 	document.getElementById("result").innerHTML = ""
 
-	files = 0
-	done = 0
-	error = 0
-	rpMode = document.getElementById("radiorp").checked
+	if (!hasData) {
+		files = 0
+		done = 0
+		error = 0
+		rpMode = document.getElementById("radiorp").checked
 
-	filetypes = {}
-	packFiles = []
-	commands = {}
-	cmdsBehindExecute = {}
-	comments = 0
-	empty = 0
-	dpExclusive = {
-		folders: {
-			advancements: 0,
-			loot_tables: 0,
-			recipes: 0,
-			predicates: 0,
-			dimension: 0,
-			dimension_type: 0,
-			worldgen: 0
-		},
-		tags: {
-			banner_pattern: 0,
-			blocks: 0,
-			cat_variant: 0,
-			entity_types: 0,
-			fluids: 0,
-			functions: 0,
-			game_events: 0,
-			instrument: 0,
-			items: 0,
-			painting_variant: 0,
-			point_of_interest_type: 0,
-			worldgen: 0
-		},
-		scoreboards: 0,
-		selectors: {
-			a: 0,
-			e: 0,
-			p: 0,
-			r: 0,
-			s: 0
+		filetypes = {}
+		packFiles = []
+		commands = {}
+		cmdsBehindExecute = {}
+		comments = 0
+		empty = 0
+		dpExclusive = {
+			folders: {
+				advancements: 0,
+				loot_tables: 0,
+				recipes: 0,
+				predicates: 0,
+				dimension: 0,
+				dimension_type: 0,
+				worldgen: 0
+			},
+			tags: {
+				banner_pattern: 0,
+				blocks: 0,
+				cat_variant: 0,
+				entity_types: 0,
+				fluids: 0,
+				functions: 0,
+				game_events: 0,
+				instrument: 0,
+				items: 0,
+				painting_variant: 0,
+				point_of_interest_type: 0,
+				worldgen: 0
+			},
+			scoreboards: 0,
+			selectors: {
+				a: 0,
+				e: 0,
+				p: 0,
+				r: 0,
+				s: 0
+			}
 		}
-	}
-	rpExclusive = {
-		atlases: 0,
-		blockstates: 0,
-		font: 0,
-		lang: 0,
-		models: 0,
-		particles: 0,
-		shaders: 0,
-		sounds: 0,
-		texts: 0,
-		textures: 0
-	}
+		rpExclusive = {
+			atlases: 0,
+			blockstates: 0,
+			font: 0,
+			lang: 0,
+			models: 0,
+			particles: 0,
+			shaders: 0,
+			sounds: 0,
+			texts: 0,
+			textures: 0
+		}
 
-	processEntries(selected)
+		processEntries(selected)
+	}
 
 	interval = setInterval(() => {
 		document.getElementById("progress").innerText = Math.round(done / files * 100) + "% scanned" + (error > 0 ? " - " + error + " errors" : "")
-		if (done + error == files) {
+		if (done + error == files || hasData) {
 			clearInterval(interval)
 			document.getElementById("resultButtons").hidden = false
 			if (error == 0) document.getElementById("progress").innerText = ""

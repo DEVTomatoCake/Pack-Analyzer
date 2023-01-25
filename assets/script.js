@@ -31,6 +31,24 @@ window.addEventListener("load", () => {
 	}
 	if (!getCookie("lang")) setCookie("lang", getLanguage(), 365)
 
+	const params = new URLSearchParams(location.search)
+	if (params.has("data")) {
+		const parsed = JSON.parse(params.get("data"))
+		files = parsed.files
+		done = parsed.done
+		errors = parsed.errors
+		rpMode = parsed.rpMode
+
+		filetypes = parsed.filetypes
+		packFiles = parsed.packFiles
+		commands = parsed.commands
+		cmdsBehindExecute = parsed.cmdsBehindExecute
+		comments = parsed.comments
+		empty = parsed.empty
+		dpExclusive = parsed.dpExclusive
+		rpExclusive = parsed.rpExclusive
+	}
+
 	if ("serviceWorker" in navigator) navigator.serviceWorker.register("/serviceworker.js")
 })
 
@@ -156,7 +174,12 @@ async function share(type) {
 				})
 			})
 			const json = await res.json()
-			console.log(json)
+			if (json.status == "success") {
+				document.getElementById("share-link").href = "https://shorter.cf" + json.name
+				document.getElementById("share-link").innerText = "https://shorter.cf" + json.name
+				document.getElementById("share-img").src = json.qrcode
+				openDialog(document.getElementById("shareDialog"))
+			} else alert("Couldn't create link: " + json.error)
 			return
 		}
 	} else if (type == "png") return createImage()
