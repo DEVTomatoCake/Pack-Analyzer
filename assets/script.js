@@ -170,7 +170,7 @@ function createImage() {
 		var x = 20
 		var y = 1
 		const lineHeight = 21
-		const maxWidth = 300
+		const maxWidth = 400
 		ctx.font = lineHeight - 1 + "px Arial"
 		ctx.fillStyle = "black"
 
@@ -196,12 +196,12 @@ function createImage() {
 		}
 		if (comments > 0) ctx.fillText("Comments: " + localize(comments), x + 30, y++ * lineHeight, maxWidth)
 		if (empty > 0) ctx.fillText("Empty lines: " + localize(empty), x + 30, y++ * lineHeight, maxWidth)
-		ctx.fillText((Object.keys(filetypes).length > 2 ? "Top 3 " : "") + "Pack file types found:", x, y++ * lineHeight, maxWidth)
+		ctx.fillText((Object.keys(filetypes).length > 2 ? "Top 3 p" : "P") + "ack file types found:", x, y++ * lineHeight, maxWidth)
 		Object.keys(filetypes).slice(0, 3).sort((a, b) => filetypes[b] - filetypes[a]).forEach(type => ctx.fillText("." + type + ": " + localize(filetypes[type]), x + 30, y++ * lineHeight, maxWidth))
 
 		if (dpExclusive.scoreboards > 0) ctx.fillText("Scoreboards created: " + localize(dpExclusive.scoreboards), x, y++ * lineHeight, maxWidth)
 		if (!rpMode && Object.values(dpExclusive.selectors).reduce((a, b) => a + b) != 0) {
-			ctx.fillText((Object.keys(dpExclusive.selectors).length > 2 ? "Top 3 " : "") + "Selectors used:", x, y++ * lineHeight, maxWidth)
+			ctx.fillText((Object.keys(dpExclusive.selectors).length > 2 ? "Top 3 s" : "S") + "electors used:", x, y++ * lineHeight, maxWidth)
 			Object.keys(dpExclusive.selectors).slice(0, 3).filter(i => dpExclusive.selectors[i] > 0).sort((a, b) => dpExclusive.selectors[b] - dpExclusive.selectors[a])
 				.forEach(type => ctx.fillText("@" + type + ": " + localize(dpExclusive.selectors[type]), x + 30, y++ * lineHeight, maxWidth))
 		}
@@ -224,12 +224,10 @@ function createImage() {
 
 		commands = Object.fromEntries(Object.entries(commands).sort(([, a], [, b]) => b - a))
 		Object.keys(commands).slice(0, 5).forEach(cmd => {
-			y++
-			ctx.fillText(cmd + ": " + localize(commands[cmd]), x, y * lineHeight, maxWidth)
+			ctx.fillText(cmd + ": " + localize(commands[cmd]), x, y++ * lineHeight, maxWidth)
 			if (cmdsBehindExecute[cmd]) {
-				y++
-				ctx.fillText("Behind execute: " + localize(cmdsBehindExecute[cmd]), x + 30, y * lineHeight, maxWidth)
-				// (cmd == "execute" ? "⚠️ <small>(<code>... run execute ...</code> equals <code>... ...</code>)</small>" : "")
+				ctx.fillText("Behind execute: " + localize(cmdsBehindExecute[cmd]), x + 30, y++ * lineHeight, maxWidth)
+				if (cmd == "execute") ctx.fillText("⚠️ (\"... run execute ...\" equals \"... ...\")", x + 30, y++ * lineHeight, maxWidth)
 			}
 		})
 	}
