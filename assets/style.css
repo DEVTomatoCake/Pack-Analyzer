@@ -121,3 +121,25 @@ a:visited {
 a:active {
 	color: var(--active);
 }
+
+#drop {
+	position: fixed;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%) scale(0);
+	opacity: 0;
+	border: #00000021 3px solid;
+	animation: animateDrop 1.5s;
+	padding: 7px;
+	border-radius: 50%;
+}
+@keyframes animateDrop {
+	from {
+		opacity: 1;
+	}
+	to {
+		transform: translate(-50%, -50%) scale(7);
+		border-width: 1px;
+		opacity: 0;
+	}
+}

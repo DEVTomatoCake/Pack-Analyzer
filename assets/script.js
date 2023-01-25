@@ -63,8 +63,15 @@ window.addEventListener("drop", async event => {
 	event.stopPropagation()
 	event.preventDefault()
 	const fileList = event.dataTransfer.files
-	if (fileList[0].name.endsWith(".zip")) handleZip(fileList[0])
-	else {
+	if (fileList[0].name.endsWith(".zip")) {
+		let dropElement = document.createElement("div")
+		dropElement.id = "drop"
+		dropElement.style.left = event.clientX + "px"
+		dropElement.style.top = event.clientY + "px"
+		document.body.appendChild(dropElement)
+		dropElement.addEventListener("animationend", () => dropElement.remove())
+		handleZip(fileList[0])
+	} else {
 		selected = []
 		for await (const file of Object.values(fileList)) {
 			selected.push({
