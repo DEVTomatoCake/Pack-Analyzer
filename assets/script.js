@@ -126,17 +126,17 @@ function clearResults() {
 	if (interval) clearInterval(interval)
 }
 
-function share(type) {
+async function share(type) {
 	var content = ""
 	if (type == "txt") content = document.getElementById("result").innerText
-	else if (type == "json") content = JSON.stringify({
+	else if (type == "json" || type == "link") {
+		content = JSON.stringify({
 			files,
 			done,
 			error,
 			rpMode,
 
 			filetypes,
-			selectors,
 			packFiles,
 			commands,
 			cmdsBehindExecute,
@@ -144,8 +144,22 @@ function share(type) {
 			empty,
 			dpExclusive,
 			rpExclusive
-		}, null, 4)
-	else if (type == "png") return createImage()
+		}, null, type == "json" ? 4 : undefined)
+		if (type == "link") {
+			const res = await fetch("https://api.tomatenkuchen.eu/short", {
+				method: "post",
+				headers: {
+					"Content-Type": "application/json"
+				},
+				body: {
+					url: location.href + "?data=" + encodeURIComponent(content)
+				}
+			})
+			const json = await res.json()
+			console.log(json)
+			return
+		}
+	} else if (type == "png") return createImage()
 
 	const download = document.createElement("a")
 	download.download = "export." + type
