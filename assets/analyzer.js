@@ -270,9 +270,9 @@ async function mainScan() {
 				: "") +
 				(!rpMode && Object.keys(commands).length > 0 ?
 					"<strong>Total amount of commands: " + localize(Object.keys(commands).reduce((a, b) => a + commands[b], 0)) + "</strong><br>" +
-					"<span class='indented'>Unique commands: " + localize(Object.keys(commands).length) + "</span><br>" +
-					(comments > 0 ? "<span class='indented'>Comments: " + localize(comments) + "</span><br>" : "")
+					"<span class='indented'>Unique commands: " + localize(Object.keys(commands).length) + "</span><br>"
 				: "") +
+				(comments > 0 ? "<span class='indented'>Comments: " + localize(comments) + "</span><br>" : "") +
 				(empty > 0 ? "<span class='indented'>Empty lines: " + localize(empty) + "</span><br>" : "") +
 				"<strong>Pack file types found:</strong><br>" +
 				Object.keys(filetypes).sort((a, b) => filetypes[b] - filetypes[a]).map(type => "<span class='indented'>." + type + ": " + localize(filetypes[type]) + "</span><br>").join("") +
@@ -282,7 +282,7 @@ async function mainScan() {
 				Object.keys(dpExclusive.selectors).filter(i => dpExclusive.selectors[i] > 0).sort((a, b) => dpExclusive.selectors[b] - dpExclusive.selectors[a])
 					.map(type => "<span class='indented'>@" + type + ": " + localize(dpExclusive.selectors[type]) + "</span><br>").join("") +
 				(!rpMode && Object.values(dpExclusive.folders).reduce((a, b) => a + b) != 0 ? "<strong>Datapack features used:</strong><br>" : "") +
-				Object.keys(dpExclusive.folders).filter(i => i > 0).sort((a, b) => dpExclusive.folders[b] - dpExclusive.folders[a])
+				Object.keys(dpExclusive.folders).filter(i => dpExclusive.folders[i] > 0).sort((a, b) => dpExclusive.folders[b] - dpExclusive.folders[a])
 					.map(type => "<span class='indented'>" + type + ": " + localize(dpExclusive.folders[type]) + "</span><br>").join("") +
 				(!rpMode && Object.values(dpExclusive.tags).reduce((a, b) => a + b) != 0 ? "<strong>Tags used:</strong><br>" : "") +
 				Object.keys(dpExclusive.tags).filter(i => dpExclusive.tags[i] > 0).sort((a, b) => dpExclusive.tags[b] - dpExclusive.tags[a])
