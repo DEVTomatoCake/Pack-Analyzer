@@ -16,21 +16,6 @@
 		<script src="./assets/analyzer.js"></script>
 		<script src="./assets/script.js"></script>
 		<script src="./assets/jszip.min.js"></script>
-
-		<script
-  			src="https://browser.sentry-cdn.com/7.31.1/bundle.tracing.replay.min.js"
-			integrity="sha384-U/eKWKK8IVhgd1+aG4JYFyFiGLCeOclQT0KB3Hqv1u9j2AwkXPEwey8Xew7GkTCW"
-			crossorigin="anonymous"
-		></script>
-		<script>
-			Sentry.init({
-				dsn: "https://129f67e4b4264ea6b0f20be3f61cd385@o1070850.ingest.sentry.io/4504543403835392",
-				integrations: [new Sentry.BrowserTracing(), new Sentry.Integrations.Replay()],
-  				replaysSessionSampleRate: 0.1,
-				replaysOnErrorSampleRate: 1,
-				tracesSampleRate: 1
-			})
-		</script>
 	</head>
 	<body class="dark-theme">
 		<header>
@@ -101,7 +86,7 @@
 				<span class="close">&times;</span>
 				<h1>Share as link</h1>
 
-				<a id="share-link"></a>
+				<a id="share-link" href="https://shorter.cf"></a>
 				<br><br>
 				<img id="share-img" width="150" height="150" alt="QR-Code">
 			</div>
