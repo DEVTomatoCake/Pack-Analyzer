@@ -175,8 +175,8 @@ async function share(type) {
 			})
 			const json = await res.json()
 			if (json.status == "success") {
-				document.getElementById("share-link").href = "https://shorter.cf" + json.name
-				document.getElementById("share-link").innerText = "https://shorter.cf" + json.name
+				document.getElementById("share-link").href = "https://shorter.cf/" + json.name
+				document.getElementById("share-link").innerText = "https://shorter.cf/" + json.name
 				document.getElementById("share-img").src = json.qrcode
 				openDialog(document.getElementById("shareDialog"))
 			} else alert("Couldn't create link: " + json.error)
@@ -238,7 +238,7 @@ function createImage() {
 
 		if (dpExclusive.scoreboards > 0) ctx.fillText("Scoreboards created: " + localize(dpExclusive.scoreboards), x, y++ * lineHeight, maxWidth)
 		if (!rpMode && Object.values(dpExclusive.selectors).reduce((a, b) => a + b) != 0) {
-			ctx.fillText((Object.keys(dpExclusive.selectors).length > 2 ? "Top 3 s" : "S") + "electors used:", x, y++ * lineHeight, maxWidth)
+			ctx.fillText((Object.keys(dpExclusive.selectors).filter(i => dpExclusive.selectors[i] > 0).length > 2 ? "Top 3 s" : "S") + "electors used:", x, y++ * lineHeight, maxWidth)
 			Object.keys(dpExclusive.selectors).slice(0, 3).filter(i => dpExclusive.selectors[i] > 0).sort((a, b) => dpExclusive.selectors[b] - dpExclusive.selectors[a])
 				.forEach(type => ctx.fillText("@" + type + ": " + localize(dpExclusive.selectors[type]), x + 30, y++ * lineHeight, maxWidth))
 		}
@@ -254,7 +254,7 @@ function createImage() {
 		}
 
 		x = 450
-		y = 2
+		y = 3
 		ctx.font = "28px Arial"
 		ctx.fillText("Commands", x, 40, maxWidth)
 		ctx.font = "20px Arial"
