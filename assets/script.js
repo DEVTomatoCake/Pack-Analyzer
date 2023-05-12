@@ -17,11 +17,31 @@ function getCookie(name) {
 
 		if (cookie.split("=")[0] == name) return cookie.substring(name.length + 1, cookie.length)
 	}
-	return undefined
+	return void 0
 }
 function deleteCookie(name) {
 	document.cookie = name + "=;Max-Age=-99999999;path=/;"
 }
+
+const getLanguage = () => {
+	if (getCookie("lang")) return getCookie("lang")
+
+	const userLang = navigator.language || navigator.userLanguage
+	return userLang ? (userLang.split("-")[0] == "de" ? "de" : "en") : "en"
+}
+
+const requestVersions = async () => {
+	const res = await fetch("https://raw.githubusercontent.com/misode/mcmeta/summary/versions/data.json")
+	const json = await res.json()
+	window.versions = json.map(ver => {
+		return {
+			name: ver.id,
+			datapack_version: ver.data_pack_version,
+			resourcepack_version: ver.resource_pack_version
+		}
+	})
+}
+requestVersions()
 
 window.addEventListener("load", () => {
 	if (getCookie("theme") == "light") document.body.classList = "light-theme"
@@ -53,26 +73,6 @@ window.addEventListener("load", () => {
 
 	if ("serviceWorker" in navigator) navigator.serviceWorker.register("/serviceworker.js")
 })
-
-const getLanguage = () => {
-	if (getCookie("lang")) return getCookie("lang")
-
-	const userLang = navigator.language || navigator.userLanguage
-	return userLang ? (userLang.split("-")[0] == "de" ? "de" : "en") : "en"
-}
-
-const requestVersions = async () => {
-	const res = await fetch("https://raw.githubusercontent.com/misode/mcmeta/summary/versions/data.json")
-	const json = await res.json()
-	window.versions = json.map(ver => {
-		return {
-			name: ver.id,
-			datapack_version: ver.data_pack_version,
-			resourcepack_version: ver.resource_pack_version
-		}
-	})
-}
-requestVersions()
 
 window.addEventListener("dragover", event => {
 	event.stopPropagation()
@@ -172,7 +172,7 @@ async function share(type) {
 			empty,
 			dpExclusive,
 			rpExclusive
-		}, null, type == "json" ? 4 : undefined)
+		}, null, type == "json" ? 4 : void 0)
 		if (type == "link") {
 			const res = await fetch("https://api.tomatenkuchen.eu/short", {
 				method: "post",

@@ -1,18 +1,18 @@
 <!DOCTYPE html>
 <html lang="en">
 	<head>
-		<meta charset="utf-8" />
-		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 		<title>Minecraft Datapack and Resourcepack analyzer</title>
-		<meta name="description" content="A tool to analyze your Minecraft Java datapacks and resourcepacks and generate stats from them." />
+		<meta name="description" content="A tool to analyze your Minecraft Java datapacks and resourcepacks and generate stats from them.">
 		<meta name="theme-color" content="#216E4A">
 
 		<link rel="manifest" href="./manifest.json">
-		<link href="./assets/images/icon_192.png" rel="shortcut icon" type="image/x-icon" />
-		<link href="./assets/images/icon_192.png" rel="apple-touch-icon" sizes="192x192" />
+		<link href="./assets/images/icon_192.png" rel="shortcut icon" type="image/x-icon">
+		<link href="./assets/images/icon_192.png" rel="apple-touch-icon" sizes="192x192">
 
-		<link rel="stylesheet" href="./assets/style.css" />
+		<link rel="stylesheet" href="./assets/style.css">
 		<script src="./assets/analyzer.js"></script>
 		<script src="./assets/script.js"></script>
 		<script src="./assets/jszip.min.js"></script>
@@ -22,25 +22,26 @@
 			<h1>Minecraft Datapack and Resourcepack analyzer</h1>
 			<h2>Drop/paste a .zip file or select a folder below to start analyzing!</h2>
 			<div>
-				<button onclick="selectFolder()">Select folder</button>
-				<button onclick="selectZip()">Select .zip</button>
-				<button onclick="openSettingsDialog()">Settings</button>
-				<button onclick="openDialog(document.getElementById('aboutDialog'))">About</button>
+				<button type="button" onclick="selectFolder()">Select folder</button>
+				<button type="button" onclick="selectZip()">Select .zip</button>
+				<button type="button" onclick="openSettingsDialog()">Settings</button>
+				<button type="button" onclick="openDialog(document.getElementById('aboutDialog'))">About</button>
 			</div>
 			<div id="resultButtons" hidden>
-				<button onclick="mainScan()">Scan again</button>
-				<button onclick="clearResults()">Clear results</button>
-				<button onclick="share('txt')">Export as txt</button>
-				<button onclick="share('json')">Export as json</button>
-				<button onclick="share('link')">Share as link</button>
-				<button onclick="share('png')">Share as image</button>
+				<button type="button" onclick="mainScan()">Scan again</button>
+				<button type="button" onclick="clearResults()">Clear results</button>
+				<button type="button" onclick="share('txt')">Export as txt</button>
+				<button type="button" onclick="share('json')">Export as json</button>
+				<button type="button" onclick="share('link')">Share as link</button>
+				<button type="button" onclick="share('png')">Share as image</button>
 			</div>
 
 			<br>
-			<label for="radiodp">Datapack</label>
+			<label for="radiodp" title="Analyze datapacks">Datapack</label>
 			<input type="radio" id="radiodp" name="packType" checked>
-			<label for="radiorp">Resourcepack</label>
-			<input type="radio" id="radiorp" name="packType"><br>
+			<label for="radiorp" title="Analyze resourcepacks and shaderpacks">Resourcepack</label>
+			<input type="radio" id="radiorp" name="packType">
+			<br>
 		</header>
 
 		<h1 id="progress"></h1>
@@ -59,7 +60,8 @@
 					<option value="dark">Dark</option>
 				</select>
 
-				<br><br>
+				<br>
+				<br>
 				<label for="setLang">Language (changes how numbers are displayed)</label>
 				<br>
 				<select id="setLang" name="lang">

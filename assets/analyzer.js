@@ -72,8 +72,8 @@ async function processEntries(entries) {
 			(!rpMode && (ext == "mcfunction" || ext == "nbt")) ||
 			(rpMode && (ext == "png" || ext == "icns" || ext == "txt" || ext == "ogg" || ext == "fsh" || ext == "vsh" || ext == "glsl" || ext == "lang" || ext == "properties" || ext == "inc" || ext == "xcf"))
 		) {
-			if (!filetypes[ext]) filetypes[ext] = 1
-			else filetypes[ext]++
+			if (filetypes[ext]) filetypes[ext]++
+			else filetypes[ext] = 1
 		} else continue
 
 		if (ext == "mcfunction" || ext == "mcmeta" || ext == "fsh" || ext == "vsh" || entry.name.endsWith("pack.png")) {
@@ -92,16 +92,16 @@ async function processEntries(entries) {
 						const splitted = line.split(" ")
 
 						const cmd = splitted[0]
-						if (!commands[cmd]) commands[cmd] = 1
-						else commands[cmd]++
+						if (commands[cmd]) commands[cmd]++
+						else commands[cmd] = 1
 
 						if (cmd == "execute") {
 							line.match(/ run [a-z_:]{2,}/g)?.forEach(match => {
 								const cmdBehind = match.replace(" run ", "")
-								if (!cmdsBehindExecute[cmdBehind]) cmdsBehindExecute[cmdBehind] = 1
-								else cmdsBehindExecute[cmdBehind]++
-								if (!commands[cmdBehind]) commands[cmdBehind] = 1
-								else commands[cmdBehind]++
+								if (cmdsBehindExecute[cmdBehind]) cmdsBehindExecute[cmdBehind]++
+								else cmdsBehindExecute[cmdBehind] = 1
+								if (commands[cmdBehind]) commands[cmdBehind]++
+								else commands[cmdBehind] = 1
 							})
 						}
 
@@ -138,8 +138,8 @@ async function processEntries(entries) {
 
 						const cmd = line.match(/^[a-z_#0-9]+/i)?.[0]
 						if (cmd && cmd != "{" && cmd != "}") {
-							if (!commands[cmd]) commands[cmd] = 1
-							else commands[cmd]++
+							if (commands[cmd]) commands[cmd]++
+							else commands[cmd] = 1
 						}
 					}
 				}
@@ -358,10 +358,10 @@ function handleZip(file) {
 	selected = []
 
 	new JSZip().loadAsync(file).then(async zip => {
-		for await (const file of Object.values(zip.files)) {
+		for await (const zipFile of Object.values(zip.files)) {
 			selected.push({
-				name: file.name,
-				content: await file.async("text")
+				name: zipFile.name,
+				content: await zipFile.async("text")
 			})
 		}
 		mainScan()
