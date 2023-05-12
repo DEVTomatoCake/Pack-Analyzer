@@ -1,18 +1,18 @@
-var interval
-var files = 0
-var done = 0
-var error = 0
-var selected = null
-var rpMode = false
+let interval
+let files = 0
+let done = 0
+let error = 0
+let selected = null
+let rpMode = false
 
-var filetypes = {}
-var packFiles = []
-var packImages = []
-var commands = {}
-var cmdsBehindExecute = {}
-var comments = 0
-var empty = 0
-var dpExclusive = {
+let filetypes = {}
+let packFiles = []
+let packImages = []
+let commands = {}
+let cmdsBehindExecute = {}
+let comments = 0
+let empty = 0
+let dpExclusive = {
 	folders: {
 		advancements: 0,
 		loot_tables: 0,
@@ -45,7 +45,7 @@ var dpExclusive = {
 		s: 0
 	}
 }
-var rpExclusive = {
+let rpExclusive = {
 	atlases: 0,
 	blockstates: 0,
 	font: 0,
@@ -70,13 +70,13 @@ async function processEntries(entries) {
 		if (
 			ext == "mcmeta" || ext == "json" ||
 			(!rpMode && (ext == "mcfunction" || ext == "nbt")) ||
-			(rpMode && (ext == "png" || ext == "icns" || ext == "txt" || ext == "ogg" || ext == "fsh" || ext == "vsh"))
+			(rpMode && (ext == "png" || ext == "icns" || ext == "txt" || ext == "ogg" || ext == "fsh" || ext == "vsh" || ext == "glsl" || ext == "lang" || ext == "properties" || ext == "inc" || ext == "xcf"))
 		) {
 			if (!filetypes[ext]) filetypes[ext] = 1
 			else filetypes[ext]++
 		} else continue
 
-		if (ext == "mcfunction" || ext == "mcmeta" || entry.name.endsWith("pack.png")) {
+		if (ext == "mcfunction" || ext == "mcmeta" || ext == "fsh" || ext == "vsh" || entry.name.endsWith("pack.png")) {
 			files++
 
 			function processFile(result) {
@@ -127,7 +127,22 @@ async function processEntries(entries) {
 							error++
 						}
 					}
-				} else if (entry.name.endsWith("pack.png")) packImages.push(result)
+				} else if (entry.name.endsWith("pack.png") && !result.includes(">")) packImages.push(result)
+				else if (rpMode && (ext == "fsh" || ext == "vsh" || ext == "glsl")) {
+					const lines = result.split("\n")
+					for (let line of lines) {
+						line = line.trim()
+						if (line.startsWith("//") || line.startsWith("/*")) comments++
+						if (line == "") empty++
+						if (line.startsWith("//") || line.startsWith("/*") || line == "") continue
+
+						const cmd = line.match(/^[a-z_#0-9]+/i)?.[0]
+						if (cmd && cmd != "{" && cmd != "}") {
+							if (!commands[cmd]) commands[cmd] = 1
+							else commands[cmd]++
+						}
+					}
+				}
 			}
 
 			if (entry.content) processFile(entry.content)
@@ -250,11 +265,12 @@ async function mainScan(hasData = false) {
 		document.getElementById("progress").innerText = Math.round(done / files * 100) + "% scanned" + (error > 0 ? " - " + error + " errors" : "")
 		if (done + error == files || hasData) {
 			clearInterval(interval)
+			if (files == 0) return document.getElementById("progress").innerText = "No files found!"
 			document.getElementById("resultButtons").hidden = false
 			if (error == 0) document.getElementById("progress").innerText = ""
 			if (Object.values(filetypes).reduce((a, b) => a + b) == 0) document.getElementById("progress").innerHTML = "No " + (rpMode ? "resource" : "data") + "pack files found!"
 
-			var html =
+			let html =
 				(packImages.length > 0 ? "<div style='display: flex;'>" + packImages.map(img => "<img src='" + img + "' width='64' height='64'>") + "</div>" : "") +
 				(packFiles.length > 0 ? "<strong>" + (rpMode ? "Resource" : "Data") + "pack" + (packFiles.length == 1 ? "" : "s") + " found:</strong><br>" +
 					packFiles.map(pack => "<span class='indented'>" + (pack.pack?.description?.replace(/§[a-f0-9]/gi, "") || "<i>No description</i>") +
@@ -274,7 +290,8 @@ async function mainScan(hasData = false) {
 						}).join("<br>") + "</small>" : "")
 					).join("<br>") + "<br>"
 				: "") +
-				(!rpMode && Object.keys(commands).length > 0 ?
+				(packFiles.length == 0 && (filetypes.fsh || filetypes.vsh || filetypes.xcf || filetypes.glsl) ? "<strong>Shader found:</strong><br>" : "") +
+				(Object.keys(commands).length > 0 ?
 					"<strong>Total amount of commands: " + localize(Object.keys(commands).reduce((a, b) => a + commands[b], 0)) + "</strong><br>" +
 					"<span class='indented'>Unique commands: " + localize(Object.keys(commands).length) + "</span><br>"
 				: "") +

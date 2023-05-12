@@ -130,7 +130,7 @@ function openDialog(dialog) {
 }
 
 async function openSettingsDialog() {
-	var dialog = document.getElementById("settingsDialog")
+	const dialog = document.getElementById("settingsDialog")
 	openDialog(dialog)
 
 	if (getCookie("theme") == "light") dialog.querySelector("option[value='light']").selected = true
@@ -155,7 +155,7 @@ function clearResults() {
 }
 
 async function share(type) {
-	var content = ""
+	let content = ""
 	if (type == "txt") content = document.getElementById("result").innerText
 	else if (type == "json" || type == "link") {
 		content = JSON.stringify({
@@ -200,9 +200,9 @@ async function share(type) {
 	download.click()
 }
 function createImage() {
-	var canvas = document.getElementById("shareImage")
+	const canvas = document.getElementById("shareImage")
 	canvas.style.display = "block"
-	var ctx = canvas.getContext("2d")
+	const ctx = canvas.getContext("2d")
 	ctx.clearRect(0, 0, canvas.width, canvas.height)
 	ctx.fillStyle = "white"
 	ctx.fillRect(0, 0, canvas.width, canvas.height)
@@ -214,8 +214,8 @@ function createImage() {
 		ctx.drawImage(drawing, 0, 0)
 		ctx.globalAlpha = 1
 
-		var x = 20
-		var y = 1
+		let x = 20
+		let y = 1
 		const lineHeight = 21
 		const maxWidth = 400
 		ctx.font = lineHeight - 1 + "px Arial"
