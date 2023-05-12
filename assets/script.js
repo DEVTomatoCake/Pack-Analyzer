@@ -237,7 +237,8 @@ function createImage() {
 				}
 			})
 		}
-		if (!rpMode && Object.keys(commands).length > 0) {
+		if (packFiles.length == 0 && (filetypes.fsh || filetypes.vsh || filetypes.xcf || filetypes.glsl)) ctx.fillText("Shader found:", x, y++ * lineHeight, maxWidth)
+		if (Object.keys(commands).length > 0) {
 			ctx.fillText("Total amount of commands: " + localize(Object.keys(commands).reduce((a, b) => a + commands[b], 0)), x, y++ * lineHeight, maxWidth)
 			ctx.fillText("Unique commands: " + localize(Object.keys(commands).length), x + 30, y++ * lineHeight, maxWidth)
 		}
@@ -266,7 +267,7 @@ function createImage() {
 		x = 450
 		y = 3
 		ctx.font = "28px Arial"
-		ctx.fillText("Commands", x, 40, maxWidth)
+		ctx.fillText((Object.keys(commands).length > 5 ? "Top c" : "c") + "ommands", x, 40, maxWidth)
 		ctx.font = "20px Arial"
 
 		commands = Object.fromEntries(Object.entries(commands).sort(([, a], [, b]) => b - a))
