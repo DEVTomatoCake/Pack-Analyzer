@@ -105,7 +105,7 @@ async function processEntries(entries) {
 							})
 						}
 
-						if (/scoreboard objectives add \w+ \w+( [ \S]+)?$/.match(line)) dpExclusive.scoreboards++
+						if (/scoreboard objectives add \w+ \w+( [ \S]+)?$/.test(line)) dpExclusive.scoreboards++
 
 						splitted.forEach(arg => {
 							if (arg.startsWith("@")) {
