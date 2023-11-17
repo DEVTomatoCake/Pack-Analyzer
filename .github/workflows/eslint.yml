@@ -17,7 +17,7 @@ jobs:
           node-version: 20
 
       - name: "🛸 install eslint html plugins"
-        run: npm i eslint-plugin-html @html-eslint/parser @html-eslint/eslint-plugin eslint-plugin-unicorn
+        run: npm i
 
       - name: "🔍 lint code"
         run: npx eslint --ext .html,.js . --report-unused-disable-directives

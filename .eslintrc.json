@@ -3,7 +3,7 @@
 		"browser": true,
 		"es2022": true
 	},
-	"plugins": ["html", "@html-eslint", "unicorn"],
+	"plugins": ["html", "@html-eslint", "unicorn", "sonarjs"],
 	"overrides": [
 		{
 			"files": ["*.html"],
@@ -176,6 +176,27 @@
 		"unicorn/require-array-join-separator": 2,
 		"unicorn/require-number-to-fixed-digits-argument": 2,
 		"unicorn/switch-case-braces": [2, "avoid"],
-		"unicorn/text-encoding-identifier-case": 2
+		"unicorn/text-encoding-identifier-case": 2,
+
+		"sonarjs/no-extra-arguments": 2,
+		"sonarjs/no-empty-collection": 2,
+		"sonarjs/no-element-overwrite": 2,
+		"sonarjs/no-use-of-empty-return-value": 2,
+		"sonarjs/no-all-duplicated-branches": 2,
+		"sonarjs/no-ignored-return": 2,
+		"sonarjs/no-identical-expressions": 2,
+		"sonarjs/no-one-iteration-loop": 2,
+		"sonarjs/non-existent-operator": 2,
+		"sonarjs/no-redundant-boolean": 2,
+		"sonarjs/no-unused-collection": 2,
+		"sonarjs/prefer-immediate-return": 2,
+		"sonarjs/no-inverted-boolean-check": 2,
+		"sonarjs/no-redundant-jump": 2,
+		"sonarjs/no-same-line-conditional": 2,
+		"sonarjs/prefer-object-literal": 2,
+		"sonarjs/no-collection-size-mischeck": 2,
+		"sonarjs/prefer-while": 2,
+		"sonarjs/no-gratuitous-expressions": 2,
+		"sonarjs/no-duplicated-branches": 2
 	}
 }
