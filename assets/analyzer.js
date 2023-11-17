@@ -79,7 +79,7 @@ async function processEntries(entries) {
 		if (ext == "mcfunction" || ext == "mcmeta" || ext == "fsh" || ext == "vsh" || entry.name.endsWith("pack.png")) {
 			files++
 
-			function processFile(result) {
+			const processFile = result => {
 				done++
 
 				if (!rpMode && ext == "mcfunction") {
@@ -105,7 +105,7 @@ async function processEntries(entries) {
 							})
 						}
 
-						if (line.match(/scoreboard objectives add \w+ \w+( [ \S]+)?$/)) dpExclusive.scoreboards++
+						if (/scoreboard objectives add \w+ \w+( [ \S]+)?$/.match(line)) dpExclusive.scoreboards++
 
 						splitted.forEach(arg => {
 							if (arg.startsWith("@")) {
@@ -149,12 +149,12 @@ async function processEntries(entries) {
 			else {
 				const reader = new FileReader()
 				if (ext == "png") reader.readAsDataURL(entry)
-				else reader.readAsText(entry)
+				else entry.text().then(processFile)
 
-				reader.onload = function() {
+				reader.onload = () => {
 					processFile(reader.result)
 				}
-				reader.onerror = function(e) {
+				reader.onerror = e => {
 					console.warn("Could not read file: " + filePath, e)
 					error++
 				}

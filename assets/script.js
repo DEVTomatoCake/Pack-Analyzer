@@ -1,4 +1,5 @@
 // Cookie/"load"/getLanguage() code modified from https://github.com/DEVTomatoCake/dashboard/blob/0ad2ba278373244f05025dc6554e4ebb86868e8a/assets/js/script.js#L1-L26 and language.js
+
 function setCookie(name, value, days) {
 	let cookie = name + "=" + (value || "") + ";path=/;"
 	if (days) {
@@ -12,15 +13,11 @@ function setCookie(name, value, days) {
 function getCookie(name) {
 	const cookies = document.cookie.split(";")
 
-	for (let i = 0; i < cookies.length; i++) {
-		let cookie = cookies[i].trim()
-
+	for (const rawCookie of cookies) {
+		const cookie = rawCookie.trim()
 		if (cookie.split("=")[0] == name) return cookie.substring(name.length + 1, cookie.length)
 	}
 	return void 0
-}
-function deleteCookie(name) {
-	document.cookie = name + "=;Max-Age=-99999999;path=/;"
 }
 
 const getLanguage = () => {
@@ -174,20 +171,22 @@ async function share(type) {
 			rpExclusive
 		}, null, type == "json" ? 4 : void 0)
 		if (type == "link") {
-			const res = await fetch("https://api.tomatenkuchen.eu/short", {
-				method: "post",
+			const name = Math.random().toString(36).slice(7)
+			const date = Date.now() + 1000 * 60 * 60 * 24 * 7
+
+			const res = await fetch("https://shorter.cf", {
+				method: "POST",
 				headers: {
 					"Content-Type": "application/json"
 				},
-				body: JSON.stringify({
-					url: location.href + "?data=" + encodeURIComponent(content)
-				})
+				body: JSON.stringify({name, url: location.href + "?data=" + encodeURIComponent(content), date})
 			})
+
 			const json = await res.json()
 			if (json.status == "success") {
-				document.getElementById("share-link").href = "https://shorter.cf/" + json.name
-				document.getElementById("share-link").innerText = "https://shorter.cf/" + json.name
-				document.getElementById("share-img").src = json.qrcode
+				document.getElementById("share-link").href = "https://shorter.cf/" + name
+				document.getElementById("share-link").innerText = "https://shorter.cf/" + name
+				document.getElementById("share-img").src = "https://api.qrserver.com/v1/create-qr-code/?data=" + encodeURIComponent("https://shorter.cf/" + name) + "&size=150x150&qzone=2"
 				openDialog(document.getElementById("shareDialog"))
 			} else alert("Couldn't create link: " + json.error)
 			return
