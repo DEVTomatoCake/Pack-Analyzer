@@ -6,6 +6,7 @@ let selected = null
 let rpMode = false
 
 let filetypes = {}
+let filetypesOther = {}
 let packFiles = []
 let packImages = []
 let commands = {}
@@ -43,7 +44,9 @@ let dpExclusive = {
 		p: 0,
 		r: 0,
 		s: 0
-	}
+	},
+	functions: [],
+	functionCalls: []
 }
 let rpExclusive = {
 	atlases: 0,
@@ -61,6 +64,7 @@ let rpExclusive = {
 async function processEntries(entries) {
 	for await (const entry of entries) {
 		const filePath = entry.webkitRelativePath || entry.name
+		if (filePath.includes("/.git/") || filePath.includes("/.svn/")) continue
 		if (entry.kind == "directory") {
 			processEntries(entry)
 			continue
@@ -74,7 +78,10 @@ async function processEntries(entries) {
 		) {
 			if (filetypes[ext]) filetypes[ext]++
 			else filetypes[ext] = 1
-		} else continue
+		} else {
+			if (filetypesOther[(entry.name.includes(".") ? "." : "") + ext]) filetypesOther[(entry.name.includes(".") ? "." : "") + ext]++
+			else filetypesOther[(entry.name.includes(".") ? "." : "") + ext] = 1
+		}
 
 		if (ext == "mcfunction" || ext == "mcmeta" || ext == "fsh" || ext == "vsh" || entry.name.endsWith("pack.png")) {
 			files++
@@ -83,6 +90,9 @@ async function processEntries(entries) {
 				done++
 
 				if (!rpMode && ext == "mcfunction") {
+					const funcLocation = /data\/([-a-z0-9_]+)\/functions\/([-a-z0-9_/]+)/i.exec(filePath)
+					if (funcLocation && !dpExclusive.functions.includes(funcLocation[1] + ":" + funcLocation[2])) dpExclusive.functions.push(funcLocation[1] + ":" + funcLocation[2])
+
 					const lines = result.split("\n")
 					for (let line of lines) {
 						line = line.trim()
@@ -104,8 +114,12 @@ async function processEntries(entries) {
 								else commands[cmdBehind] = 1
 							})
 						}
+						if (cmd == "function" || cmd.includes(" function ")) {
+							const func = /function ([-a-z0-9_]+):([-a-z0-9_/]+)/i.exec(line)
+							if (func && !dpExclusive.functionCalls.includes(func[1] + ":" + func[2])) dpExclusive.functionCalls.push(func[1] + ":" + func[2])
+						}
 
-						if (/scoreboard objectives add \w+ \w+( [ \S]+)?$/.test(line)) dpExclusive.scoreboards++
+						if (/scoreboard objectives add \w+ \w+( .+)?$/.test(line)) dpExclusive.scoreboards++
 
 						splitted.forEach(arg => {
 							if (arg.startsWith("@")) {
@@ -173,8 +187,15 @@ async function processEntries(entries) {
 			else if (filePath.includes("/tags/cat_variant/")) dpExclusive.tags.cat_variant++
 			else if (filePath.includes("/tags/entity_types/")) dpExclusive.tags.entity_types++
 			else if (filePath.includes("/tags/fluids/")) dpExclusive.tags.fluids++
-			else if (filePath.includes("/tags/functions/")) dpExclusive.tags.functions++
-			else if (filePath.includes("/tags/game_events/")) dpExclusive.tags.game_events++
+			else if (filePath.includes("/tags/functions/")) {
+				dpExclusive.tags.functions++
+
+				const parsed = JSON.parse(entry.content)
+				console.log(parsed)
+				parsed.values.forEach(func => {
+					dpExclusive.functionCalls.push(func)
+				})
+			} else if (filePath.includes("/tags/game_events/")) dpExclusive.tags.game_events++
 			else if (filePath.includes("/tags/items/")) dpExclusive.tags.items++
 			else if (filePath.includes("/tags/instrument/")) dpExclusive.tags.instrument++
 			else if (filePath.includes("/tags/painting_variant/")) dpExclusive.tags.painting_variant++
@@ -206,6 +227,7 @@ async function mainScan(hasData = false) {
 		rpMode = document.getElementById("radiorp").checked
 
 		filetypes = {}
+		filetypesOther = {}
 		packFiles = []
 		packImages = []
 		commands = {}
@@ -243,7 +265,9 @@ async function mainScan(hasData = false) {
 				p: 0,
 				r: 0,
 				s: 0
-			}
+			},
+			functions: [],
+			functionCalls: []
 		}
 		rpExclusive = {
 			atlases: 0,
@@ -270,35 +294,73 @@ async function mainScan(hasData = false) {
 			if (error == 0) document.getElementById("progress").innerText = ""
 			if (Object.values(filetypes).reduce((a, b) => a + b) == 0) document.getElementById("progress").innerHTML = "No " + (rpMode ? "resource" : "data") + "pack files found!"
 
+			const uncalledFunctions = dpExclusive.functions.filter(func => !dpExclusive.functionCalls.includes(func))
+			const missingFunctions = dpExclusive.functionCalls.filter(func => !dpExclusive.functions.includes(func))
+
 			let html =
 				(packImages.length > 0 ? "<div style='display: flex;'>" + packImages.map(img => "<img src='" + img + "' width='64' height='64'>") + "</div>" : "") +
 				(packFiles.length > 0 ? "<strong>" + (rpMode ? "Resource" : "Data") + "pack" + (packFiles.length == 1 ? "" : "s") + " found:</strong><br>" +
-					packFiles.map(pack => "<span class='indented'>" + (pack.pack?.description?.replace(/§[a-f0-9]/gi, "") || "<i>No description</i>") +
-						(window.versions.some(ver => (rpMode ? ver.resourcepack_version : ver.datapack_version) == pack.pack.pack_format) ?
-							" <small>(Supported versions: " +
-							(window.versions.findLast(ver => (rpMode ? ver.resourcepack_version : ver.datapack_version) == pack.pack.pack_format)?.name || "?") + "<strong>-</strong>" +
-							(window.versions.find(ver => (rpMode ? ver.resourcepack_version : ver.datapack_version) == pack.pack.pack_format)?.name || "?") +
-							")</small>"
-						: "") +
-						"</span>" +
-						(pack.features?.enabled?.length > 0 ? "<br><span class='indented'>Selected internal features:<br>" + pack.features.enabled.map(feature => "<span class='indented'>" + feature + "</span>").join("<br>") + "</span>" : "") +
-						(pack.filter?.block?.length > 0 ? "<br><span class='indented2'>Pack filters:</span><br><small>" + pack.filter.block.map(filter => {
-							return "<span class='indented3'>" +
-							(filter.namespace ? "Namespace: <code>" + filter.namespace + "</code>" : "") +
-							(filter.namespace && filter.path ? ", " : "") +
-							(filter.path ? "Path: <code>" + filter.path + "</code>" : "") + "</span>"
-						}).join("<br>") + "</small>" : "")
-					).join("<br>") + "<br>"
+					packFiles.map(pack => {
+						let oldestFormat = pack.pack.pack_format
+						let newestFormat = pack.pack.pack_format
+						if (pack.pack.supported_formats && typeof pack.pack.supported_formats == "object") {
+							if (Array.isArray(pack.pack.supported_formats)) {
+								oldestFormat = pack.pack.supported_formats[0]
+								newestFormat = pack.pack.supported_formats[1]
+							} else {
+								oldestFormat = pack.pack.supported_formats.min_inclusive
+								newestFormat = pack.pack.supported_formats.max_inclusive
+							}
+						}
+
+						return "<span class='indented'>" + (pack.pack?.description?.replace(/§[0-9a-flmnor]/gi, "") || "<i>No description</i>") +
+							(window.versions.some(ver => (rpMode ? ver.resourcepack_version : ver.datapack_version) == pack.pack.pack_format) ?
+								"<br><span class='indented2'>Supported versions: " +
+								(window.versions.findLast(ver => (rpMode ? ver.resourcepack_version : ver.datapack_version) == oldestFormat)?.name || "?") +
+								"<strong>-</strong>" +
+								(window.versions.find(ver => (rpMode ? ver.resourcepack_version : ver.datapack_version) == newestFormat)?.name || "?") +
+								"</span>"
+							: "") +
+							"</span>" +
+							(pack.features?.enabled?.length > 0 ?
+								"<br><span class='indented2'>Selected internal features: " +
+								pack.features.enabled.map(feature => "<code>" + feature + "</code>").join(", ") + "</span>"
+							: "") +
+							(pack.filter?.block?.length > 0 ? "<br><span class='indented2'>Pack filters:</span><br><small>" + pack.filter.block.map(filter =>
+								"<span class='indented3'>" +
+								(filter.namespace ? "Namespace: <code>" + filter.namespace + "</code>" : "") +
+								(filter.namespace && filter.path ? ", " : "") +
+								(filter.path ? "Path: <code>" + filter.path + "</code>" : "") +
+								"</span>"
+							).join("<br>") + "</small>" : "")
+					}).join("<br>") + "<br>"
 				: "") +
-				(packFiles.length == 0 && (filetypes.fsh || filetypes.vsh || filetypes.xcf || filetypes.glsl) ? "<strong>Shader found:</strong><br>" : "") +
+				(packFiles.length == 0 && (filetypes.fsh || filetypes.vsh || filetypes.xcf || filetypes.glsl) ? "<strong>Shader found</strong><br>" : "") +
+
 				(Object.keys(commands).length > 0 ?
 					"<strong>Total amount of commands: " + localize(Object.keys(commands).reduce((a, b) => a + commands[b], 0)) + "</strong><br>" +
-					"<span class='indented'>Unique commands: " + localize(Object.keys(commands).length) + "</span><br>"
+					"<span class='indented'>Unique command names: " + localize(Object.keys(commands).length) + "</span><br>"
 				: "") +
 				(comments > 0 ? "<span class='indented'>Comments: " + localize(comments) + "</span><br>" : "") +
 				(empty > 0 ? "<span class='indented'>Empty lines: " + localize(empty) + "</span><br>" : "") +
 				"<strong>Pack file types found:</strong><br>" +
 				Object.keys(filetypes).sort((a, b) => filetypes[b] - filetypes[a]).map(type => "<span class='indented'>." + type + ": " + localize(filetypes[type]) + "</span><br>").join("") +
+				(Object.keys(filetypesOther).length > 0 ?
+					"<details><summary>" +
+					"<strong>Non-pack file types found:</strong></summary>" +
+					Object.keys(filetypesOther).sort((a, b) => filetypesOther[b] - filetypesOther[a]).map(type => "<span class='indented'>" + type + ": " + localize(filetypesOther[type]) + "</span><br>").join("") +
+					"<br></details>"
+				: "") +
+				(uncalledFunctions.length > 0 ?
+					"<strong>Uncalled functions:</strong><br>" +
+					uncalledFunctions.map(func => "<span class='indented'>" + func + "</span><br>").join("") +
+					"<br>"
+				: "") +
+				(missingFunctions.length > 0 ?
+					"<strong>Missing functions:</strong><br>" +
+					missingFunctions.map(func => "<span class='indented'>" + func + "</span><br>").join("") +
+					"<br>"
+				: "") +
 
 				(dpExclusive.scoreboards > 0 ? "<strong>Scoreboards created: " + localize(dpExclusive.scoreboards) + "</strong><br>" : "") +
 				(!rpMode && Object.values(dpExclusive.selectors).reduce((a, b) => a + b) != 0 ? "<strong>Selectors used:</strong><br>" : "") +

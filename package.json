@@ -1,15 +1,15 @@
 {
   "name": "datapack-analyzer",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "private": true,
   "description": "Allows you to analyze and generate stats for [Minecraft](https://minecraft.net) Java Edition data- and resourcepacks.",
   "main": "index.html",
   "author": "TomatoCake",
-  "license": "See README.md",
+  "license": "CC BY-NC-SA 4.0 https://creativecommons.org/licenses/by-nc-sa/4.0",
   "devDependencies": {
-    "@html-eslint/eslint-plugin": "^0.20.0",
-    "@html-eslint/parser": "^0.20.0",
-    "eslint": "^8.53.0",
+    "@html-eslint/eslint-plugin": "^0.21.0",
+    "@html-eslint/parser": "^0.21.0",
+    "eslint": "^8.55.0",
     "eslint-plugin-html": "^7.1.0",
     "eslint-plugin-sonarjs": "^0.23.0",
     "eslint-plugin-unicorn": "^49.0.0"
