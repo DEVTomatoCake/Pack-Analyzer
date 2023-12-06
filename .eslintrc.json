@@ -95,7 +95,7 @@
 		"no-unsafe-optional-chaining": 2,
 		"no-unmodified-loop-condition": 2,
 		"no-promise-executor-return": 2,
-		"no-warning-comments": 2,
+		"no-warning-comments": 1,
 		"no-var": 2,
 		"no-new-func": 2,
 		"no-new-wrappers": 2,

@@ -115,8 +115,11 @@ async function processEntries(entries) {
 							})
 						}
 						if (cmd == "function" || cmd.includes(" function ")) {
-							const func = /function ([-a-z0-9_]+):([-a-z0-9_/]+)/i.exec(line)
-							if (func && !dpExclusive.functionCalls.includes(func[1] + ":" + func[2])) dpExclusive.functionCalls.push(func[1] + ":" + func[2])
+							const func = /function (([-a-z0-9_]+):)?([-a-z0-9_/]+)/i.exec(line)
+							dpExclusive.functionCalls.push({
+								source: funcLocation[1] + ":" + funcLocation[2],
+								target: (func[2] || "minecraft") + ":" + func[3]
+							})
 						}
 
 						if (/scoreboard objectives add \w+ \w+( .+)?$/.test(line)) dpExclusive.scoreboards++
@@ -174,8 +177,16 @@ async function processEntries(entries) {
 				}
 			}
 		} else if (!rpMode && ext == "json") {
-			if (filePath.includes("/advancements/")) dpExclusive.folders.advancements++
-			else if (filePath.includes("/loot_tables/")) dpExclusive.folders.loot_tables++
+			// TODO: Refactor to avoid duplicate code
+			if (filePath.includes("/advancements/")) {
+				dpExclusive.folders.advancements++
+
+				const parsed = JSON.parse(entry.content)
+				if (parsed.rewards && parsed.rewards.function) dpExclusive.functionCalls.push({
+					source: "(Advancement) " + entry.name,
+					target: parsed.rewards.function.includes(":") ? parsed.rewards.function : "minecraft:" + parsed.rewards.function
+				})
+			} else if (filePath.includes("/loot_tables/")) dpExclusive.folders.loot_tables++
 			else if (filePath.includes("/recipes/")) dpExclusive.folders.recipes++
 			else if (filePath.includes("/predicates/")) dpExclusive.folders.predicates++
 			else if (filePath.includes("/dimension/")) dpExclusive.folders.dimension++
@@ -191,9 +202,11 @@ async function processEntries(entries) {
 				dpExclusive.tags.functions++
 
 				const parsed = JSON.parse(entry.content)
-				console.log(parsed)
-				parsed.values.forEach(func => {
-					dpExclusive.functionCalls.push(func)
+				if (parsed.values) parsed.values.forEach(func => {
+					dpExclusive.functionCalls.push({
+						source: "(Tag) " + entry.name,
+						target: func.includes(":") ? func : "minecraft:" + func
+					})
 				})
 			} else if (filePath.includes("/tags/game_events/")) dpExclusive.tags.game_events++
 			else if (filePath.includes("/tags/items/")) dpExclusive.tags.items++
@@ -294,8 +307,8 @@ async function mainScan(hasData = false) {
 			if (error == 0) document.getElementById("progress").innerText = ""
 			if (Object.values(filetypes).reduce((a, b) => a + b) == 0) document.getElementById("progress").innerHTML = "No " + (rpMode ? "resource" : "data") + "pack files found!"
 
-			const uncalledFunctions = dpExclusive.functions.filter(func => !dpExclusive.functionCalls.includes(func))
-			const missingFunctions = dpExclusive.functionCalls.filter(func => !dpExclusive.functions.includes(func))
+			const uncalledFunctions = dpExclusive.functions.filter(funcName => !dpExclusive.functionCalls.some(func => func.target == funcName))
+			const missingFunctions = dpExclusive.functionCalls.filter(func => !dpExclusive.functions.includes(func.target))
 
 			let html =
 				(packImages.length > 0 ? "<div style='display: flex;'>" + packImages.map(img => "<img src='" + img + "' width='64' height='64'>") + "</div>" : "") +

@@ -206,7 +206,7 @@ function createImage() {
 	ctx.fillStyle = "white"
 	ctx.fillRect(0, 0, canvas.width, canvas.height)
 
-	drawing = new Image()
+	const drawing = new Image()
 	drawing.src = "./assets/images/generated_background.png"
 	drawing.onload = () => {
 		ctx.globalAlpha = 0.3
