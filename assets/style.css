@@ -8,6 +8,8 @@
 	--active: #FF0000;
 	--dialog-shadow: rgba(0, 0, 0, 0.25);
 	--code-bg: #EEE;
+	--heading-color: #008900;
+	--number-color: #00a100;
 }
 .dark-theme {
 	--background: #222;
@@ -19,6 +21,8 @@
 	--active: #FF0000;
 	--dialog-shadow: rgba(0, 0, 0, 0.75);
 	--code-bg: #111;
+	--heading-color: #00a100;
+	--number-color: #c5c31d;
 }
 
 body {
@@ -43,6 +47,9 @@ p {
 }
 #resultButtons {
 	margin-top: 10px;
+}
+strong {
+	color: var(--heading-color);
 }
 
 code {

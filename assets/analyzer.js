@@ -83,7 +83,10 @@ async function processEntries(entries) {
 			else filetypesOther[(entry.name.includes(".") ? "." : "") + ext] = 1
 		}
 
-		if (ext == "mcfunction" || ext == "mcmeta" || ext == "fsh" || ext == "vsh" || entry.name.endsWith("pack.png")) {
+		if (
+			ext == "mcfunction" || ext == "mcmeta" || (!rpMode && ext == "json" && (filePath.includes("/advancements/") || filePath.includes("/tags/functions/"))) ||
+			ext == "fsh" || ext == "vsh" || ext == "glsl" || entry.name.endsWith("pack.png")
+		) {
 			files++
 
 			const processFile = result => {
@@ -114,9 +117,9 @@ async function processEntries(entries) {
 								else commands[cmdBehind] = 1
 							})
 						}
-						if (cmd == "function" || cmd.includes(" function ")) {
+						if (cmd == "function" || line.includes(" function ")) {
 							const func = /function (([-a-z0-9_]+):)?([-a-z0-9_/]+)/i.exec(line)
-							dpExclusive.functionCalls.push({
+							if (func && func[3]) dpExclusive.functionCalls.push({
 								source: funcLocation[1] + ":" + funcLocation[2],
 								target: (func[2] || "minecraft") + ":" + func[3]
 							})
@@ -159,6 +162,34 @@ async function processEntries(entries) {
 							else commands[cmd] = 1
 						}
 					}
+				} else if (!rpMode && ext == "json") {
+					if (filePath.includes("/advancements/")) {
+						const fileLocation = /data\/([-a-z0-9_]+)\/advancements\/([-a-z0-9_/]+)/i.exec(filePath)
+
+						try {
+							const parsed = JSON.parse(result)
+							if (parsed.rewards && parsed.rewards.function) dpExclusive.functionCalls.push({
+								source: "(Advancement) " + fileLocation[1] + ":" + fileLocation[2],
+								target: parsed.rewards.function.includes(":") ? parsed.rewards.function : "minecraft:" + parsed.rewards.function
+							})
+						} catch (e) {
+							console.warn("Unable to analyze advancement: " + filePath, e)
+						}
+					} else if (filePath.includes("/tags/functions/")) {
+						const fileLocation = /data\/([-a-z0-9_]+)\/tags\/functions\/([-a-z0-9_/]+)/i.exec(filePath)
+
+						try {
+							const parsed = JSON.parse(result)
+							if (parsed.values) parsed.values.forEach(func => {
+								dpExclusive.functionCalls.push({
+									source: "#" + fileLocation[1] + ":" + fileLocation[2],
+									target: func.includes(":") ? func : "minecraft:" + func
+								})
+							})
+						} catch (e) {
+							console.warn("Unable to analyze function tag: " + filePath, e)
+						}
+					}
 				}
 			}
 
@@ -176,55 +207,24 @@ async function processEntries(entries) {
 					error++
 				}
 			}
-		} else if (!rpMode && ext == "json") {
+		}
+		if (!rpMode && ext == "json") {
 			// TODO: Refactor to avoid duplicate code
-			if (filePath.includes("/advancements/")) {
-				dpExclusive.folders.advancements++
-
-				const parsed = JSON.parse(entry.content)
-				if (parsed.rewards && parsed.rewards.function) dpExclusive.functionCalls.push({
-					source: "(Advancement) " + entry.name,
-					target: parsed.rewards.function.includes(":") ? parsed.rewards.function : "minecraft:" + parsed.rewards.function
-				})
-			} else if (filePath.includes("/loot_tables/")) dpExclusive.folders.loot_tables++
+			if (filePath.includes("/advancements/")) dpExclusive.folders.advancements++
+			else if (filePath.includes("/loot_tables/")) dpExclusive.folders.loot_tables++
 			else if (filePath.includes("/recipes/")) dpExclusive.folders.recipes++
 			else if (filePath.includes("/predicates/")) dpExclusive.folders.predicates++
 			else if (filePath.includes("/dimension/")) dpExclusive.folders.dimension++
 			else if (filePath.includes("/dimension_type/")) dpExclusive.folders.dimension_type++
 			else if (filePath.includes("/worldgen/")) dpExclusive.folders.worldgen++
 
-			else if (filePath.includes("/tags/banner_pattern/")) dpExclusive.tags.banner_pattern++
-			else if (filePath.includes("/tags/blocks/")) dpExclusive.tags.blocks++
-			else if (filePath.includes("/tags/cat_variant/")) dpExclusive.tags.cat_variant++
-			else if (filePath.includes("/tags/entity_types/")) dpExclusive.tags.entity_types++
-			else if (filePath.includes("/tags/fluids/")) dpExclusive.tags.fluids++
-			else if (filePath.includes("/tags/functions/")) {
-				dpExclusive.tags.functions++
-
-				const parsed = JSON.parse(entry.content)
-				if (parsed.values) parsed.values.forEach(func => {
-					dpExclusive.functionCalls.push({
-						source: "(Tag) " + entry.name,
-						target: func.includes(":") ? func : "minecraft:" + func
-					})
-				})
-			} else if (filePath.includes("/tags/game_events/")) dpExclusive.tags.game_events++
-			else if (filePath.includes("/tags/items/")) dpExclusive.tags.items++
-			else if (filePath.includes("/tags/instrument/")) dpExclusive.tags.instrument++
-			else if (filePath.includes("/tags/painting_variant/")) dpExclusive.tags.painting_variant++
-			else if (filePath.includes("/tags/point_of_interest_type/")) dpExclusive.tags.point_of_interest_type++
-			else if (filePath.includes("/tags/worldgen/")) dpExclusive.tags.worldgen++
+			Object.keys(dpExclusive.tags).forEach(type => {
+				if (filePath.includes("/tags/" + type + "/")) dpExclusive.tags[type]++
+			})
 		} else if (rpMode) {
-			if (filePath.includes("/atlases/")) rpExclusive.atlases++
-			else if (filePath.includes("/blockstates/")) rpExclusive.blockstates++
-			else if (filePath.includes("/font/")) rpExclusive.font++
-			else if (filePath.includes("/lang/")) rpExclusive.lang++
-			else if (filePath.includes("/models/")) rpExclusive.models++
-			else if (filePath.includes("/particles/")) rpExclusive.particles++
-			else if (filePath.includes("/shaders/")) rpExclusive.shaders++
-			else if (filePath.includes("/sounds/")) rpExclusive.sounds++
-			else if (filePath.includes("/texts/")) rpExclusive.texts++
-			else if (filePath.includes("/textures/")) rpExclusive.textures++
+			Object.keys(rpExclusive).forEach(type => {
+				if (filePath.includes("/" + type + "/")) rpExclusive[type]++
+			})
 		}
 	}
 }
@@ -330,7 +330,7 @@ async function mainScan(hasData = false) {
 							(window.versions.some(ver => (rpMode ? ver.resourcepack_version : ver.datapack_version) == pack.pack.pack_format) ?
 								"<br><span class='indented2'>Supported versions: " +
 								(window.versions.findLast(ver => (rpMode ? ver.resourcepack_version : ver.datapack_version) == oldestFormat)?.name || "?") +
-								"<strong>-</strong>" +
+								" - " +
 								(window.versions.find(ver => (rpMode ? ver.resourcepack_version : ver.datapack_version) == newestFormat)?.name || "?") +
 								"</span>"
 							: "") +
