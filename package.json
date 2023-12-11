@@ -7,7 +7,7 @@
   "author": "TomatoCake",
   "license": "CC BY-NC-SA 4.0 https://creativecommons.org/licenses/by-nc-sa/4.0",
   "devDependencies": {
-    "@html-eslint/eslint-plugin": "^0.21.0",
+    "@html-eslint/eslint-plugin": "^0.22.0",
     "@html-eslint/parser": "^0.22.0",
     "eslint": "^8.55.0",
     "eslint-plugin-html": "^7.1.0",
