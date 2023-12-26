@@ -11,7 +11,7 @@
 	--heading-color: #008900;
 	--number-color: #00a100;
 }
-.dark-theme {
+:root {
 	--background: #222;
 	--header-bg: #216E4A;
 	--dialog-bg: #222;
@@ -37,7 +37,9 @@ button {
 	padding: 5px 8px;
 	font-size: 16px;
 	border: none;
-	border-radius: 5px;
+	border-radius: 7px;
+	cursor: pointer;
+	box-shadow: inset 0px -1px 2px rgba(17,24,39,.15), 0 0 0 0 transparent;
 }
 p {
 	font-size: 19px;
@@ -65,6 +67,10 @@ code {
 }
 .indented3 {
 	margin-left: 75px;
+}
+
+main {
+	margin: 0 25px;
 }
 
 header {

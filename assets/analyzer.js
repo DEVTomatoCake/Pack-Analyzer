@@ -109,7 +109,9 @@ async function processEntries(entries) {
 						else commands[cmd] = 1
 
 						if (cmd == "execute") {
-							line.match(/ run [a-z_:]{2,}/g)?.forEach(match => {
+							line.match(/run ([a-z_:]{2,})/g)?.forEach(match => {
+								if (match[1] == "return") return
+
 								const cmdBehind = match.replace(" run ", "")
 								if (cmdsBehindExecute[cmdBehind]) cmdsBehindExecute[cmdBehind]++
 								else cmdsBehindExecute[cmdBehind] = 1
@@ -117,7 +119,7 @@ async function processEntries(entries) {
 								else commands[cmdBehind] = 1
 							})
 						}
-						if (cmd == "function" || line.includes(" function ")) {
+						if (cmd == "function" || line.includes(" function ") || line.includes("/function ")) {
 							const func = /function (([-a-z0-9_]+):)?([-a-z0-9_/]+)/i.exec(line)
 							if (func && func[3]) dpExclusive.functionCalls.push({
 								source: funcLocation[1] + ":" + funcLocation[2],
@@ -209,23 +211,16 @@ async function processEntries(entries) {
 			}
 		}
 		if (!rpMode && ext == "json") {
-			// TODO: Refactor to avoid duplicate code
-			if (filePath.includes("/advancements/")) dpExclusive.folders.advancements++
-			else if (filePath.includes("/loot_tables/")) dpExclusive.folders.loot_tables++
-			else if (filePath.includes("/recipes/")) dpExclusive.folders.recipes++
-			else if (filePath.includes("/predicates/")) dpExclusive.folders.predicates++
-			else if (filePath.includes("/dimension/")) dpExclusive.folders.dimension++
-			else if (filePath.includes("/dimension_type/")) dpExclusive.folders.dimension_type++
-			else if (filePath.includes("/worldgen/")) dpExclusive.folders.worldgen++
-
+			Object.keys(dpExclusive.folders).forEach(type => {
+				if (filePath.includes("/" + type + "/")) dpExclusive.folders[type]++
+			})
 			Object.keys(dpExclusive.tags).forEach(type => {
 				if (filePath.includes("/tags/" + type + "/")) dpExclusive.tags[type]++
 			})
-		} else if (rpMode) {
+		} else if (rpMode)
 			Object.keys(rpExclusive).forEach(type => {
 				if (filePath.includes("/" + type + "/")) rpExclusive[type]++
 			})
-		}
 	}
 }
 

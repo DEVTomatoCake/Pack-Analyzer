@@ -1,4 +1,4 @@
-// Cookie/"load"/getLanguage() code modified from https://github.com/DEVTomatoCake/dashboard/blob/0ad2ba278373244f05025dc6554e4ebb86868e8a/assets/js/script.js#L1-L26 and language.js
+// Cookie/"load" code modified from https://github.com/DEVTomatoCake/dashboard/blob/0ad2ba278373244f05025dc6554e4ebb86868e8a/assets/js/script.js#L1-L26
 
 function setCookie(name, value, days) {
 	let cookie = name + "=" + (value || "") + ";path=/;"
@@ -20,13 +20,6 @@ function getCookie(name) {
 	return void 0
 }
 
-const getLanguage = () => {
-	if (getCookie("lang")) return getCookie("lang")
-
-	const userLang = navigator.language || navigator.userLanguage
-	return userLang ? (userLang.split("-")[0] == "de" ? "de" : "en") : "en"
-}
-
 const requestVersions = async () => {
 	const res = await fetch("https://raw.githubusercontent.com/misode/mcmeta/summary/versions/data.json")
 	const json = await res.json()
@@ -41,12 +34,11 @@ const requestVersions = async () => {
 requestVersions()
 
 window.addEventListener("load", () => {
-	if (getCookie("theme") == "light") document.body.classList = "light-theme"
+	if (getCookie("theme") == "light") document.body.classList.add("light-theme")
 	else if (window.matchMedia("(prefers-color-scheme: light)").matches) {
-		document.body.classList = "light-theme"
+		document.body.classList.add("light-theme")
 		setCookie("theme", "light", 365)
 	}
-	if (!getCookie("lang")) setCookie("lang", getLanguage(), 365)
 
 	const params = new URLSearchParams(location.search)
 	if (params.has("data")) {
@@ -114,7 +106,7 @@ window.addEventListener("paste", async e => {
 	}
 })
 
-const localize = string => string.toLocaleString(getCookie("lang") || "en-US")
+const localize = string => string.toLocaleString()
 
 function openDialog(dialog) {
 	dialog.style.display = "block"
@@ -126,22 +118,11 @@ function openDialog(dialog) {
 	}
 }
 
-async function openSettingsDialog() {
-	const dialog = document.getElementById("settingsDialog")
-	openDialog(dialog)
-
-	if (getCookie("theme") == "light") dialog.querySelector("option[value='light']").selected = true
-	else dialog.querySelector("option[value='dark']").selected = true
-
-	if (getCookie("lang") == "de-DE") dialog.querySelector("option[value='de-DE']").selected = true
-	else dialog.querySelector("option[value='en-US']").selected = true
-
-	for (let select of dialog.getElementsByTagName("select")) {
-		select.onchange = () => {
-			setCookie(select.name, select.value, 365)
-			if (select.name == "theme") document.body.classList = select.value + "-theme"
-		}
-	}
+const toggleTheme = () => {
+	const newTheme = getCookie("theme") == "light" ? "dark" : "light"
+	setCookie("theme", newTheme, 365)
+	if (newTheme == "light") document.body.classList.add("light-theme")
+	else document.body.classList.remove("light-theme")
 }
 
 function clearResults() {

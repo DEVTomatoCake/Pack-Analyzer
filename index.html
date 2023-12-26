@@ -9,22 +9,22 @@
 		<meta name="theme-color" content="#216E4A">
 
 		<link rel="manifest" href="./manifest.json">
-		<link href="./assets/images/icon_192.png" rel="shortcut icon" type="image/x-icon">
-		<link href="./assets/images/icon_192.png" rel="apple-touch-icon" sizes="192x192">
+		<link href="./assets/images/favicon.ico" rel="shortcut icon" type="image/x-icon">
+		<link href="./assets/images/favicon.ico" rel="apple-touch-icon" sizes="192x192">
 
 		<link rel="stylesheet" href="./assets/style.css">
 		<script src="./assets/analyzer.js"></script>
 		<script src="./assets/script.js"></script>
 		<script src="./assets/jszip.min.js"></script>
 	</head>
-	<body class="dark-theme">
+	<body>
 		<header>
 			<h1>Minecraft Datapack and Resourcepack analyzer</h1>
 			<h2>Drop/paste a .zip file or select a folder below to start analyzing!</h2>
 			<div>
 				<button type="button" onclick="selectFolder()">Select folder</button>
 				<button type="button" onclick="selectZip()">Select .zip</button>
-				<button type="button" onclick="openSettingsDialog()">Settings</button>
+				<button type="button" onclick="toggleTheme()">Toggle theme</button>
 				<button type="button" onclick="openDialog(document.getElementById('aboutDialog'))">About</button>
 			</div>
 			<div id="resultButtons" hidden>
@@ -44,70 +44,49 @@
 			<br>
 		</header>
 
-		<h1 id="progress"></h1>
-		<canvas id="shareImage" width="955" height="500" style="display: none;"></canvas>
-		<p id="result"></p>
+		<main>
+			<h1 id="progress"></h1>
+			<canvas id="shareImage" width="955" height="500" style="display: none;"></canvas>
+			<p id="result"></p>
 
-		<div id="settingsDialog" class="dialog">
-			<div class="dialog-content">
-				<span class="close">&times;</span>
-				<h1>Settings</h1>
+			<div id="aboutDialog" class="dialog">
+				<div class="dialog-content">
+					<span class="close">&times;</span>
+					<h1>About</h1>
 
-				<label for="setTheme">Theme</label>
-				<br>
-				<select id="setTheme" name="theme">
-					<option value="dark" selected>Dark</option>
-					<option value="light">Light</option>
-				</select>
+					<p>
+						Made in HTML, plain JavaScript and CSS, this site allows you to get usage stats from your Minecraft data and resource packs.
+						It also allows analyzing of whole worlds and shaders.
+					</p>
 
-				<br>
-				<br>
-				<label for="setLang">Language (changes how numbers are displayed)</label>
-				<br>
-				<select id="setLang" name="lang">
-					<option value="en-US" selected>English</option>
-					<option value="de-DE">German</option>
-				</select>
+					<p>
+						Developed by: <a href="https://discord.com/users/581146486646243339" target="_blank" rel="noopener">TomatoCake</a>
+					</p>
+					<p>
+						Inspired by: <a href="https://github.com/ErrorCraft/FunctionAnalyser" target="_blank" rel="noopener">ErrorCraft's FunctionAnalyser</a>
+					</p>
+					<p>
+						GitHub: <a href="https://github.com/DEVTomatoCake/Pack-Analyzer" target="_blank" rel="noopener">https://github.com/DEVTomatoCake/Pack-Analyzer</a>
+					</p>
+					<p>
+						Support/Feedback:
+						<a href="https://discord.gg/JXVDQFf" target="_blank" rel="noopener">Vanilla Minigames Discord</a> or
+						<a href="https://github.com/DEVTomatoCake/Pack-Analyzer/issues" target="_blank" rel="noopener">GitHub</a>
+					</p>
+				</div>
 			</div>
-		</div>
 
-		<div id="aboutDialog" class="dialog">
-			<div class="dialog-content">
-				<span class="close">&times;</span>
-				<h1>About</h1>
+			<div id="shareDialog" class="dialog">
+				<div class="dialog-content">
+					<span class="close">&times;</span>
+					<h1>Share as link</h1>
 
-				<p>
-					Made in raw HTML, JavaScript and CSS (yes, it's pain. Don't ask.), this site allows you to get stats from your Minecraft datapacks and resourcepacks.
-					It also allows analyzing of whole worlds and OptiFine shaders.
-				</p>
-
-				<p>
-					Developed by: <a href="https://discord.com/users/581146486646243339" target="_blank" rel="noopener">TomatoCake</a>
-				</p>
-				<p>
-					Inspired by: <a href="https://github.com/ErrorCraft/FunctionAnalyser" target="_blank" rel="noopener">ErrorCraft's FunctionAnalyser</a>
-				</p>
-				<p>
-					GitHub: <a href="https://github.com/DEVTomatoCake/Datapack-Analyzer" target="_blank" rel="noopener">https://github.com/DEVTomatoCake/Datapack-Analyzer</a>
-				</p>
-				<p>
-					Support/Feedback:
-					<a href="https://discord.gg/JXVDQFf" target="_blank" rel="noopener">Vanilla Minigames Discord</a> or
-					<a href="https://github.com/DEVTomatoCake/Datapack-Analyzer/issues" target="_blank" rel="noopener">GitHub</a>
-				</p>
+					<a id="share-link" href="https://shorter.cf"></a>
+					<br>
+					<br>
+					<img id="share-img" width="150" height="150" alt="QR-Code">
+				</div>
 			</div>
-		</div>
-
-		<div id="shareDialog" class="dialog">
-			<div class="dialog-content">
-				<span class="close">&times;</span>
-				<h1>Share as link</h1>
-
-				<a id="share-link" href="https://shorter.cf"></a>
-				<br>
-				<br>
-				<img id="share-img" width="150" height="150" alt="QR-Code">
-			</div>
-		</div>
+		</main>
 	</body>
 </html>
