@@ -93,7 +93,7 @@ async function processEntries(entries) {
 				done++
 
 				if (!rpMode && ext == "mcfunction") {
-					const funcLocation = /data\/([-a-z0-9_]+)\/functions\/([-a-z0-9_/]+)/i.exec(filePath)
+					const funcLocation = /data\/([-a-z0-9_.]+)\/functions\/([-a-z0-9_./]+)\.mcfunction/i.exec(filePath)
 					if (funcLocation && !dpExclusive.functions.includes(funcLocation[1] + ":" + funcLocation[2])) dpExclusive.functions.push(funcLocation[1] + ":" + funcLocation[2])
 
 					const lines = result.split("\n")
@@ -120,7 +120,7 @@ async function processEntries(entries) {
 							})
 						}
 						if (cmd == "function" || line.includes(" function ") || line.includes("/function ")) {
-							const func = /function (([-a-z0-9_]+):)?([-a-z0-9_/]+)/i.exec(line)
+							const func = /function (([-a-z0-9_.]+):)?([-a-z0-9_./]+)/i.exec(line)
 							if (func && func[3]) dpExclusive.functionCalls.push({
 								source: funcLocation[1] + ":" + funcLocation[2],
 								target: (func[2] || "minecraft") + ":" + func[3]
@@ -166,7 +166,7 @@ async function processEntries(entries) {
 					}
 				} else if (!rpMode && ext == "json") {
 					if (filePath.includes("/advancements/")) {
-						const fileLocation = /data\/([-a-z0-9_]+)\/advancements\/([-a-z0-9_/]+)/i.exec(filePath)
+						const fileLocation = /data\/([-a-z0-9_.]+)\/advancements\/([-a-z0-9_./]+)\.json/i.exec(filePath)
 
 						try {
 							const parsed = JSON.parse(result)
@@ -178,11 +178,12 @@ async function processEntries(entries) {
 							console.warn("Unable to analyze advancement: " + filePath, e)
 						}
 					} else if (filePath.includes("/tags/functions/")) {
-						const fileLocation = /data\/([-a-z0-9_]+)\/tags\/functions\/([-a-z0-9_/]+)/i.exec(filePath)
+						const fileLocation = /data\/([-a-z0-9_.]+)\/tags\/functions\/([-a-z0-9_./]+)\.json/i.exec(filePath)
 
 						try {
 							const parsed = JSON.parse(result)
 							if (parsed.values) parsed.values.forEach(func => {
+								if (typeof func == "object") func = func.id
 								dpExclusive.functionCalls.push({
 									source: "#" + fileLocation[1] + ":" + fileLocation[2],
 									target: func.includes(":") ? func : "minecraft:" + func
@@ -357,7 +358,7 @@ async function mainScan(hasData = false) {
 					"<details><summary>" +
 					"<strong>Non-pack file types found:</strong></summary>" +
 					Object.keys(filetypesOther).sort((a, b) => filetypesOther[b] - filetypesOther[a]).map(type => "<span class='indented'>" + type + ": " + localize(filetypesOther[type]) + "</span><br>").join("") +
-					"<br></details>"
+					"</details><br>"
 				: "") +
 				(uncalledFunctions.length > 0 ?
 					"<strong>Uncalled functions:</strong><br>" +
