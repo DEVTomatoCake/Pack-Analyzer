@@ -3,18 +3,9 @@
 	"short_name": "MC Pack Analyzer",
 	"icons": [
 		{
-			"src": "/assets/images/icon_512.png",
-			"type": "image/png",
-			"sizes": "512x512"
-		},{
-			"src": "/assets/images/icon_192.png",
-			"type": "image/png",
-			"sizes": "192x192"
-		},{
-			"src": "/assets/images/maskable_icon.png",
-			"type": "image/png",
-			"sizes": "512x512",
-			"purpose": "maskable"
+			"src": "/assets/images/favicon.ico",
+			"type": "image/x-icon",
+			"sizes": "120x120x"
 		}
 	],
 	"id": "/?source=pwa",
