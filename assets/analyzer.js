@@ -14,6 +14,7 @@ let cmdsBehindExecute = {}
 let cmdsBehindMacros = {}
 let comments = 0
 let empty = 0
+let emptyFiles = []
 let dpExclusive = {
 	folders: {
 		advancements: 0,
@@ -92,6 +93,7 @@ async function processEntries(entries) {
 
 			const processFile = result => {
 				done++
+				if (result.trim() == "") return emptyFiles.push(filePath)
 
 				if (!rpMode && ext == "mcfunction") {
 					const funcLocation = /data\/([-a-z0-9_.]+)\/functions\/([-a-z0-9_./]+)\.mcfunction/i.exec(filePath)
@@ -208,7 +210,7 @@ async function processEntries(entries) {
 				}
 			}
 
-			if (entry.content) processFile(entry.content)
+			if ("content" in entry) processFile(entry.content)
 			else {
 				const reader = new FileReader()
 				if (ext == "png") reader.readAsDataURL(entry)
@@ -256,6 +258,7 @@ async function mainScan(hasData = false) {
 		cmdsBehindMacros = {}
 		comments = 0
 		empty = 0
+		emptyFiles = []
 		dpExclusive = {
 			folders: {
 				advancements: 0,
@@ -381,6 +384,11 @@ async function mainScan(hasData = false) {
 				(missingFunctions.length > 0 ?
 					"<strong>Missing functions:</strong><br>" +
 					missingFunctions.map(func => "<span class='indented'>" + func + "</span><br>").join("") +
+					"<br>"
+				: "") +
+				(emptyFiles.length > 0 ?
+					"<strong>Empty files:</strong><br>" +
+					emptyFiles.map(func => "<span class='indented'>" + func + "</span><br>").join("") +
 					"<br>"
 				: "") +
 
