@@ -121,12 +121,14 @@ async function processEntries(entries) {
 						if (cmd == "execute") {
 							const matches = / run ([a-z_:]{2,})/g.exec(line)
 							if (matches) matches.forEach(match => {
-								if (cmdsBehindExecute[match[1]]) cmdsBehindExecute[match[1]]++
-								else cmdsBehindExecute[match[1]] = 1
-								if (commands[match[1]]) commands[match[1]]++
-								else commands[match[1]] = 1
+								const cmdBehind = match.replace("run ", "").trim()
 
-								if (match[1] == "return") {
+								if (cmdsBehindExecute[cmdBehind]) cmdsBehindExecute[cmdBehind]++
+								else cmdsBehindExecute[cmdBehind] = 1
+								if (commands[cmdBehind]) commands[cmdBehind]++
+								else commands[cmdBehind] = 1
+
+								if (cmdBehind == "return") {
 									const returnCmd = / run return run ([a-z_:]{2,})/g.exec(line)
 									if (returnCmd && returnCmd[1]) {
 										if (cmdsBehindReturn[returnCmd[1]]) cmdsBehindReturn[returnCmd[1]]++
@@ -352,7 +354,7 @@ async function mainScan(hasData = false) {
 							}
 						}
 
-						let description = "<i>No description</i>"
+						let description = ""
 						if (pack.pack && pack.pack.description) {
 							if (typeof pack.pack.description == "object") {
 								const desc = Array.isArray(pack.pack.description) ? pack.pack.description : [pack.pack.description]
@@ -360,7 +362,7 @@ async function mainScan(hasData = false) {
 									if (d.text || d.translation) description += d.text || d.translation
 								})
 							} else description = pack.pack.description
-						}
+						} else description = "<i>No description</i>"
 
 						return "<span class='indented'>" + description.replace(/§[0-9a-flmnor]/gi, "") +
 							(window.versions.some(ver => (rpMode ? ver.resourcepack_version : ver.datapack_version) == pack.pack.pack_format) ?
