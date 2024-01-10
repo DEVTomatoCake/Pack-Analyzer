@@ -352,8 +352,16 @@ async function mainScan(hasData = false) {
 							}
 						}
 
-						const description = pack.pack && pack.pack.description ?
-							(typeof pack.pack.description == "object" ? (pack.pack.description.text || pack.pack.description.translation) : pack.pack.description) : "<i>No description</i>"
+						let description = "<i>No description</i>"
+						if (pack.pack && pack.pack.description) {
+							if (typeof pack.pack.description == "object") {
+								const desc = Array.isArray(pack.pack.description) ? pack.pack.description : [pack.pack.description]
+								desc.forEach(d => {
+									if (d.text || d.translation) description += d.text || d.translation
+								})
+							} else description = pack.pack.description
+						}
+
 						return "<span class='indented'>" + description.replace(/§[0-9a-flmnor]/gi, "") +
 							(window.versions.some(ver => (rpMode ? ver.resourcepack_version : ver.datapack_version) == pack.pack.pack_format) ?
 								"<br><span class='indented2'>Supported versions: " +
