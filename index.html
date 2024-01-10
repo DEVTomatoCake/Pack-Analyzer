@@ -9,8 +9,8 @@
 		<meta name="theme-color" content="#216E4A">
 
 		<link rel="manifest" href="./manifest.json">
-		<link href="./assets/images/favicon.ico" rel="shortcut icon" type="image/x-icon">
-		<link href="./assets/images/favicon.ico" rel="apple-touch-icon" sizes="192x192">
+		<link href="./assets/images/icon-128x128.png" rel="shortcut icon" type="image/x-icon">
+		<link href="./assets/images/icon-192x192.png" rel="apple-touch-icon" sizes="192x192">
 
 		<link rel="stylesheet" href="./assets/style.css">
 		<script src="./assets/analyzer.js"></script>
@@ -19,8 +19,8 @@
 	</head>
 	<body>
 		<header>
-			<h1>Minecraft Datapack and Resourcepack analyzer</h1>
-			<h2>Drop/paste a .zip file or select a folder below to start analyzing!</h2>
+			<h1>Minecraft Java Datapack and Resourcepack analyzer</h1>
+			<h2>Drop/paste a .zip file or select a folder below to analyze locally!</h2>
 			<div>
 				<button type="button" onclick="selectFolder()">Select folder</button>
 				<button type="button" onclick="selectZip()">Select .zip</button>
@@ -30,17 +30,24 @@
 			<div id="resultButtons" hidden>
 				<button type="button" onclick="mainScan()">Scan again</button>
 				<button type="button" onclick="clearResults()">Clear results</button>
-				<button type="button" onclick="share('txt')">Export as txt</button>
-				<button type="button" onclick="share('json')">Export as json</button>
-				<button type="button" onclick="share('link')">Share as link</button>
-				<button type="button" onclick="share('png')">Share as image</button>
+				<button type="button" onclick="share('txt')">Export as .txt</button>
+				<button type="button" onclick="share('json')">Export as .json</button>
+				<button type="button" onclick="share('link')">Share link</button>
+				<button type="button" onclick="share('png')">Generate image</button>
 			</div>
 
 			<br>
-			<label for="radiodp" title="Analyze datapacks">Datapack</label>
-			<input type="radio" id="radiodp" name="packType" checked>
-			<label for="radiorp" title="Analyze resourcepacks and shaderpacks">Resourcepack</label>
-			<input type="radio" id="radiorp" name="packType">
+			<div class="packType">
+				<span>Select the pack type the site uses for analyzing files:</span>
+				<div>
+					<input type="radio" id="radiodp" name="packType" checked>
+					<label for="radiodp" title="Analyze datapacks">Datapack</label>
+				</div>
+				<div>
+					<input type="radio" id="radiorp" name="packType">
+					<label for="radiorp" title="Analyze resourcepacks and shaderpacks">Resourcepack</label>
+				</div>
+			</div>
 			<br>
 		</header>
 

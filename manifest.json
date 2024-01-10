@@ -3,25 +3,65 @@
 	"short_name": "MC Pack Analyzer",
 	"icons": [
 		{
-			"src": "/assets/images/favicon.ico",
-			"type": "image/x-icon",
-			"sizes": "120x120x"
+			"src": "/assets/images/icon-72x72.png",
+			"sizes": "72x72",
+			"type": "image/png"
+		},
+		{
+			"src": "/assets/images/icon-96x96.png",
+			"sizes": "96x96",
+			"type": "image/png"
+		},
+		{
+			"src": "/assets/images/icon-128x128.png",
+			"sizes": "128x128",
+			"type": "image/png"
+		},
+		{
+			"src": "/assets/images/icon-144x144.png",
+			"sizes": "144x144",
+			"type": "image/png"
+		},
+		{
+			"src": "/assets/images/icon-152x152.png",
+			"sizes": "152x152",
+			"type": "image/png"
+		},
+		{
+			"src": "/assets/images/icon-192x192.png",
+			"sizes": "192x192",
+			"type": "image/png"
+		},
+		{
+			"src": "/assets/images/icon-384x384.png",
+			"sizes": "384x384",
+			"type": "image/png"
+		},
+		{
+			"src": "/assets/images/icon-512x512.png",
+			"sizes": "512x512",
+			"type": "image/png"
 		}
 	],
-	"id": "/?source=pwa",
-	"start_url": "/?source=pwa",
+	"id": "/",
+	"start_url": "/",
 	"background_color": "#222",
 	"display_override": ["window-control-overlay"],
 	"display": "standalone",
 	"scope": "/",
 	"theme_color": "#216E4A",
 	"lang": "en",
-	"description": "A tool which allows you to analyze Minecraft Java datapacks and resourcepacks, and generate stats from them.",
+	"description": "A tool which allows you to analyze Minecraft Java datapacks and resourcepacks, and generate stats and share from them.",
 	"screenshots": [
 		{
 			"src": "/assets/images/screen_result.png",
 			"type": "image/png",
 			"sizes": "713x339"
+		},{
+			"src": "/assets/images/showcase.png",
+			"type": "image/png",
+			"form_factor": "wide",
+			"sizes": "955x500"
 		}
 	]
 }

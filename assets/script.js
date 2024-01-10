@@ -119,10 +119,8 @@ function openDialog(dialog) {
 }
 
 const toggleTheme = () => {
-	const newTheme = getCookie("theme") == "light" ? "dark" : "light"
-	setCookie("theme", newTheme, 365)
-	if (newTheme == "light") document.body.classList.add("light-theme")
-	else document.body.classList.remove("light-theme")
+	const toggled = document.body.classList.toggle("light-theme")
+	setCookie("theme", toggled ? "light" : "dark", 365)
 }
 
 function clearResults() {
@@ -150,6 +148,7 @@ async function share(type) {
 			cmdsBehindMacros,
 			comments,
 			empty,
+			emptyFiles,
 			dpExclusive,
 			rpExclusive
 		}, null, type == "json" ? 4 : void 0)
@@ -249,16 +248,14 @@ function createImage() {
 		x = 450
 		y = 3
 		ctx.font = "28px Arial"
-		ctx.fillText((Object.keys(commands).length > 5 ? "Top c" : "c") + "ommands", x, 40, maxWidth)
+		ctx.fillText((Object.keys(commands).length > 5 ? "Top c" : "C") + "ommands", x, 40, maxWidth)
 		ctx.font = "20px Arial"
 
 		commands = Object.fromEntries(Object.entries(commands).sort(([, a], [, b]) => b - a))
 		Object.keys(commands).slice(0, 5).forEach(cmd => {
 			ctx.fillText(cmd + ": " + localize(commands[cmd]), x, y++ * lineHeight, maxWidth)
-			if (cmdsBehindExecute[cmd]) {
-				ctx.fillText("Behind execute: " + localize(cmdsBehindExecute[cmd]), x + 30, y++ * lineHeight, maxWidth)
-				if (cmd == "execute") ctx.fillText("⚠️ (\"... run execute ...\" equals \"... ...\")", x + 30, y++ * lineHeight, maxWidth)
-			}
+			if (cmdsBehindExecute[cmd]) ctx.fillText("Behind execute: " + localize(cmdsBehindExecute[cmd]), x + 30, y++ * lineHeight, maxWidth)
+			if (cmdsBehindMacros[cmd]) ctx.fillText("Behind macro: " + localize(cmdsBehindMacros[cmd]), x + (cmdsBehindExecute[cmd] ? 90 : 30), y++ * lineHeight, maxWidth)
 		})
 	}
 }

@@ -54,6 +54,22 @@ strong {
 	color: var(--heading-color);
 }
 
+header .packType {
+	display: flex;
+	gap: 15px;
+}
+header .packType label {
+	cursor: pointer;
+}
+
+header .packType input {
+	display: none;
+}
+header .packType input:checked ~ label {
+	font-weight: bold;
+	border-bottom: 2px solid var(--heading-color);
+}
+
 code {
 	background-color: var(--code-bg);
 	border-radius: 5px;
@@ -70,13 +86,17 @@ code {
 }
 
 main {
-	margin: 0 25px;
+	margin: 25px 35px 15px;
+}
+@media screen and (max-width: 750px) {
+	main {
+		margin: 15px 15px;
+	}
 }
 
 header {
 	background-color: var(--header-bg);
-	padding: 20px;
-	margin-bottom: 30px;
+	padding: 10px 30px;
 }
 header h1 {
 	margin: 15px 0;

@@ -1,6 +1,8 @@
+const cacheName = "offline1"
+
 self.addEventListener("install", event => {
 	event.waitUntil((async () => {
-		const cache = await caches.open("offline")
+		const cache = await caches.open(cacheName)
 		await cache.addAll(["/", "./assets/analyzer.js", "./assets/script.js", "./assets/jszip.min.js", "./assets/style.css", "https://raw.githubusercontent.com/misode/mcmeta/summary/versions/data.json"])
 	})())
 })
@@ -25,7 +27,7 @@ self.addEventListener("fetch", event => {
 			} catch (e) {
 				console.warn("Cannot fetch, serving from cache", e)
 
-				const cache = await caches.open("offline")
+				const cache = await caches.open(cacheName)
 				return await cache.match(event.request.url)
 			}
 		})())

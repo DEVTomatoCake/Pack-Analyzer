@@ -122,7 +122,7 @@ async function processEntries(entries) {
 							line.match(/run ([a-z_:]{2,})/g)?.forEach(match => {
 								if (match[1] == "return") return
 
-								const cmdBehind = match.replace(" run ", "")
+								const cmdBehind = match.replace("run ", "").trim()
 								if (cmdsBehindExecute[cmdBehind]) cmdsBehindExecute[cmdBehind]++
 								else cmdsBehindExecute[cmdBehind] = 1
 								if (commands[cmdBehind]) commands[cmdBehind]++
@@ -414,7 +414,7 @@ async function mainScan(hasData = false) {
 				html += cmd + ": " + localize(commands[cmd]) + "<br>"
 				if (cmdsBehindExecute[cmd]) html += "<span class='indented'>Behind execute: " + localize(cmdsBehindExecute[cmd]) +
 					(cmd == "execute" ? "⚠️ <small>(<code>... run execute ...</code> equals <code>... ...</code>)</small>" : "") + "</span><br>"
-				if (cmdsBehindMacros[cmd]) html += "<span class='indented'>Behind macros: " + localize(cmdsBehindMacros[cmd]) + "</span><br>"
+				if (cmdsBehindMacros[cmd]) html += "<span class='indented'>Behind macro: " + localize(cmdsBehindMacros[cmd]) + "</span><br>"
 			})
 			document.getElementById("result").innerHTML = html
 		}
