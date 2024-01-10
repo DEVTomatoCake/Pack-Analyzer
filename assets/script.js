@@ -53,8 +53,11 @@ window.addEventListener("load", () => {
 		packFiles = parsed.packFiles
 		commands = parsed.commands
 		cmdsBehindExecute = parsed.cmdsBehindExecute
+		cmdsBehindMacros = parsed.cmdsBehindMacros
+		cmdsBehindReturn = parsed.cmdsBehindReturn
 		comments = parsed.comments
 		empty = parsed.empty
+		emptyFiles = parsed.emptyFiles
 		dpExclusive = parsed.dpExclusive
 		rpExclusive = parsed.rpExclusive
 
@@ -148,6 +151,7 @@ async function share(type) {
 			commands,
 			cmdsBehindExecute,
 			cmdsBehindMacros,
+			cmdsBehindReturn,
 			comments,
 			empty,
 			emptyFiles,

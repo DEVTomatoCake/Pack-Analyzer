@@ -12,6 +12,7 @@ let packImages = []
 let commands = {}
 let cmdsBehindExecute = {}
 let cmdsBehindMacros = {}
+let cmdsBehindReturn = {}
 let comments = 0
 let empty = 0
 let emptyFiles = []
@@ -117,17 +118,28 @@ async function processEntries(entries) {
 						if (commands[cmd]) commands[cmd]++
 						else commands[cmd] = 1
 
-						// TODO: Count "return run ..." commands
 						if (cmd == "execute") {
-							line.match(/run ([a-z_:]{2,})/g)?.forEach(match => {
-								if (match[1] == "return") return
+							const matches = / run ([a-z_:]{2,})/g.exec(line)
+							if (matches) matches.forEach(match => {
+								if (cmdsBehindExecute[match[1]]) cmdsBehindExecute[match[1]]++
+								else cmdsBehindExecute[match[1]] = 1
+								if (commands[match[1]]) commands[match[1]]++
+								else commands[match[1]] = 1
 
-								const cmdBehind = match.replace("run ", "").trim()
-								if (cmdsBehindExecute[cmdBehind]) cmdsBehindExecute[cmdBehind]++
-								else cmdsBehindExecute[cmdBehind] = 1
-								if (commands[cmdBehind]) commands[cmdBehind]++
-								else commands[cmdBehind] = 1
+								if (match[1] == "return") {
+									const returnCmd = / run return run ([a-z_:]{2,})/g.exec(line)
+									if (returnCmd && returnCmd[1]) {
+										if (cmdsBehindReturn[returnCmd[1]]) cmdsBehindReturn[returnCmd[1]]++
+										else cmdsBehindReturn[returnCmd[1]] = 1
+									}
+								}
 							})
+						} else if (cmd == "return") {
+							const returnCmd = / run return run ([a-z_:]{2,})/g.exec(line)
+							if (returnCmd && returnCmd[1]) {
+								if (cmdsBehindReturn[returnCmd[1]]) cmdsBehindReturn[returnCmd[1]]++
+								else cmdsBehindReturn[returnCmd[1]] = 1
+							}
 						}
 						if (cmd == "function" || line.includes(" function ") || line.includes("/function ")) {
 							const func = /function ((#?[-a-z0-9_.]+):)?([-a-z0-9_./]+)/i.exec(line)
@@ -257,6 +269,7 @@ async function mainScan(hasData = false) {
 		commands = {}
 		cmdsBehindExecute = {}
 		cmdsBehindMacros = {}
+		cmdsBehindReturn = {}
 		comments = 0
 		empty = 0
 		emptyFiles = []
@@ -339,7 +352,9 @@ async function mainScan(hasData = false) {
 							}
 						}
 
-						return "<span class='indented'>" + (pack.pack?.description?.replace(/§[0-9a-flmnor]/gi, "") || "<i>No description</i>") +
+						const description = pack.pack && pack.pack.description ?
+							(typeof pack.pack.description == "object" ? (pack.pack.description.text || pack.pack.description.translation) : pack.pack.description) : "<i>No description</i>"
+						return "<span class='indented'>" + description.replace(/§[0-9a-flmnor]/gi, "") +
 							(window.versions.some(ver => (rpMode ? ver.resourcepack_version : ver.datapack_version) == pack.pack.pack_format) ?
 								"<br><span class='indented2'>Supported versions: " +
 								(window.versions.findLast(ver => (rpMode ? ver.resourcepack_version : ver.datapack_version) == oldestFormat)?.name || "?") +
@@ -415,6 +430,7 @@ async function mainScan(hasData = false) {
 				if (cmdsBehindExecute[cmd]) html += "<span class='indented'>Behind execute: " + localize(cmdsBehindExecute[cmd]) +
 					(cmd == "execute" ? "⚠️ <small>(<code>... run execute ...</code> equals <code>... ...</code>)</small>" : "") + "</span><br>"
 				if (cmdsBehindMacros[cmd]) html += "<span class='indented'>Behind macro: " + localize(cmdsBehindMacros[cmd]) + "</span><br>"
+				if (cmdsBehindReturn[cmd]) html += "<span class='indented'>Behind return: " + localize(cmdsBehindReturn[cmd]) + "</span><br>"
 			})
 			document.getElementById("result").innerHTML = html
 		}
