@@ -11,6 +11,7 @@ let packFiles = []
 let packImages = []
 let commands = {}
 let cmdsBehindExecute = {}
+let cmdsBehindMacros = {}
 let comments = 0
 let empty = 0
 let dpExclusive = {
@@ -104,10 +105,17 @@ async function processEntries(entries) {
 						if (line.startsWith("#") || line == "") continue
 						const splitted = line.split(" ")
 
-						const cmd = splitted[0]
+						let cmd = splitted[0]
+						if (cmd.startsWith("$")) {
+							cmd = cmd.slice(1)
+							if (cmdsBehindMacros[cmd]) cmdsBehindMacros[cmd]++
+							else cmdsBehindMacros[cmd] = 1
+						}
+
 						if (commands[cmd]) commands[cmd]++
 						else commands[cmd] = 1
 
+						// TODO: Count "return run ..." commands
 						if (cmd == "execute") {
 							line.match(/run ([a-z_:]{2,})/g)?.forEach(match => {
 								if (match[1] == "return") return
@@ -183,7 +191,11 @@ async function processEntries(entries) {
 						try {
 							const parsed = JSON.parse(result)
 							if (parsed.values) parsed.values.forEach(func => {
-								if (typeof func == "object") func = func.id
+								if (typeof func == "object") {
+									if (func.required === false) return
+									func = func.id
+								}
+
 								dpExclusive.functionCalls.push({
 									source: "#" + fileLocation[1] + ":" + fileLocation[2],
 									target: func.includes(":") ? func : "minecraft:" + func
@@ -241,6 +253,7 @@ async function mainScan(hasData = false) {
 		packImages = []
 		commands = {}
 		cmdsBehindExecute = {}
+		cmdsBehindMacros = {}
 		comments = 0
 		empty = 0
 		dpExclusive = {
@@ -392,6 +405,7 @@ async function mainScan(hasData = false) {
 				html += cmd + ": " + localize(commands[cmd]) + "<br>"
 				if (cmdsBehindExecute[cmd]) html += "<span class='indented'>Behind execute: " + localize(cmdsBehindExecute[cmd]) +
 					(cmd == "execute" ? "⚠️ <small>(<code>... run execute ...</code> equals <code>... ...</code>)</small>" : "") + "</span><br>"
+				if (cmdsBehindMacros[cmd]) html += "<span class='indented'>Behind macros: " + localize(cmdsBehindMacros[cmd]) + "</span><br>"
 			})
 			document.getElementById("result").innerHTML = html
 		}

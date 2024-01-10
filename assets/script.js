@@ -143,9 +143,11 @@ async function share(type) {
 			rpMode,
 
 			filetypes,
+			filetypesOther,
 			packFiles,
 			commands,
 			cmdsBehindExecute,
+			cmdsBehindMacros,
 			comments,
 			empty,
 			dpExclusive,
