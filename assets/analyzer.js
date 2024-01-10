@@ -48,7 +48,7 @@ let dpExclusive = {
 		s: 0
 	},
 	functions: [],
-	functionCalls: []
+	functionCalls: ["#minecraft:load", "#minecraft:tick"]
 }
 let rpExclusive = {
 	atlases: 0,
@@ -293,7 +293,7 @@ async function mainScan(hasData = false) {
 				s: 0
 			},
 			functions: [],
-			functionCalls: []
+			functionCalls: ["#minecraft:load", "#minecraft:tick"]
 		}
 		rpExclusive = {
 			atlases: 0,

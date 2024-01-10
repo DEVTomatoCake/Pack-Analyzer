@@ -47,6 +47,7 @@ window.addEventListener("load", () => {
 		done = parsed.done
 		errors = parsed.errors
 		rpMode = parsed.rpMode
+		document.getElementById("radiorp").checked = rpMode
 
 		filetypes = parsed.filetypes
 		packFiles = parsed.packFiles
@@ -127,6 +128,7 @@ function clearResults() {
 	document.getElementById("progress").innerText = ""
 	document.getElementById("result").innerHTML = ""
 	document.getElementById("resultButtons").hidden = true
+	document.getElementById("shareImage").style.display = "none"
 	if (interval) clearInterval(interval)
 }
 
@@ -151,7 +153,7 @@ async function share(type) {
 			emptyFiles,
 			dpExclusive,
 			rpExclusive
-		}, null, type == "json" ? 4 : void 0)
+		}, null, type == "json" ? "\t" : void 0)
 		if (type == "link") {
 			const name = Math.random().toString(36).slice(7)
 			const date = Date.now() + 1000 * 60 * 60 * 24 * 7
@@ -159,13 +161,19 @@ async function share(type) {
 			const res = await fetch("https://shorter.cf", {
 				method: "POST",
 				headers: {
-					"Content-Type": "application/json"
+					"Content-Type": "application/json",
+					Accept: "application/json",
+					"User-Agent": "TomatoCake / pack-analyzer"
 				},
-				body: JSON.stringify({name, url: location.href + "?data=" + encodeURIComponent(content), date})
+				body: JSON.stringify({
+					name,
+					date,
+					url: location.href + "?data=" + encodeURIComponent(content)
+				})
 			})
 
 			const json = await res.json()
-			if (json.status == "success") {
+			if (res.ok) {
 				document.getElementById("share-link").href = "https://shorter.cf/" + name
 				document.getElementById("share-link").innerText = "https://shorter.cf/" + name
 				document.getElementById("share-img").src = "https://api.qrserver.com/v1/create-qr-code/?data=" + encodeURIComponent("https://shorter.cf/" + name) + "&size=150x150&qzone=2"

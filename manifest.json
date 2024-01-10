@@ -54,13 +54,16 @@
 	"description": "A tool which allows you to analyze Minecraft Java datapacks and resourcepacks, and generate stats and share from them.",
 	"screenshots": [
 		{
-			"src": "/assets/images/screen_result.png",
+			"src": "/assets/images/showcase1.png",
 			"type": "image/png",
-			"sizes": "713x339"
+			"sizes": "828x795"
 		},{
-			"src": "/assets/images/showcase.png",
+			"src": "/assets/images/showcase2.png",
 			"type": "image/png",
-			"form_factor": "wide",
+			"sizes": "597x363"
+		},{
+			"src": "/assets/images/showcase3.png",
+			"type": "image/png",
 			"sizes": "955x500"
 		}
 	]

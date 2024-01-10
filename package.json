@@ -6,6 +6,10 @@
   "main": "index.html",
   "author": "TomatoCake",
   "license": "CC BY-NC-SA 4.0 https://creativecommons.org/licenses/by-nc-sa/4.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/DEVTomatoCake/Pack-Analyzer.git"
+  },
   "devDependencies": {
     "@html-eslint/eslint-plugin": "^0.22.0",
     "@html-eslint/parser": "^0.22.0",
