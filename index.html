@@ -4,9 +4,12 @@
 		<meta charset="utf-8">
 		<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-		<title>Minecraft Datapack and Resourcepack analyzer</title>
-		<meta name="description" content="A tool to analyze your Minecraft Java datapacks and resourcepacks and generate stats from them.">
+		<title>Minecraft Datapack and Resourcepack Analyzer</title>
+		<meta name="description" content="A local, open source and offline-working tool to analyze your Minecraft Java datapacks and resourcepacks and generate stats from them.">
 		<meta name="theme-color" content="#216E4A">
+		<meta property="og:url" content="https://pack-analyzer.pages.dev/">
+		<meta property="og:image" content="https://pack-analyzer.pages.dev/assets/images/showcase1.png">
+		<meta property="twitter:card" name="twitter:card" content="summary_large_image">
 
 		<link rel="manifest" href="./manifest.json">
 		<link href="./assets/images/icon-128x128.png" rel="shortcut icon" type="image/x-icon">
@@ -32,7 +35,7 @@
 				<button type="button" onclick="clearResults()">Clear results</button>
 				<button type="button" onclick="share('txt')">Export as .txt</button>
 				<button type="button" onclick="share('json')">Export as .json</button>
-				<button type="button" onclick="share('link')">Share link</button>
+				<button type="button" onclick="share('link')">Share as link</button>
 				<button type="button" onclick="share('png')">Generate image</button>
 			</div>
 
@@ -62,7 +65,7 @@
 					<h1>About</h1>
 
 					<p>
-						Made in HTML, plain JavaScript and CSS, this site allows you to get usage stats from your Minecraft data and resource packs.
+						Made in HTML, plain JavaScript and CSS, this site allows you to get usage stats from your Minecraft datapacks and resourcepacks.
 						It also allows analyzing of whole worlds and shaders.
 					</p>
 
@@ -91,7 +94,7 @@
 					<a id="share-link" href="https://shorter.cf"></a>
 					<br>
 					<br>
-					<img id="share-img" width="150" height="150" alt="QR-Code">
+					<img id="share-img" width="150" height="150" alt="QR code link for sharing">
 				</div>
 			</div>
 		</main>
