@@ -96,8 +96,8 @@ async function processEntries(entries) {
 				if (result.trim() == "") return emptyFiles.push(filePath)
 
 				if (!rpMode && ext == "mcfunction") {
-					const funcLocation = /data\/([-a-z0-9_.]+)\/functions\/([-a-z0-9_./]+)\.mcfunction/i.exec(filePath)
-					if (funcLocation && !dpExclusive.functions.includes(funcLocation[1] + ":" + funcLocation[2])) dpExclusive.functions.push(funcLocation[1] + ":" + funcLocation[2])
+					const fileLocation = /data\/([-a-z0-9_.]+)\/functions\/([-a-z0-9_./]+)\.mcfunction/i.exec(filePath)
+					if (fileLocation && !dpExclusive.functions.includes(fileLocation[1] + ":" + fileLocation[2])) dpExclusive.functions.push(fileLocation[1] + ":" + fileLocation[2])
 
 					const lines = result.split("\n")
 					for (let line of lines) {
@@ -130,9 +130,9 @@ async function processEntries(entries) {
 							})
 						}
 						if (cmd == "function" || line.includes(" function ") || line.includes("/function ")) {
-							const func = /function (([-a-z0-9_.]+):)?([-a-z0-9_./]+)/i.exec(line)
+							const func = /function ((#?[-a-z0-9_.]+):)?([-a-z0-9_./]+)/i.exec(line)
 							if (func && func[3]) dpExclusive.functionCalls.push({
-								source: funcLocation[1] + ":" + funcLocation[2],
+								source: fileLocation[1] + ":" + fileLocation[2],
 								target: (func[2] || "minecraft") + ":" + func[3]
 							})
 						}
@@ -189,6 +189,7 @@ async function processEntries(entries) {
 						}
 					} else if (filePath.includes("/tags/functions/")) {
 						const fileLocation = /data\/([-a-z0-9_.]+)\/tags\/functions\/([-a-z0-9_./]+)\.json/i.exec(filePath)
+						if (fileLocation && !dpExclusive.functions.includes("#" + fileLocation[1] + ":" + fileLocation[2])) dpExclusive.functions.push("#" + fileLocation[1] + ":" + fileLocation[2])
 
 						try {
 							const parsed = JSON.parse(result)
