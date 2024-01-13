@@ -9,7 +9,6 @@
 		<meta name="theme-color" content="#216E4A">
 		<meta property="og:url" content="https://pack-analyzer.pages.dev/">
 		<meta property="og:image" content="https://pack-analyzer.pages.dev/assets/images/showcase1.png">
-		<meta property="twitter:card" name="twitter:card" content="summary_large_image">
 
 		<link rel="manifest" href="./manifest.json">
 		<link href="./assets/images/icon-128x128.png" rel="shortcut icon" type="image/x-icon">
@@ -23,7 +22,7 @@
 	<body>
 		<header>
 			<h1>Minecraft Java Datapack and Resourcepack analyzer</h1>
-			<h2>Drop/paste a .zip file or select a folder below to analyze locally!</h2>
+			<h2>Drop/paste a .zip or .mcfunction file, or select a folder below to analyze it!</h2>
 			<div>
 				<button type="button" onclick="selectFolder()">Select folder</button>
 				<button type="button" onclick="selectZip()">Select .zip</button>
@@ -31,7 +30,6 @@
 				<button type="button" onclick="openDialog(document.getElementById('aboutDialog'))">About</button>
 			</div>
 			<div id="resultButtons" hidden>
-				<button type="button" onclick="mainScan()">Scan again</button>
 				<button type="button" onclick="clearResults()">Clear results</button>
 				<button type="button" onclick="share('txt')">Export as .txt</button>
 				<button type="button" onclick="share('json')">Export as .json</button>
@@ -67,13 +65,18 @@
 					<p>
 						Made in HTML, plain JavaScript and CSS, this site allows you to get usage stats from your Minecraft datapacks and resourcepacks.
 						It also allows analyzing of whole worlds and shaders.
+						<br>
+						Everything is done locally, no data ever gets sent to any server (except for anonymous Cloudflare statistics).
 					</p>
 
 					<p>
 						Developed by: <a href="https://discord.com/users/581146486646243339" target="_blank" rel="noopener">TomatoCake</a>
 					</p>
 					<p>
-						Inspired by: <a href="https://github.com/ErrorCraft/FunctionAnalyser" target="_blank" rel="noopener">ErrorCraft's FunctionAnalyser</a>
+						Inspired by: <a href="https://github.com/ErrorCraft/FunctionAnalyser" target="_blank" rel="noopener">ErrorCrafts FunctionAnalyser</a>
+					</p>
+					<p>
+						Uses <a href="https://github.com/misode/mcmeta" target="_blank" rel="noopener">misodes mcmeta</a> to get a list of all Minecraft versions with their respective pack formats.
 					</p>
 					<p>
 						GitHub: <a href="https://github.com/DEVTomatoCake/Pack-Analyzer" target="_blank" rel="noopener">https://github.com/DEVTomatoCake/Pack-Analyzer</a>

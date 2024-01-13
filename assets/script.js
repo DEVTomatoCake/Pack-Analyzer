@@ -64,7 +64,7 @@ window.addEventListener("load", () => {
 		mainScan(true)
 	}
 
-	if ("serviceWorker" in navigator) navigator.serviceWorker.register("/serviceworker.js")
+	if (location.protocol == "https:" && "serviceWorker" in navigator) navigator.serviceWorker.register("/serviceworker.js")
 })
 
 window.addEventListener("dragover", event => {

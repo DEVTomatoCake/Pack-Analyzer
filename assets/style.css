@@ -74,6 +74,9 @@ code {
 	background-color: var(--code-bg);
 	border-radius: 5px;
 }
+a {
+	text-decoration: none;
+}
 
 .indented {
 	margin-left: 25px;

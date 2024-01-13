@@ -143,7 +143,7 @@ async function processEntries(entries) {
 								else cmdsBehindReturn[returnCmd[1]] = 1
 							}
 						}
-						if (cmd == "function" || line.includes(" function ") || line.includes("/function ")) {
+						if (fileLocation && (cmd == "function" || line.includes(" function ") || line.includes("/function "))) {
 							const func = /function ((#?[-a-z0-9_.]+):)?([-a-z0-9_./]+)/i.exec(line)
 							if (func && func[3]) dpExclusive.functionCalls.push({
 								source: fileLocation[1] + ":" + fileLocation[2],
