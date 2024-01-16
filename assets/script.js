@@ -247,12 +247,12 @@ function createImage() {
 				.forEach(type => ctx.fillText("@" + type + ": " + localize(dpExclusive.selectors[type]), x + 30, y++ * lineHeight, maxWidth))
 		}
 		if (!rpMode && Object.values(dpExclusive.folders).reduce((a, b) => a + b) != 0) {
-			ctx.fillText("Datapack features used:", x, y++ * lineHeight, maxWidth)
+			ctx.fillText("Data pack features used:", x, y++ * lineHeight, maxWidth)
 			Object.keys(dpExclusive.folders).filter(i => dpExclusive.folders[i] > 0).sort((a, b) => dpExclusive.folders[b] - dpExclusive.folders[a])
 				.forEach(type => ctx.fillText(type + ": " + localize(dpExclusive.folders[type]), x + 30, y++ * lineHeight, maxWidth))
 		}
 		if (rpMode && Object.values(rpExclusive).reduce((a, b) => a + b) != 0) {
-			ctx.fillText("Resourcepack features used:", x, y++ * lineHeight, maxWidth)
+			ctx.fillText("Resource pack features used:", x, y++ * lineHeight, maxWidth)
 			Object.keys(rpExclusive).filter(i => !isNaN(i) && rpExclusive[i] > 0).sort((a, b) => rpExclusive[b] - rpExclusive[a])
 				.forEach(type => ctx.fillText(type + ": " + localize(rpExclusive[type]), x + 30, y++ * lineHeight, maxWidth))
 		}

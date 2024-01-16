@@ -2,7 +2,7 @@
   "name": "pack-analyzer",
   "version": "2.0.0",
   "private": true,
-  "description": "Allows you to analyze and generate stats for [Minecraft](https://minecraft.net) Java Edition datapacks and resourcepacks.",
+  "description": "Allows you to analyze and generate stats for [Minecraft](https://minecraft.net) Java Edition data and resource packs.",
   "main": "index.html",
   "author": "TomatoCake",
   "license": "CC BY-NC-SA 4.0 https://creativecommons.org/licenses/by-nc-sa/4.0",

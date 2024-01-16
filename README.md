@@ -1,5 +1,5 @@
-# Minecraft Datapack Analyzer
-Allows you to analyze and generate stats for [Minecraft](https://minecraft.net) Java Edition data- and resourcepacks.
+# Minecraft Pack Analyzer
+Allows you to analyze and generate stats for [Minecraft](https://minecraft.net) Java Edition data and resource packs.
 
 ![](https://raw.githubusercontent.com/DEVTomatoCake/Pack-Analyzer/main/assets/images/showcase.png)
 
