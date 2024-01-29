@@ -11,7 +11,7 @@
     "url": "https://github.com/DEVTomatoCake/Pack-Analyzer.git"
   },
   "devDependencies": {
-    "@html-eslint/eslint-plugin": "^0.22.0",
+    "@html-eslint/eslint-plugin": "^0.23.1",
     "@html-eslint/parser": "^0.23.0",
     "eslint": "^8.56.0",
     "eslint-plugin-html": "^7.1.0",
