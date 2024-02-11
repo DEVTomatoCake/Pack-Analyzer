@@ -54,6 +54,10 @@ strong {
 	color: var(--heading-color);
 }
 
+#shareImage {
+	display: none;
+}
+
 header .packType {
 	display: flex;
 	gap: 15px;

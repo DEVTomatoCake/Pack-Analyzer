@@ -17,7 +17,7 @@ jobs:
           node-version: 21
 
       - name: "🛸 install eslint html plugins"
-        run: npm i
+        run: npm i --omit=optional
 
       - name: "🔍 lint code"
-        run: npx eslint --ext .html,.js . --report-unused-disable-directives
+        run: npx eslint .

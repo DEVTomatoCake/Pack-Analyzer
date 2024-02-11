@@ -13,9 +13,11 @@
   "devDependencies": {
     "@html-eslint/eslint-plugin": "^0.23.1",
     "@html-eslint/parser": "^0.23.0",
+    "@stylistic/eslint-plugin-js": "^1.6.1",
     "eslint": "^8.56.0",
-    "eslint-plugin-html": "^7.1.0",
+    "eslint-plugin-html": "^8.0.0",
     "eslint-plugin-sonarjs": "^0.23.0",
-    "eslint-plugin-unicorn": "^50.0.1"
+    "eslint-plugin-unicorn": "^51.0.1",
+    "globals": "^14.0.0"
   }
 }
