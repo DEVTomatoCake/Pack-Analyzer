@@ -1,19 +1,13 @@
-// Cookie/"load" code modified from https://github.com/DEVTomatoCake/dashboard/blob/0ad2ba278373244f05025dc6554e4ebb86868e8a/assets/js/script.js#L1-L26
+// Cookie/"load" code modified from https://github.com/DEVTomatoCake/dashboard/blob/700b21999a671f4e9c32ba4a1a35f94156db11d4/assets/js/script.js#L16-L31
 
-function setCookie(name, value, days) {
-	let cookie = name + "=" + (value || "") + ";path=/;"
-	if (days) {
-		const date = new Date()
-		date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000))
-		cookie += "expires=" + date.toUTCString() + ";"
-	}
+function setCookie(name = "", value = "", days = void 0) {
+	let cookie = name + "=" + value + ";path=/;Secure;"
+	if (days) cookie += "expires=" + new Date(Date.now() + 1000 * 60 * 60 * 24 * days).toUTCString() + ";"
 
 	document.cookie = cookie
 }
 function getCookie(name) {
-	const cookies = document.cookie.split(";")
-
-	for (const rawCookie of cookies) {
+	for (const rawCookie of document.cookie.split(";")) {
 		const cookie = rawCookie.trim()
 		if (cookie.split("=")[0] == name) return cookie.substring(name.length + 1, cookie.length)
 	}
@@ -23,13 +17,11 @@ function getCookie(name) {
 const requestVersions = async () => {
 	const res = await fetch("https://raw.githubusercontent.com/misode/mcmeta/summary/versions/data.json")
 	const json = await res.json()
-	window.versions = json.map(ver => {
-		return {
-			name: ver.id,
-			datapack_version: ver.data_pack_version,
-			resourcepack_version: ver.resource_pack_version
-		}
-	})
+	window.versions = json.map(ver => ({
+		name: ver.id,
+		datapack_version: ver.data_pack_version,
+		resourcepack_version: ver.resource_pack_version
+	}))
 }
 requestVersions()
 
@@ -99,7 +91,8 @@ window.addEventListener("drop", async event => {
 })
 window.addEventListener("paste", async e => {
 	e.preventDefault()
-	if (!e.clipboardData.files.length) return
+	if (e.clipboardData.files.length == 0) return
+
 	const file = e.clipboardData.files[0]
 	if (file.name.endsWith(".zip")) handleZip(file)
 	else {
