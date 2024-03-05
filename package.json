@@ -10,6 +10,12 @@
     "type": "git",
     "url": "https://github.com/DEVTomatoCake/Pack-Analyzer.git"
   },
+  "scripts": {
+    "minify": "node minify.js"
+  },
+  "dependencies": {
+    "uglify-js": "^3.17.4"
+  },
   "devDependencies": {
     "@html-eslint/eslint-plugin": "^0.23.1",
     "@html-eslint/parser": "^0.23.0",

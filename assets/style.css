@@ -1,4 +1,4 @@
-.light-theme {
+.light {
 	--background: #FFF;
 	--header-bg: #8be0c0;
 	--dialog-bg: #EEE;
@@ -35,8 +35,8 @@ body {
 }
 
 button {
-	padding: 5px 8px;
-	font-size: 16px;
+	padding: 6px 8px;
+	font-size: 16.5px;
 	border: none;
 	border-radius: 7px;
 	cursor: pointer;

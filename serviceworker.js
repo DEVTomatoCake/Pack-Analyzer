@@ -18,8 +18,7 @@ self.addEventListener("install", event => {
 		const fallbackCache = await caches.open("fallback" + version)
 		fallbackCache.addAll([
 			"/assets/style.css",
-			"/assets/script.js",
-			"/assets/analyzer.js"
+			"/assets/script.js"
 		])
 	})())
 })

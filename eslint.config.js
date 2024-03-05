@@ -225,7 +225,7 @@ module.exports = [
 			globals: global
 		},
 		files: ["**/*.js"],
-		ignores: ["eslint.config.js", "assets/jszip.min.js"],
+		ignores: ["eslint.config.js", "minify.js", "assets/jszip.min.js"],
 		plugins: {
 			unicorn,
 			sonarjs,
@@ -240,7 +240,7 @@ module.exports = [
 				...globals.node
 			}
 		},
-		files: ["eslint.config.js"],
+		files: ["eslint.config.js", "minify.js"],
 		plugins: {
 			unicorn,
 			sonarjs,
