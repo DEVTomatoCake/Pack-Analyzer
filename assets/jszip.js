@@ -291,20 +291,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
 		}
 	};
 
-	},{"./utils":32}],5:[function(require,module,exports){
-	"use strict";
-	exports.base64 = false;
-	exports.binary = false;
-	exports.dir = false;
-	exports.createFolders = true;
-	exports.date = null;
-	exports.compression = null;
-	exports.compressionOptions = null;
-	exports.comment = null;
-	exports.unixPermissions = null;
-	exports.dosPermissions = null;
-
-	},{}],6:[function(require,module,exports){
+	},{"./utils":32}],6:[function(require,module,exports){
 	"use strict";
 
 	// load the global object first:
@@ -1055,7 +1042,6 @@ https://github.com/nodeca/pako/blob/main/LICENSE
 	JSZip.prototype = require("./object");
 	JSZip.prototype.loadAsync = require("./load");
 	JSZip.support = require("./support");
-	JSZip.defaults = require("./defaults");
 
 	// TODO find a better way to handle this version,
 	// a require('package.json').version doesn't work with webpack, see #327
@@ -1068,7 +1054,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
 	JSZip.external = require("./external");
 	module.exports = JSZip;
 
-	},{"./defaults":5,"./external":6,"./load":11,"./object":15,"./support":30}],11:[function(require,module,exports){
+	},{"./external":6,"./load":11,"./object":15,"./support":30}],11:[function(require,module,exports){
 	"use strict";
 	var utils = require("./utils");
 	var external = require("./external");
@@ -1287,7 +1273,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
 		 * In a browser, browserify won't include this file and the whole module
 		 * will be resolved an empty object.
 		 */
-		isNode : typeof Buffer !== "undefined",
+		isNode: false,
 		/**
 		 * Create a new nodejs Buffer from an existing content.
 		 * @param {Object} data the data to pass to the constructor.
@@ -1339,14 +1325,10 @@ https://github.com/nodeca/pako/blob/main/LICENSE
 
 	},{}],15:[function(require,module,exports){
 	"use strict";
-	var utf8 = require("./utf8");
 	var utils = require("./utils");
 	var GenericWorker = require("./stream/GenericWorker");
-	var StreamHelper = require("./stream/StreamHelper");
-	var defaults = require("./defaults");
 	var CompressedObject = require("./compressedObject");
 	var ZipObject = require("./zipObject");
-	var generate = require("./generate");
 	var nodejsUtils = require("./nodejsUtils");
 	var NodejsStreamInputAdapter = require("./nodejs/NodejsStreamInputAdapter");
 
@@ -1369,7 +1351,18 @@ https://github.com/nodeca/pako/blob/main/LICENSE
 		 * Correct options.
 		 */
 
-		var o = utils.extend(originalOptions || {}, defaults);
+		var o = utils.extend(originalOptions || {}, {
+			base64: false,
+			binary: false,
+			dir: false,
+			createFolders: true,
+			date: null,
+			compression: null,
+			compressionOptions: null,
+			comment: null,
+			unixPermissions: null,
+			dosPermissions: null
+		});
 		o.date = o.date || new Date();
 		if (o.compression !== null) {
 			o.compression = o.compression.toUpperCase();
@@ -1477,7 +1470,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
 	 * @return {Object} the new folder.
 	 */
 	var folderAdd = function(name, createFolders) {
-		createFolders = (typeof createFolders !== "undefined") ? createFolders : defaults.createFolders;
+		createFolders = (typeof createFolders !== "undefined") ? createFolders : true;
 
 		name = forceTrailingSlash(name);
 
@@ -1503,51 +1496,6 @@ https://github.com/nodeca/pako/blob/main/LICENSE
 
 	// return the actual prototype of JSZip
 	var out = {
-		/**
-		 * @see loadAsync
-		 */
-		load: function() {
-			throw new Error("This method has been removed in JSZip 3.0, please check the upgrade guide.");
-		},
-
-
-		/**
-		 * Call a callback function for each entry at this folder level.
-		 * @param {Function} cb the callback function:
-		 * function (relativePath, file) {...}
-		 * It takes 2 arguments : the relative path and the file.
-		 */
-		forEach: function(cb) {
-			var filename, relativePath, file;
-			// ignore warning about unwanted properties because this.files is a null prototype object
-			/* eslint-disable-next-line guard-for-in */
-			for (filename in this.files) {
-				file = this.files[filename];
-				relativePath = filename.slice(this.root.length, filename.length);
-				if (relativePath && filename.slice(0, this.root.length) === this.root) { // the file is in the current root
-					cb(relativePath, file); // TODO reverse the parameters ? need to be clean AND consistent with the filter search fn...
-				}
-			}
-		},
-
-		/**
-		 * Filter nested files/folders with the specified function.
-		 * @param {Function} search the predicate to use :
-		 * function (relativePath, file) {...}
-		 * It takes 2 arguments : the relative path and the file.
-		 * @return {Array} An array of matching elements.
-		 */
-		filter: function(search) {
-			var result = [];
-			this.forEach(function (relativePath, entry) {
-				if (search(relativePath, entry)) { // the file matches the function
-					result.push(entry);
-				}
-
-			});
-			return result;
-		},
-
 		/**
 		 * Add a file to the zip file, or search a file.
 		 * @param   {string|RegExp} name The name of the file to add (if data is defined),
@@ -1579,151 +1527,11 @@ https://github.com/nodeca/pako/blob/main/LICENSE
 				fileAdd.call(this, name, data, o);
 			}
 			return this;
-		},
-
-		/**
-		 * Add a directory to the zip file, or search.
-		 * @param   {String|RegExp} arg The name of the directory to add, or a regex to search folders.
-		 * @return  {JSZip} an object with the new directory as the root, or an array containing matching folders.
-		 */
-		folder: function(arg) {
-			if (!arg) {
-				return this;
-			}
-
-			if (isRegExp(arg)) {
-				return this.filter(function(relativePath, file) {
-					return file.dir && arg.test(relativePath);
-				});
-			}
-
-			// else, name is a new folder
-			var name = this.root + arg;
-			var newFolder = folderAdd.call(this, name);
-
-			// Allow chaining by returning a new object with this folder as the root
-			var ret = this.clone();
-			ret.root = newFolder.name;
-			return ret;
-		},
-
-		/**
-		 * Delete a file, or a directory and all sub-files, from the zip
-		 * @param {string} name the name of the file to delete
-		 * @return {JSZip} this JSZip object
-		 */
-		remove: function(name) {
-			name = this.root + name;
-			var file = this.files[name];
-			if (!file) {
-				// Look for any folders
-				if (name.slice(-1) !== "/") {
-					name += "/";
-				}
-				file = this.files[name];
-			}
-
-			if (file && !file.dir) {
-				// file
-				delete this.files[name];
-			} else {
-				// maybe a folder, delete recursively
-				var kids = this.filter(function(relativePath, file) {
-					return file.name.slice(0, name.length) === name;
-				});
-				for (var i = 0; i < kids.length; i++) {
-					delete this.files[kids[i].name];
-				}
-			}
-
-			return this;
-		},
-
-		/**
-		 * @deprecated This method has been removed in JSZip 3.0, please check the upgrade guide.
-		 */
-		generate: function() {
-			throw new Error("This method has been removed in JSZip 3.0, please check the upgrade guide.");
-		},
-
-		/**
-		 * Generate the complete zip file as an internal stream.
-		 * @param {Object} options the options to generate the zip file :
-		 * - compression, "STORE" by default.
-		 * - type, "base64" by default. Values are : string, base64, uint8array, arraybuffer, blob.
-		 * @return {StreamHelper} the streamed zip file.
-		 */
-		generateInternalStream: function(options) {
-			var worker, opts = {};
-			try {
-				opts = utils.extend(options || {}, {
-					streamFiles: false,
-					compression: "STORE",
-					compressionOptions : null,
-					type: "",
-					platform: "DOS",
-					comment: null,
-					mimeType: "application/zip",
-					encodeFileName: utf8.utf8encode
-				});
-
-				opts.type = opts.type.toLowerCase();
-				opts.compression = opts.compression.toUpperCase();
-
-				// "binarystring" is preferred but the internals use "string".
-				if(opts.type === "binarystring") {
-					opts.type = "string";
-				}
-
-				if (!opts.type) {
-					throw new Error("No output type specified.");
-				}
-
-				utils.checkSupport(opts.type);
-
-				// accept nodejs `process.platform`
-				if(
-					opts.platform === "darwin" ||
-					opts.platform === "freebsd" ||
-					opts.platform === "linux" ||
-					opts.platform === "sunos"
-				) {
-					opts.platform = "UNIX";
-				}
-				if (opts.platform === "win32") {
-					opts.platform = "DOS";
-				}
-
-				var comment = opts.comment || this.comment || "";
-				worker = generate.generateWorker(this, opts, comment);
-			} catch (e) {
-				worker = new GenericWorker("error");
-				worker.error(e);
-			}
-			return new StreamHelper(worker, opts.type || "string", opts.mimeType);
-		},
-		/**
-		 * Generate the complete zip file asynchronously.
-		 * @see generateInternalStream
-		 */
-		generateAsync: function(options, onUpdate) {
-			return this.generateInternalStream(options).accumulate(onUpdate);
-		},
-		/**
-		 * Generate the complete zip file asynchronously.
-		 * @see generateInternalStream
-		 */
-		generateNodeStream: function(options, onUpdate) {
-			options = options || {};
-			if (!options.type) {
-				options.type = "nodebuffer";
-			}
-			return this.generateInternalStream(options).toNodejsStream(onUpdate);
 		}
 	};
 	module.exports = out;
 
-	},{"./compressedObject":2,"./defaults":5,"./generate":9,"./nodejs/NodejsStreamInputAdapter":12,"./nodejsUtils":14,"./stream/GenericWorker":28,"./stream/StreamHelper":29,"./utf8":31,"./utils":32,"./zipObject":35}],16:[function(require,module,exports){
+	},{"./compressedObject":2,"./generate":9,"./nodejs/NodejsStreamInputAdapter":12,"./nodejsUtils":14,"./stream/GenericWorker":28,"./stream/StreamHelper":29,"./utf8":31,"./utils":32,"./zipObject":35}],16:[function(require,module,exports){
 	"use strict";
 	/*
 	 * This file is used by module bundlers (browserify/webpack/etc) when

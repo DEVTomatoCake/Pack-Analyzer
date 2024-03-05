@@ -44,7 +44,14 @@ const minifyFile = async (path, options = {}) => {
 
 async function main() {
 	await minifyFile("./assets/script.js", {
-		module: false
+		toplevel: true,
+		compress: {
+			...defaultOptions.compress,
+			top_retain: ["selectFolder", "selectZip", "toggleTheme", "openDialog", "clearResults", "share"]
+		},
+		mangle: {
+			reserved: ["selectFolder", "selectZip", "toggleTheme", "openDialog", "clearResults", "share"]
+		}
 	})
 	await minifyFile("./assets/jszip.js", {
 		toplevel: true,

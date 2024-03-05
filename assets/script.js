@@ -339,6 +339,7 @@ async function processEntries(entries) {
 			processEntries(entry)
 			continue
 		}
+		if (entry.name.endsWith("/") && entry.content == "") continue
 
 		const ext = entry.name.split(".").pop()
 		if (
