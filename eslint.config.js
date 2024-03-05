@@ -4,7 +4,7 @@ const unicorn = require("eslint-plugin-unicorn")
 const sonarjs = require("eslint-plugin-sonarjs")
 const stylistic = require("@stylistic/eslint-plugin-js")
 const htmlESLint = require("@html-eslint/eslint-plugin")
-const html = require("eslint-plugin-html")
+//const html = require("eslint-plugin-html")
 
 const linterOptions = {
 	reportUnusedDisableDirectives: "error"
@@ -12,34 +12,7 @@ const linterOptions = {
 const global = {
 	...globals.browser,
 
-	encode: "writable",
-	assertInt: "writable",
-	get: "writable",
-	getLanguage: "writable",
-	getCookie: "writable",
-	setCookie: "writable",
-	deleteCookie: "writable",
-	reloadText: "writable",
-	handleError: "writable",
-	handleChange: "writable",
-	pickerData: "writable",
-	selectData: "writable",
-	messageData: "writable",
-	loadFunc: "writable",
-	openDialog: "writable",
-	fadeIn: "writable",
-	fadeOut: "writable",
-	ToastNotification: "writable",
-	sockette: "writable",
-	mentionPicker: "writable",
-	emojiPicker: "writable",
-	sidebar: "writable",
-	updateSelected: "writable",
-	togglePicker: "writable",
-
-	renderImage: "readonly",
-	turnstile: "readonly",
-	Chart: "readonly"
+	JSZip: "readonly"
 }
 
 const rules = {
@@ -285,8 +258,8 @@ module.exports = [
 			unicorn,
 			sonarjs,
 			"@stylistic/js": stylistic,
-			"@html-eslint": htmlESLint,
-			html
+			"@html-eslint": htmlESLint/*,
+			html*/
 		},
 		settings: {
 			"html/html-extensions": [".html"]

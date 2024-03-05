@@ -76,8 +76,9 @@ window.addEventListener("drop", async event => {
 	event.stopPropagation()
 	event.preventDefault()
 	const fileList = event.dataTransfer.files
+	if (fileList.length == 0) return
 
-	let dropElement = document.createElement("div")
+	const dropElement = document.createElement("div")
 	dropElement.id = "drop"
 	dropElement.style.left = event.clientX + "px"
 	dropElement.style.top = event.clientY + "px"
