@@ -4,7 +4,7 @@ const UglifyJS = require("uglify-js")
 const nameCache = {}
 const defaultOptions = {
 	compress: {
-		passes: 2,
+		passes: 5,
 		unsafe: true,
 		unsafe_Function: true,
 		unsafe_math: true,
@@ -45,6 +45,12 @@ const minifyFile = async (path, options = {}) => {
 async function main() {
 	await minifyFile("./assets/script.js", {
 		module: false
+	})
+	await minifyFile("./assets/jszip.js", {
+		toplevel: true,
+		mangle: {
+			reserved: ["JSZip"]
+		}
 	})
 }
 main()

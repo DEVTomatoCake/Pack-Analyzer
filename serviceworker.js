@@ -10,7 +10,7 @@ self.addEventListener("install", event => {
 		const staticCache = await caches.open("static" + version)
 		staticCache.addAll([
 			"/",
-			"/assets/jszip.min.js",
+			"/assets/jszip.js",
 			"/assets/images/icon-128x128.png",
 			"assets/images/generated_background.png"
 		])

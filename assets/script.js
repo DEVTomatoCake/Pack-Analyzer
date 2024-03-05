@@ -183,11 +183,10 @@ function openDialog(dialog) {
 }
 
 const toggleTheme = () => {
-	const toggled = document.body.classList.toggle("light")
-	setCookie("theme", toggled ? "light" : "dark", 365)
+	setCookie("theme", document.body.classList.toggle("light") ? "light" : "dark", 365)
 }
 
-function clearResults() {
+const clearResults = () => {
 	document.getElementById("progress").innerText = ""
 	document.getElementById("result").innerHTML = ""
 	document.getElementById("resultButtons").hidden = true
@@ -221,7 +220,6 @@ async function share(type) {
 
 		if (type == "link") {
 			const name = Math.random().toString(36).slice(8)
-			const date = Date.now() + 1000 * 60 * 60 * 24 * 30
 
 			const res = await fetch("https://sh0rt.zip", {
 				method: "POST",
@@ -232,7 +230,7 @@ async function share(type) {
 				},
 				body: JSON.stringify({
 					name,
-					date,
+					date: Date.now() + 1000 * 60 * 60 * 24 * 30,
 					url: location.href + "?data=" + encodeURIComponent(content)
 				})
 			})
@@ -369,8 +367,7 @@ async function processEntries(entries) {
 					const fileLocation = /data\/([-a-z0-9_.]+)\/functions\/([-a-z0-9_./]+)\.mcfunction/i.exec(filePath)
 					if (fileLocation && !dpExclusive.functions.includes(fileLocation[1] + ":" + fileLocation[2])) dpExclusive.functions.push(fileLocation[1] + ":" + fileLocation[2])
 
-					const lines = result.split("\n")
-					for (let line of lines) {
+					for (let line of result.split("\n")) {
 						line = line.trim()
 						if (line.startsWith("#")) comments++
 						if (line == "") empty++
@@ -444,8 +441,7 @@ async function processEntries(entries) {
 					}
 				} else if (entry.name.endsWith("pack.png") && !result.includes(">")) packImages.push(result)
 				else if (rpMode && (ext == "fsh" || ext == "vsh" || ext == "glsl")) {
-					const lines = result.split("\n")
-					for (let line of lines) {
+					for (let line of result.split("\n")) {
 						line = line.trim()
 						if (line.startsWith("//") || line.startsWith("/*")) comments++
 						if (line == "") empty++
