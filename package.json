@@ -18,7 +18,7 @@
   },
   "devDependencies": {
     "@html-eslint/eslint-plugin": "^0.23.1",
-    "@html-eslint/parser": "^0.23.0",
+    "@html-eslint/parser": "^0.24.0",
     "@stylistic/eslint-plugin-js": "^1.6.3",
     "eslint": "^8.57.0",
     "eslint-plugin-html": "^8.0.0",
