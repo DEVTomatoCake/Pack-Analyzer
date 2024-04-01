@@ -24,6 +24,6 @@
     "eslint-plugin-html": "^8.0.0",
     "eslint-plugin-sonarjs": "^0.24.0",
     "eslint-plugin-unicorn": "^51.0.1",
-    "globals": "^14.0.0"
+    "globals": "^15.0.0"
   }
 }
