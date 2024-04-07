@@ -1,21 +1,12 @@
-// Cookie/"load" code modified from https://github.com/DEVTomatoCake/dashboard/blob/700b21999a671f4e9c32ba4a1a35f94156db11d4/assets/js/script.js#L16-L31
-
-function setCookie(name = "", value = "", days = void 0) {
-	let cookie = name + "=" + value + ";path=/;Secure;"
-	if (days) cookie += "expires=" + new Date(Date.now() + 1000 * 60 * 60 * 24 * days).toUTCString() + ";"
-
-	document.cookie = cookie
-}
-function getCookie(name) {
-	for (const rawCookie of document.cookie.split(";")) {
-		const cookie = rawCookie.trim()
-		if (cookie.split("=")[0] == name) return cookie.substring(name.length + 1, cookie.length)
-	}
-	return void 0
-}
+// "load" code modified from https://github.com/DEVTomatoCake/dashboard/blob/700b21999a671f4e9c32ba4a1a35f94156db11d4/assets/js/script.js#L16-L31
 
 const requestVersions = async () => {
-	const res = await fetch("https://raw.githubusercontent.com/misode/mcmeta/summary/versions/data.json")
+	const res = await fetch("https://raw.githubusercontent.com/misode/mcmeta/summary/versions/data.json", {
+		headers: {
+			Accept: "application/json",
+			"User-Agent": "DEVTomatoCake/Pack-Analyzer"
+		}
+	})
 	const json = await res.json()
 	window.versions = json.map(ver => ({
 		name: ver.id,
@@ -91,11 +82,11 @@ let rpExclusive = {
 	textures: 0
 }
 
-window.addEventListener("load", () => {
-	if (getCookie("theme") == "light") document.body.classList.add("light")
+window.addEventListener("DOMContentLoaded", () => {
+	if (localStorage.getItem("theme") == "light") document.body.classList.add("light")
 	else if (window.matchMedia("(prefers-color-scheme: light)").matches) {
 		document.body.classList.add("light")
-		setCookie("theme", "light", 365)
+		localStorage.setItem("theme", "light")
 	}
 
 	const params = new URLSearchParams(location.search)
@@ -121,6 +112,46 @@ window.addEventListener("load", () => {
 
 		mainScan(true)
 	}
+
+	document.getElementById("clear-results").addEventListener("click", () => {
+		document.getElementById("progress").innerText = ""
+		document.getElementById("result").innerHTML = ""
+		document.getElementById("resultButtons").hidden = true
+		document.getElementById("shareImage").style.display = "none"
+		if (interval) clearInterval(interval)
+	})
+	document.getElementById("toggle-theme").addEventListener("click", () => {
+		localStorage.setItem("theme", document.body.classList.toggle("light") ? "light" : "dark")
+	})
+	document.getElementById("about-button").addEventListener("click", () => openDialog(document.getElementById("aboutDialog")))
+
+	document.getElementById("select-folder").addEventListener("click", () => {
+		if (interval) clearInterval(interval)
+		selected = null
+
+		const input = document.createElement("input")
+		input.type = "file"
+		input.webkitdirectory = true
+		input.onchange = e => {
+			selected = e.target.files
+			mainScan()
+		}
+		if ("showPicker" in HTMLInputElement.prototype) input.showPicker()
+		else input.click()
+	})
+	document.getElementById("select-zip").addEventListener("click", () => {
+		if (interval) clearInterval(interval)
+
+		const input = document.createElement("input")
+		input.type = "file"
+		input.accept = ".zip"
+		input.onchange = e => handleZip(e.target.files[0])
+
+		if ("showPicker" in HTMLInputElement.prototype) input.showPicker()
+		else input.click()
+	})
+
+	for (const elem of document.getElementsByClassName("share")) elem.addEventListener("click", () => share(elem.dataset.type))
 
 	if (location.protocol == "https:" && "serviceWorker" in navigator) navigator.serviceWorker.register("/serviceworker.js")
 })
@@ -182,18 +213,6 @@ function openDialog(dialog) {
 	}
 }
 
-const toggleTheme = () => {
-	setCookie("theme", document.body.classList.toggle("light") ? "light" : "dark", 365)
-}
-
-const clearResults = () => {
-	document.getElementById("progress").innerText = ""
-	document.getElementById("result").innerHTML = ""
-	document.getElementById("resultButtons").hidden = true
-	document.getElementById("shareImage").style.display = "none"
-	if (interval) clearInterval(interval)
-}
-
 async function share(type) {
 	let content = ""
 	if (type == "txt") content = document.getElementById("result").innerText
@@ -239,7 +258,7 @@ async function share(type) {
 			if (res.ok) {
 				document.getElementById("share-link").href = "https://sh0rt.zip/" + name
 				document.getElementById("share-link").innerText = "https://sh0rt.zip/" + name
-				document.getElementById("share-img").src = "https://api.qrserver.com/v1/create-qr-code/?data=" + encodeURIComponent("https://sh0rt.zip/" + name) + "&size=150x150&qzone=2"
+				document.getElementById("share-img").src = "https://sh0rt.zip/qr/" + name
 				openDialog(document.getElementById("shareDialog"))
 			} else alert("Couldn't create link: " + json.error)
 			return
@@ -711,33 +730,6 @@ async function mainScan(hasData = false) {
 			document.getElementById("result").innerHTML = html
 		}
 	}, 100)
-}
-
-async function selectFolder() {
-	if (interval) clearInterval(interval)
-	selected = null
-
-	const input = document.createElement("input")
-	input.type = "file"
-	input.webkitdirectory = true
-	input.onchange = e => {
-		selected = e.target.files
-		mainScan()
-	}
-	if ("showPicker" in HTMLInputElement.prototype) input.showPicker()
-	else input.click()
-}
-
-async function selectZip() {
-	if (interval) clearInterval(interval)
-
-	const input = document.createElement("input")
-	input.type = "file"
-	input.accept = ".zip"
-	input.onchange = e => handleZip(e.target.files[0])
-
-	if ("showPicker" in HTMLInputElement.prototype) input.showPicker()
-	else input.click()
 }
 
 function handleZip(file) {

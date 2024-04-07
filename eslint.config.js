@@ -103,6 +103,7 @@ const rules = {
 	"prefer-const": 2,
 	"use-isnan": 2,
 	"valid-typeof": 2,
+	yoda: 2,
 
 	"@stylistic/js/array-bracket-spacing": 2,
 	"@stylistic/js/arrow-parens": [2, "as-needed"],
@@ -195,6 +196,8 @@ const rules = {
 	"unicorn/require-number-to-fixed-digits-argument": 2,
 	"unicorn/switch-case-braces": [2, "avoid"],
 	"unicorn/text-encoding-identifier-case": 2,
+	"unicorn/no-await-in-promise-methods": 2,
+	"unicorn/no-single-promise-in-promise-methods": 2,
 
 	"sonarjs/no-extra-arguments": 2,
 	"sonarjs/no-empty-collection": 2,

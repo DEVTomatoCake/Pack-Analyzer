@@ -10,7 +10,7 @@
 		<meta property="og:url" content="https://pack-analyzer.pages.dev/">
 		<meta property="og:image" content="https://pack-analyzer.pages.dev/assets/images/showcase1.png">
 
-		<link rel="manifest" href="./manifest.json">
+		<link rel="manifest" href="./assets/manifest.json">
 		<link href="./assets/images/icon-128x128.png" rel="shortcut icon" type="image/x-icon">
 		<link href="./assets/images/icon-192x192.png" rel="apple-touch-icon" sizes="192x192">
 
@@ -23,17 +23,17 @@
 			<h1>Minecraft Java Data and Resource pack analyzer</h1>
 			<h2>Drop/paste a .zip or .mcfunction file, or select a folder below to analyze it!</h2>
 			<div>
-				<button type="button" onclick="selectFolder()">Select folder</button>
-				<button type="button" onclick="selectZip()">Select .zip</button>
-				<button type="button" onclick="toggleTheme()">Toggle theme</button>
-				<button type="button" onclick="openDialog(document.getElementById('aboutDialog'))">About</button>
+				<button type="button" id="select-folder">Select folder</button>
+				<button type="button" id="select-zip">Select .zip</button>
+				<button type="button" id="toggle-theme">Toggle theme</button>
+				<button type="button" id="about-button">About</button>
 			</div>
 			<div id="resultButtons" hidden>
-				<button type="button" onclick="clearResults()">Clear results</button>
-				<button type="button" onclick="share('txt')">Export as .txt</button>
-				<button type="button" onclick="share('json')">Export as .json</button>
-				<button type="button" onclick="share('link')">Share as link</button>
-				<button type="button" onclick="share('png')">Generate image</button>
+				<button type="button" id="clear-results">Clear results</button>
+				<button type="button" class="share" data-type="txt">Export as .txt</button>
+				<button type="button" class="share" data-type="json">Export as .json</button>
+				<button type="button" class="share" data-type="link">Share as link</button>
+				<button type="button" class="share" data-type="png">Generate image</button>
 			</div>
 
 			<br>

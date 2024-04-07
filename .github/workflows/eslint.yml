@@ -1,6 +1,7 @@
 name: ESLint
 
 on:
+  pull_request:
   push:
 
 jobs:
@@ -15,6 +16,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 21
+          cache: "npm"
 
       - name: "🛸 install eslint html plugins"
         run: npm i --omit=optional

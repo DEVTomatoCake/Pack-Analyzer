@@ -1,0 +1,7 @@
+/*
+	Content-Security-Policy-Report-Only: default-src 'none' 'report-sample'; script-src-elem 'self'; script-src-attr 'unsafe-inline'; style-src-elem 'self'; style-src-attr 'unsafe-inline'; img-src 'self'; connect-src 'self' https://sh0rt.zip/ https://cloudflareinsights.com/cdn-cgi/rum https://static.cloudflareinsights.com; form-action 'none'; frame-ancestors 'none'; worker-src 'self'; manifest-src 'self'; report-uri https://api.tomatenkuchen.com/csp-violation
+	Report-To: {"group":"default","max_age":2592000,"endpoints":[{"url":"https://api.tomatenkuchen.com/csp-violation"}],"include_subdomains":false}
+	Cross-Origin-Opener-Policy: same-origin
+	X-Frame-Options: DENY
+	X-Content-Type-Options: nosniff
+	Referrer-Policy: strict-origin-when-cross-origin

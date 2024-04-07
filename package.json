@@ -5,7 +5,6 @@
   "description": "Allows you to analyze and generate stats for [Minecraft](https://minecraft.net) Java Edition data and resource packs.",
   "main": "index.html",
   "author": "TomatoCake",
-  "license": "CC BY-NC-SA 4.0 https://creativecommons.org/licenses/by-nc-sa/4.0",
   "repository": {
     "type": "git",
     "url": "https://github.com/DEVTomatoCake/Pack-Analyzer.git"
@@ -14,16 +13,17 @@
     "minify": "node minify.js"
   },
   "dependencies": {
+    "clean-css": "^5.3.3",
     "uglify-js": "^3.17.4"
   },
   "devDependencies": {
-    "@html-eslint/eslint-plugin": "^0.23.1",
-    "@html-eslint/parser": "^0.24.0",
+    "@html-eslint/eslint-plugin": "^0.24.1",
+    "@html-eslint/parser": "^0.24.1",
     "@stylistic/eslint-plugin-js": "^1.7.0",
     "eslint": "^8.57.0",
     "eslint-plugin-html": "^8.0.0",
-    "eslint-plugin-sonarjs": "^0.24.0",
-    "eslint-plugin-unicorn": "^51.0.1",
+    "eslint-plugin-sonarjs": "^0.25.1",
+    "eslint-plugin-unicorn": "^52.0.0",
     "globals": "^15.0.0"
   }
 }

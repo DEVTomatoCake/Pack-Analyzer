@@ -1,4 +1,5 @@
 // Modified by TomatoCake from https://github.com/DEVTomatoCake/dashboard/blob/700b21999a671f4e9c32ba4a1a35f94156db11d4/serviceworker.js
+
 const version = 1
 
 self.addEventListener("install", event => {
@@ -11,8 +12,9 @@ self.addEventListener("install", event => {
 		staticCache.addAll([
 			"/",
 			"/assets/jszip.js",
+			"/assets/manifest.json",
 			"/assets/images/icon-128x128.png",
-			"assets/images/generated_background.png"
+			"/assets/images/generated_background.png"
 		])
 
 		const fallbackCache = await caches.open("fallback" + version)
