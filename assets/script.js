@@ -8,13 +8,15 @@ const requestVersions = async () => {
 		}
 	})
 	const json = await res.json()
-	window.versions = json.map(ver => ({
+
+	localStorage.setItem("mcVersions", JSON.stringify(json.map(ver => ({
 		name: ver.id,
 		datapack_version: ver.data_pack_version,
 		resourcepack_version: ver.resource_pack_version
-	}))
+	}))))
+	localStorage.setItem("mcVersionsDate", Date.now())
 }
-requestVersions()
+if (!localStorage.getItem("mcVersions") || Date.now() - localStorage.getItem("mcVersionsDate") > 1000 * 60 * 60 * 4) requestVersions()
 
 let interval
 let files = 0
@@ -178,25 +180,38 @@ window.addEventListener("drop", async event => {
 	else {
 		selected = []
 		for await (const file of Object.values(fileList)) {
-			selected.push({
-				name: file.name,
-				content: await file.text()
-			})
+			try {
+				selected.push({
+					name: file.name,
+					content: await file.text()
+				})
+			} catch (e) {
+				console.error(e)
+				alert("Couldn't read file: " + file.name + "\nYour browser may not support reading files/folders by dropping them on a website, try using the buttons above.")
+			}
 		}
 		mainScan()
 	}
 })
-window.addEventListener("paste", async e => {
-	e.preventDefault()
-	if (e.clipboardData.files.length == 0) return
+window.addEventListener("paste", async event => {
+	event.preventDefault()
+	if (event.clipboardData.files.length == 0) return
 
-	const file = e.clipboardData.files[0]
-	if (file.name.endsWith(".zip")) handleZip(file)
+	const fileList = event.clipboardData.files
+	if (fileList[0].name.endsWith(".zip")) handleZip(fileList[0])
 	else {
-		selected = [{
-			name: file.name,
-			content: await file.text()
-		}]
+		selected = []
+		for await (const file of Object.values(fileList)) {
+			try {
+				selected.push({
+					name: file.name,
+					content: await file.text()
+				})
+			} catch (e) {
+				console.error(e)
+				alert("Couldn't read file: " + file.name + "\nYour browser may not support reading files/folders from the clipboard, try using the buttons above.")
+			}
+		}
 		mainScan()
 	}
 })
@@ -623,6 +638,7 @@ async function mainScan(hasData = false) {
 			const uncalledFunctions = dpExclusive.functions.filter(funcName => !dpExclusive.functionCalls.some(func => func.target == funcName))
 			const missingFunctions = [...new Set(dpExclusive.functionCalls.filter(func => !dpExclusive.functions.includes(func.target)).map(func => func.target))]
 
+			const versions = localStorage.getItem("mcVersions") ? JSON.parse(localStorage.getItem("mcVersions")) : []
 			let html =
 				(packImages.length > 0 ? "<div style='display: flex;'>" + packImages.map(img => "<img src='" + img + "' width='64' height='64'>") + "</div>" : "") +
 				(packFiles.length > 0 ? "<strong>" + (rpMode ? "Resource" : "Data") + "pack" + (packFiles.length == 1 ? "" : "s") + " found:</strong><br>" +
@@ -650,11 +666,11 @@ async function mainScan(hasData = false) {
 						} else description = "<i>No description</i>"
 
 						return "<span class='indented'>" + description.replace(/§[0-9a-flmnor]/gi, "") +
-							(window.versions.some(ver => (rpMode ? ver.resourcepack_version : ver.datapack_version) == pack.pack.pack_format) ?
+							(versions.some(ver => (rpMode ? ver.resourcepack_version : ver.datapack_version) == pack.pack.pack_format) ?
 								"<br><span class='indented2'>Supported versions: " +
-								(window.versions.findLast(ver => (rpMode ? ver.resourcepack_version : ver.datapack_version) == oldestFormat)?.name || "?") +
+								(versions.findLast(ver => (rpMode ? ver.resourcepack_version : ver.datapack_version) == oldestFormat)?.name || "?") +
 								" - " +
-								(window.versions.find(ver => (rpMode ? ver.resourcepack_version : ver.datapack_version) == newestFormat)?.name || "?") +
+								(versions.find(ver => (rpMode ? ver.resourcepack_version : ver.datapack_version) == newestFormat)?.name || "?") +
 								"</span>"
 							: "") +
 							"</span>" +
