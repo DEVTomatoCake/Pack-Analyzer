@@ -4,11 +4,20 @@ updates:
     directory: "/"
     schedule:
       interval: "weekly"
+      day: "saturday"
+      time: "05:00"
+      timezone: "Europe/Berlin"
+    assignees:
+      - "DEVTomatoCake"
     groups:
-      html-parser-eslint:
+      eslint-html-parser:
         patterns:
-        - "@html-parser/*"
+          - "@html-parser/eslint-plugin"
+          - "@html-parser/parser"
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
       interval: "weekly"
+      day: "saturday"
+      time: "05:00"
+      timezone: "Europe/Berlin"

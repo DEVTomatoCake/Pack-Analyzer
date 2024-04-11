@@ -1,0 +1,72 @@
+{
+	"name": "pack-analyzer",
+	"displayName": "Minecraft Data and Resource pack Analyzer",
+	"description": "Allows you to analyze and generate stats for [Minecraft](https://minecraft.net) Java Edition data and resource packs.",
+	"version": "1.0.0",
+	"publisher": "tomatocake",
+	"main": "./out/extension",
+	"browser": "./out/extension",
+	"extensionKind": [
+		"workspace"
+	],
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/DEVTomatoCake/Pack-Analyzer.git"
+	},
+	"engines": {
+		"vscode": "^1.88.0"
+	},
+	"categories": [
+		"Other"
+	],
+	"qna": false,
+	"keywords": [
+		"minecraft",
+		"datapack",
+		"data-pack",
+		"resourcepack",
+		"resource-pack",
+		"mcfunction",
+		"packstats"
+	],
+	"contributes": {
+		"viewsContainers": {
+			"activitybar": [
+				{
+					"id": "packAnalyzer",
+					"title": "Pack Analyzer",
+					"icon": "temp_icon.png"
+				}
+			]
+		},
+		"views": {
+			"packAnalyzer": [
+				{
+					"id": "packAnalyzer",
+					"name": "Analyzer results"
+				}
+			]
+		}
+	},
+	"scripts": {
+		"vscode:prepublish": "npm run compile",
+		"compile": "tsc -p ./",
+		"lint": "eslint .",
+		"watch": "tsc -watch -p ./",
+		"pack": "vsce pack -o ./out/pack-analyzer.vsix -t web",
+		"pack-files": "vsce ls",
+		"publish": "vsce publish",
+		"publish-openvsx": "npx ovsx publish ./out/pack-analyzer.vsix",
+		"sideload": "npx serve --cors -l 5000 --ssl-cert $HOME/certs/localhost.pem --ssl-key $HOME/certs/localhost-key.pem",
+		"sideload-win": "npx serve --cors -l 5000 --ssl-cert %userprofile%\\certs\\localhost.pem --ssl-key %userprofile%\\certs\\localhost-key.pem"
+	},
+	"devDependencies": {
+		"@stylistic/eslint-plugin-js": "^1.7.0",
+		"@types/node": "^20.12.5",
+		"@types/vscode": "^1.88.0",
+		"@vscode/vsce": "^2.24.0",
+		"eslint": "^8.57.0",
+		"eslint-plugin-sonarjs": "^0.25.1",
+		"eslint-plugin-unicorn": "^52.0.0"
+	}
+}

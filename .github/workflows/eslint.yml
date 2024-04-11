@@ -1,7 +1,6 @@
 name: ESLint
 
 on:
-  pull_request:
   push:
 
 jobs:
@@ -19,7 +18,7 @@ jobs:
           cache: "npm"
 
       - name: "🛸 install eslint html plugins"
-        run: npm i --omit=optional
+        run: npm i --omit=optional --include=dev --no-fund --progress=false
 
       - name: "🔍 lint code"
         run: npx eslint .

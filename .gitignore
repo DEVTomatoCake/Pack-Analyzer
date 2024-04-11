@@ -1,1 +1,4 @@
 /node_modules/
+
+/vscExtension/node_modules/
+/vscExtension/out/
