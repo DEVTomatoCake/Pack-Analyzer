@@ -28,7 +28,6 @@ let interval
 let files = 0
 let done = 0
 let error = 0
-let selected = null
 let rpMode = false
 
 let filetypes = {}
@@ -90,16 +89,13 @@ let rpExclusive = {
 	textures: 0
 }
 
-const localize = string => string.toLocaleString()
+const localize = str => str.toLocaleString()
 
 async function processEntries(entries) {
-	for await (const entry of entries) {
-		console.log(entry)
-		const filePath = entry[0]
-		if (filePath.includes("/.git/") || filePath.includes("/.svn/")) continue
-		if (entry[1] != vscode.FileType.File) continue
+	for await (const filePath of entries) {
+		const name = filePath.split("/").pop()
 
-		const ext = entry.name.split(".").pop()
+		const ext = name.split(".").pop()
 		if (
 			ext == "mcmeta" || ext == "json" ||
 			(!rpMode && (ext == "mcfunction" || ext == "nbt")) ||
@@ -108,17 +104,18 @@ async function processEntries(entries) {
 			if (filetypes[ext]) filetypes[ext]++
 			else filetypes[ext] = 1
 		} else {
-			if (filetypesOther[(entry.name.includes(".") ? "." : "") + ext]) filetypesOther[(entry.name.includes(".") ? "." : "") + ext]++
-			else filetypesOther[(entry.name.includes(".") ? "." : "") + ext] = 1
+			if (filetypesOther[(name.includes(".") ? "." : "") + ext]) filetypesOther[(name.includes(".") ? "." : "") + ext]++
+			else filetypesOther[(name.includes(".") ? "." : "") + ext] = 1
 		}
 
 		if (
 			ext == "mcfunction" || ext == "mcmeta" || (!rpMode && ext == "json" && (filePath.includes("/advancements/") || filePath.includes("/tags/functions/"))) ||
-			ext == "fsh" || ext == "vsh" || ext == "glsl" || entry.name.endsWith("pack.png")
+			ext == "fsh" || ext == "vsh" || ext == "glsl" || name.endsWith("pack.png")
 		) {
 			files++
 
 			const processFile = result => {
+				log("Processing file " + filePath + " (" + result.length + " characters)")
 				done++
 				if (result.trim() == "") return emptyFiles.push(filePath)
 
@@ -190,7 +187,7 @@ async function processEntries(entries) {
 						})
 					}
 				} else if (ext == "mcmeta") {
-					if (entry.name == "pack.mcmeta") {
+					if (name == "pack.mcmeta") {
 						try {
 							packFiles.push(JSON.parse(result))
 						} catch (e) {
@@ -198,7 +195,7 @@ async function processEntries(entries) {
 							error++
 						}
 					}
-				} else if (entry.name.endsWith("pack.png") && !result.includes(">")) packImages.push(result)
+				} else if (name.endsWith("pack.png") && !result.includes(">")) packImages.push(result)
 				else if (rpMode && (ext == "fsh" || ext == "vsh" || ext == "glsl")) {
 					for (let line of result.split("\n")) {
 						line = line.trim()
@@ -249,20 +246,9 @@ async function processEntries(entries) {
 				}
 			}
 
-			if ("content" in entry) processFile(entry.content)
-			else {
-				const reader = new FileReader()
-				if (ext == "png") reader.readAsDataURL(entry)
-				else entry.text().then(processFile)
-
-				reader.onload = () => {
-					processFile(reader.result)
-				}
-				reader.onerror = e => {
-					console.warn("Could not read file: " + filePath, e)
-					error++
-				}
-			}
+			const content = await vscode.workspace.fs.readFile(vscode.Uri.file(filePath))
+			const decoder = new TextDecoder()
+			processFile(decoder.decode(content))
 		}
 		if (!rpMode && ext == "json") {
 			Object.keys(dpExclusive.folders).forEach(type => {
@@ -276,12 +262,15 @@ async function processEntries(entries) {
 				if (filePath.includes("/" + type + "/")) rpExclusive[type]++
 			})
 	}
+
+	log("Successfully processed " + done + " files with " + error + " errors")
+	log(JSON.stringify(filetypes, null, "\t"))
+	log(JSON.stringify(filetypesOther, null, "\t"))
+	log(JSON.stringify(dpExclusive, null, "\t"))
+	log(JSON.stringify(cmdsBehindExecute, null, "\t"))
 }
 
 async function mainScan(hasData = false) {
-	if (interval) clearInterval(interval)
-	document.getElementById("result").innerHTML = ""
-
 	files = 0
 	done = 0
 	error = 0
@@ -345,8 +334,6 @@ async function mainScan(hasData = false) {
 		texts: 0,
 		textures: 0
 	}
-
-	processEntries(selected)
 
 	interval = setInterval(() => {
 		document.getElementById("progress").innerText = Math.round(done / files * 100) + "% scanned" + (error > 0 ? " - " + error + " errors" : "")
@@ -469,6 +456,23 @@ async function mainScan(hasData = false) {
 	}, 100)
 }
 
+const collapsible = new Set([
+	"dpExclusive",
+	"rpExclusive",
+
+	"filetypes",
+	"filetypesOther",
+
+	"commands",
+	"cmdsBehindExecute",
+	"cmdsBehindMacros",
+	"cmdsBehindReturn",
+
+	"folders",
+	"tags",
+	"selectors"
+])
+
 class PackAnalyzer {
 	constructor() {
 		this._onDidChangeTreeData = new vscode.EventEmitter()
@@ -478,39 +482,69 @@ class PackAnalyzer {
 	getTreeItem(element) {
 		log("getTreeItem: " + element)
 
-		const treeItem = new vscode.TreeItem("Test")
+		let label = element
+		if (element == "files") label = "Scanned files: " + files
+		else if (element == "error") label = "Scanning errors: " + error
+		else if (element == "rpMode") label = "Resource pack mode: " + (rpMode ? "enabled" : "disabled")
+
+		else if (element == "filetypes") label = "File types: " + Object.keys(filetypes).length
+		else if (element == "filetypesOther") label = "Non-pack file types: " + Object.keys(filetypesOther).length
+
+		else if (element == "commands") label = "Commands: " + Object.keys(commands).length
+		else if (element == "cmdsBehindExecute") label = "Commands behind execute: " + Object.keys(cmdsBehindExecute).length
+		else if (element == "cmdsBehindMacros") label = "Commands behind macros: " + Object.keys(cmdsBehindMacros).length
+		else if (element == "cmdsBehindReturn") label = "Commands behind return: " + Object.keys(cmdsBehindReturn).length
+
+		else if (element == "folders") label = "Data pack folders: " + Object.keys(dpExclusive.folders).length
+		else if (element == "tags") label = "Data pack tags: " + Object.keys(dpExclusive.tags).length
+		else if (element == "selectors") label = "Selectors: " + Object.keys(dpExclusive.selectors).length
+
+		else if (element == "dpExclusive") label = "Data pack exclusive"
+		else if (element == "rpExclusive") label = "Resource pack exclusive"
+
+		else if (element == "comments") label = "Comments: " + comments
+		else if (element == "empty") label = "Empty lines: " + empty
+		else if (element == "emptyFiles") label = "Empty files: " + emptyFiles.length
+
+		const treeItem = new vscode.TreeItem(label)
+		treeItem.id = element
+
+		if (collapsible.has(element)) treeItem.collapsibleState = vscode.TreeItemCollapsibleState.Collapsed
 
 		return treeItem
 	}
 
 	async getChildren(element) {
 		log("getChildren: " + element)
+
 		if (element == "dpExclusive") return [
-			/*"folders": {
-				advancements: 0,
-				loot_tables: 0,
-				recipes: 0,
-				predicates: 0,
-				dimension: 0,
-				dimension_type: 0,
-				worldgen: 0
-			},
-			"tags": {
-				banner_pattern: 0,
-				blocks: 0,
-				cat_variant: 0,
-				entity_types: 0,
-				fluids: 0,
-				functions: 0,
-				game_events: 0,
-				instrument: 0,
-				items: 0,
-				painting_variant: 0,
-				point_of_interest_type: 0,
-				worldgen: 0
-			},*/
+			"folders",
+			"tags",
 			"scoreboards",
 			"selectors"
+		]
+		if (element == "folders") return [
+			"advancements",
+			"loot_tables",
+			"recipes",
+			"predicates",
+			"dimension",
+			"dimension_type",
+			"worldgen"
+		]
+		if (element == "tags") return [
+			"banner_pattern",
+			"blocks",
+			"cat_variant",
+			"entity_types",
+			"fluids",
+			"functions",
+			"game_events",
+			"instrument",
+			"items",
+			"painting_variant",
+			"point_of_interest_type",
+			"worldgen"
 		]
 		if (element == "selectors") return [
 			"a", "e", "p", "r", "s"
@@ -529,29 +563,37 @@ class PackAnalyzer {
 			"textures"
 		]
 
-		const files = vscode.workspace.textDocuments
-		console.log(files)
-		processEntries(files)
+		if (element == "filetypes") return Object.keys(filetypes)
+		if (element == "filetypesOther") return Object.keys(filetypesOther)
+
+		if (element == "commands") return Object.keys(commands)
+		if (element == "cmdsBehindExecute") return Object.keys(cmdsBehindExecute)
+		if (element == "cmdsBehindMacros") return Object.keys(cmdsBehindMacros)
+		if (element == "cmdsBehindReturn") return Object.keys(cmdsBehindReturn)
+
+		const fileList = await vscode.workspace.findFiles("**/*")
+		log(fileList.length + " files with the following schemes found: " + [...new Set(fileList.map(file => file.scheme))].join(", "))
+		await processEntries(fileList.filter(file => !file.path.includes("/.git/") && !file.path.includes("/.svn/") && !file.path.includes("/node_modules/")).map(file => file.path))
 
 		return [
 			"files",
-			"done",
 			"error",
 			"rpMode",
 
+			"dpExclusive",
+			"rpExclusive",
+
 			"filetypes",
 			"filetypesOther",
-			"packFiles",
-			"packImages",
+
 			"commands",
 			"cmdsBehindExecute",
 			"cmdsBehindMacros",
 			"cmdsBehindReturn",
+
 			"comments",
 			"empty",
-			"emptyFiles",
-			"dpExclusive",
-			"rpExclusive"
+			"emptyFiles"
 		]
 	}
 }
