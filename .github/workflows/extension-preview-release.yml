@@ -3,7 +3,7 @@ name: Extension preview release
 on:
   workflow_dispatch:
   push:
-    paths: ["/.github/workflows/extension-preview-release.yml", "vscExtension/src/*.js"]
+    paths: [".github/workflows/extension-preview-release.yml", "vscExtension/src/*.js"]
 
 jobs:
   lint:
@@ -36,14 +36,15 @@ jobs:
           allowUpdates: true
           artifactErrorsFailBuild: true
           artifacts: /vscExtension/out/pack-analyzer.vsix
+          body: |
+            This is an automatically generated **preview** release of the Pack Analyzer VS Code extension.
+
+            You can install it by downloading the `.vsix` file below and installing it in [Visual Studio Code](https://code.visualstudio.com)
+            or in e.g. VSCodium, using "Install from VSIX" on the extensions tab by clicking on the three dots.
+
+            Last commit:
+            - [`${{ env.SHA_SHORT }}`](https://github.com/DEVTomatoCake/Pack-Analyzer/commit/${{ github.sha }}) ${{ github.event.head_commit.message }}
           commit: ${{ github.sha }}
           makeLatest: false
           prerelease: true
           tag: v${{ env.EXTENSION_VERSION }}-preview
-          body: |
-            This is an automatically generated **preview** release of the Pack Analyzer extension.
-
-            You can install it by downloading the `.vsix` file below and installing it in [Visual Studio Code](https://code.visualstudio.com) or in e.g. VSCodium.
-
-            Triggering commit:
-            [`${{ env.SHA_SHORT }}`](https://github.com/DEVTomatoCake/Pack-Analyzer/commit/${{ github.sha }}) ${{ github.event.head_commit.message }}
