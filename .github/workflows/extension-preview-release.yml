@@ -22,7 +22,7 @@ jobs:
       - name: "🏁 build extension"
         run: |
           cd vscExtension
-          npm i --omit=optional --omit=dev --no-fund --progress=false
+          npm i --omit=optional --include=dev --no-fund --progress=false
           npm run pack
 
       - name: "🚀 release extension"
