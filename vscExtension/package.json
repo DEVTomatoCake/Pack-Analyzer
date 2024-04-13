@@ -33,11 +33,7 @@
 		"commands": [
 			{
 				"command": "packAnalyzer.refresh",
-				"title": "Refresh",
-				"icon": {
-					"light": "resources/light/refresh.svg",
-					"dark": "resources/dark/refresh.svg"
-				}
+				"title": "Refresh"
 			}
 		],
 		"menus": {

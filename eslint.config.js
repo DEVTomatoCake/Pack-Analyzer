@@ -244,6 +244,7 @@ module.exports = [
 			}
 		},
 		files: ["vscExtension/**/*.js", "eslint.config.js", "minify.js"],
+		ignores: ["vscExtension/out/*.js"],
 		plugins: {
 			unicorn,
 			sonarjs,

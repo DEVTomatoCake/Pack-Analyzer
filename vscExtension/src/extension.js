@@ -277,9 +277,6 @@ async function processEntries(entries) {
 }
 
 async function mainScan() {
-	const uncalledFunctions = dpExclusive.functions.filter(funcName => !dpExclusive.functionCalls.some(func => func.target == funcName))
-	const missingFunctions = [...new Set(dpExclusive.functionCalls.filter(func => !dpExclusive.functions.includes(func.target)).map(func => func.target))]
-
 	let html =
 		(packImages.length > 0 ? "<div style='display: flex;'>" + packImages.map(img => "<img src='" + img + "' width='64' height='64'>") + "</div>" : "") +
 		(packFiles.length > 0 ? "<strong>" + (rpMode ? "Resource" : "Data") + "pack" + (packFiles.length == 1 ? "" : "s") + " found:</strong><br>" +
@@ -330,12 +327,6 @@ async function mainScan() {
 		: "") +
 		(packFiles.length == 0 && (filetypes.fsh || filetypes.vsh || filetypes.xcf || filetypes.glsl) ? "<strong>Shader found</strong><br>" : "") +
 
-		(Object.keys(commands).length > 0 ?
-			"<strong>Total amount of commands: " + localize(Object.keys(commands).reduce((a, b) => a + commands[b], 0)) + "</strong><br>" +
-			"<span class='indented'>Unique command names: " + localize(Object.keys(commands).length) + "</span><br>"
-		: "") +
-		(comments > 0 ? "<span class='indented'>Comments: " + localize(comments) + "</span><br>" : "") +
-		(empty > 0 ? "<span class='indented'>Empty lines: " + localize(empty) + "</span><br>" : "") +
 		"<strong>Pack file types found:</strong><br>" +
 		Object.keys(filetypes).sort((a, b) => filetypes[b] - filetypes[a]).map(type => "<span class='indented'>." + type + ": " + localize(filetypes[type]) + "</span><br>").join("") +
 		(Object.keys(filetypesOther).length > 0 ?
@@ -343,16 +334,6 @@ async function mainScan() {
 			"<strong>Non-pack file types found:</strong></summary>" +
 			Object.keys(filetypesOther).sort((a, b) => filetypesOther[b] - filetypesOther[a]).map(type => "<span class='indented'>" + type + ": " + localize(filetypesOther[type]) + "</span><br>").join("") +
 			"</details><br>"
-		: "") +
-		(uncalledFunctions.length > 0 ?
-			"<strong>Uncalled functions:</strong><br>" +
-			uncalledFunctions.map(func => "<span class='indented'>" + func + "</span><br>").join("") +
-			"<br>"
-		: "") +
-		(missingFunctions.length > 0 ?
-			"<strong>Missing functions:</strong><br>" +
-			missingFunctions.map(func => "<span class='indented'>" + func + "</span><br>").join("") +
-			"<br>"
 		: "") +
 		(emptyFiles.length > 0 ?
 			"<strong>Empty files:</strong><br>" +
@@ -396,10 +377,18 @@ const collapsible = new Set([
 	"cmdsBehindMacros",
 	"cmdsBehindReturn",
 
-	"folders",
 	"tags",
-	"selectors"
+	"selectors",
+
+	"uncalledFunctions",
+	"missingFunctions"
 ])
+
+const iconUrl = (icon = "") =>
+	vscode.Uri.from({
+		scheme: "data",
+		path: "image/png;base64," + icon + ""
+	})
 
 class PackAnalyzer {
 	constructor() {
@@ -489,41 +478,84 @@ class PackAnalyzer {
 	getTreeItem(element) {
 		log("getTreeItem: " + JSON.stringify(element))
 
-		let label = element.item
-		const treeItem = new vscode.TreeItem(label)
-
-		if (element.item == "files") label = "Scanned files: " + files
-		else if (element.item == "error") label = "Scanning errors: " + error
-		else if (element.item == "rpMode") label = "Resource pack mode: " + (rpMode ? "enabled" : "disabled")
-
-		else if (element.item == "dpExclusive") label = "Data pack"
-		else if (element.parent == "folders") label = element.item + ": " + dpExclusive.folders[element.item]
-		else if (element.parent == "tags") label = element.item + ": " + dpExclusive.tags[element.item]
-		else if (element.item == "scoreboards") label = "Scoreboards: " + dpExclusive.scoreboards
-		else if (element.item == "selectors") label = "Selectors: " + Object.keys(dpExclusive.selectors).length
-		else if (element.parent == "selectors") label = "@" + element.item + ": " + dpExclusive.selectors[element.item]
-
-		else if (element.item == "rpExclusive") label = "Resource pack"
-		else if (element.parent == "rpExclusive") label = element.item + ": " + rpExclusive[element.item]
-
-		else if (element.item == "filetypes") label = "File types: " + Object.keys(filetypes).length
-		else if (element.parent == "filetypes") label = "." + element.item + ": " + filetypes[element.item]
-		else if (element.item == "filetypesOther") label = "Non-pack file types: " + Object.keys(filetypesOther).length
-		else if (element.parent == "filetypesOther") label = element.item + ": " + filetypesOther[element.item]
-
-		else if (element.item == "commands") label = "Commands: " + Object.keys(commands).length
-		else if (element.parent == "commands") {
-			label = element.item + ": " + commands[element.item]
-			if (cmdsBehindExecute[element.item]) treeItem.description = "(" + cmdsBehindExecute[element.item] + " behind execute)"
-		} else if (element.item == "cmdsBehindMacros") label = "Commands behind macros: " + Object.keys(cmdsBehindMacros).length
-		else if (element.item == "cmdsBehindReturn") label = "Commands behind return: " + Object.keys(cmdsBehindReturn).length
-
-		else if (element.item == "comments") label = "Comments: " + comments
-		else if (element.item == "empty") label = "Empty lines: " + empty
-		else if (element.item == "emptyFiles") label = "Empty files: " + emptyFiles.length
-
-		treeItem.label = label
+		const treeItem = new vscode.TreeItem(element.item)
+		treeItem.iconPath = iconUrl("{DPICON|namespace}")
 		if (collapsible.has(element.item)) treeItem.collapsibleState = vscode.TreeItemCollapsibleState.Collapsed
+
+		if (element.item == "files") treeItem.label = "Scanned files: " + localize(files)
+		else if (element.item == "error") treeItem.label = "Scanning errors: " + localize(error)
+		else if (element.item == "rpMode") treeItem.label = "Resource pack mode: " + (rpMode ? "enabled" : "disabled")
+
+		else if (element.item == "dpExclusive") {
+			treeItem.label = "Data pack"
+			treeItem.iconPath = iconUrl("{DPICON|mcfunction}")
+		} else if (element.item == "tags") {
+			treeItem.label = "Tags"
+			treeItem.description = "(" + localize(Object.values(dpExclusive.tags).reduce((a, b) => a + b)) + " total, " + localize(Object.keys(dpExclusive.tags).length) + " unique)"
+			treeItem.iconPath = iconUrl("{DPICON|tags}")
+		} else if (element.parent == "tags") {
+			treeItem.label = element.item + ": " + localize(dpExclusive.tags[element.item])
+			treeItem.iconPath = iconUrl("{DPICON|tags}")
+		} else if (element.item == "scoreboards") treeItem.label = "Scoreboards: " + localize(dpExclusive.scoreboards)
+		else if (element.item == "selectors") {
+			treeItem.label = "Selectors"
+			treeItem.iconPath = iconUrl("{DPICON|mcfunction}")
+		} else if (element.parent == "selectors") {
+			treeItem.label = "@" + element.item + ": " + localize(dpExclusive.selectors[element.item])
+			treeItem.iconPath = iconUrl("{DPICON|mcfunction}")
+		} else if (element.item == "rpExclusive") {
+			treeItem.label = "Resource pack"
+			treeItem.iconPath = iconUrl("{DPICON|assets}")
+		} else if (element.parent == "rpExclusive") {
+			treeItem.label = element.item + ": " + localize(rpExclusive[element.item])
+
+			// Must be hardcoded due to static replacement in vscExtension/build.js
+			if (element.item == "atlases") treeItem.iconPath = iconUrl("{DPICON|atlases}")
+			else if (element.item == "blockstates") treeItem.iconPath = iconUrl("{DPICON|blockstates}")
+			else if (element.item == "font") treeItem.iconPath = iconUrl("{DPICON|font}")
+			else if (element.item == "lang") treeItem.iconPath = iconUrl("{DPICON|lang}")
+			else if (element.item == "models") treeItem.iconPath = iconUrl("{DPICON|models}")
+			else if (element.item == "particles") treeItem.iconPath = iconUrl("{DPICON|particles}")
+			else if (element.item == "shaders") treeItem.iconPath = iconUrl("{DPICON|shaders}")
+			else if (element.item == "sounds") treeItem.iconPath = iconUrl("{DPICON|sounds}")
+			else if (element.item == "texts") treeItem.iconPath = iconUrl("{DPICON|texts}")
+			else if (element.item == "textures") treeItem.iconPath = iconUrl("{DPICON|textures}")
+		} else if (element.item == "filetypes") {
+			treeItem.label = "Files"
+			treeItem.description = "(parsed only; " + localize(Object.values(filetypes).reduce((a, b) => a + b)) + " total, " + localize(Object.keys(filetypes).length) + " unique)"
+			treeItem.iconPath = iconUrl("{DPICON|folder}")
+		} else if (element.parent == "filetypes") treeItem.label = "." + element.item + ": " + localize(filetypes[element.item])
+
+		else if (element.item == "commands") {
+			treeItem.label = "Commands"
+			treeItem.description = "(" + localize(Object.values(commands).reduce((a, b) => a + b)) + " total, " + localize(Object.keys(commands).length) + " unique)"
+		} else if (element.parent == "commands") {
+			treeItem.label = element.item + ": " + localize(commands[element.item])
+			if (cmdsBehindExecute[element.item]) {
+				treeItem.description = (element.item == "execute" ? "⚠️ " : "") + "(" + localize(cmdsBehindExecute[element.item]) + " behind execute)"
+				if (element.item == "execute") treeItem.tooltip = "⚠️ (\"... run execute ...\" equals \"... ...\")"
+			}
+		} else if (element.item == "cmdsBehindMacros") treeItem.label = "Commands behind macros: " + localize(Object.keys(cmdsBehindMacros).length)
+		else if (element.parent == "cmdsBehindMacros") treeItem.label = element.item + ": " + localize(cmdsBehindMacros[element.item])
+		else if (element.item == "cmdsBehindReturn") treeItem.label = "Commands behind return: " + localize(Object.keys(cmdsBehindReturn).length)
+		else if (element.parent == "cmdsBehindReturn") treeItem.label = element.item + ": " + localize(cmdsBehindReturn[element.item])
+
+		else if (element.item == "comments") {
+			treeItem.label = "Comments: " + localize(comments)
+			treeItem.iconPath = iconUrl("{DPICON|md}")
+		} else if (element.item == "empty") {
+			treeItem.label = "Empty lines: " + localize(empty)
+			treeItem.iconPath = iconUrl("{DPICON|misc}")
+		} else if (element.item == "emptyFiles") {
+			treeItem.label = "Empty files: " + localize(emptyFiles.length)
+			treeItem.iconPath = iconUrl("{DPICON|misc}")
+		} else if (element.item == "uncalledFunctions") {
+			treeItem.label = "Uncalled functions: " + localize(dpExclusive.uncalledFunctions.length)
+			treeItem.iconPath = iconUrl("{DPICON|mcfunction}")
+		} else if (element.item == "missingFunctions") {
+			treeItem.label = "Missing functions: " + localize(dpExclusive.missingFunctions.length)
+			treeItem.iconPath = iconUrl("{DPICON|mcfunction}")
+		}
 
 		return treeItem
 	}
@@ -534,26 +566,26 @@ class PackAnalyzer {
 		if (element) {
 			const item = element.item
 			if (item == "dpExclusive") return [
-				Object.keys(dpExclusive.folders).reduce((a, b) => a + dpExclusive.folders[b], 0) > 0 ? "folders" : void 0,
 				Object.keys(dpExclusive.tags).reduce((a, b) => a + dpExclusive.tags[b], 0) > 0 ? "tags" : void 0,
 				dpExclusive.scoreboards > 0 ? "scoreboards" : void 0,
 				Object.keys(dpExclusive.selectors).reduce((a, b) => a + dpExclusive.selectors[b], 0) > 0 ? "selectors" : void 0,
-				"uncalledFunctions",
-				"missingFunctions"
+				dpExclusive.uncalledFunctions.length > 0 ? "uncalledFunctions" : void 0,
+				dpExclusive.missingFunctions.length > 0 ? "missingFunctions" : void 0
 			].filter(Boolean).map(child => ({item: child, parent: item}))
 
-			if (item == "folders") return Object.keys(dpExclusive.folders).filter(key => dpExclusive.folders[key] > 0).map(child => ({item: child, parent: item}))
 			if (item == "tags") return Object.keys(dpExclusive.tags).filter(key => dpExclusive.tags[key] > 0).map(child => ({item: child, parent: item}))
 			if (item == "selectors") return Object.keys(dpExclusive.selectors).filter(key => dpExclusive.selectors[key] > 0).map(child => ({item: child, parent: item}))
 
 			if (item == "rpExclusive") return Object.keys(rpExclusive).filter(key => rpExclusive[key] > 0).map(child => ({item: child, parent: item}))
 
 			if (item == "filetypes") return Object.keys(filetypes).map(child => ({item: child, parent: item}))
-			if (item == "filetypesOther") return Object.keys(filetypesOther).map(child => ({item: child, parent: item}))
 
 			if (item == "commands") return Object.keys(commands).map(child => ({item: child, parent: item}))
 			if (item == "cmdsBehindMacros") return Object.keys(cmdsBehindMacros).map(child => ({item: child, parent: item}))
 			if (item == "cmdsBehindReturn") return Object.keys(cmdsBehindReturn).map(child => ({item: child, parent: item}))
+
+			if (item == "missingFunctions") return dpExclusive.missingFunctions.map(child => ({item: child, parent: item}))
+			if (item == "uncalledFunctions") return dpExclusive.uncalledFunctions.map(child => ({item: child, parent: item}))
 		}
 
 		const fileList = await vscode.workspace.findFiles("**/*")
@@ -569,6 +601,9 @@ class PackAnalyzer {
 			return []
 		}
 
+		dpExclusive.uncalledFunctions = dpExclusive.functions.filter(funcName => !dpExclusive.functionCalls.some(func => func.target == funcName))
+		dpExclusive.missingFunctions = [...new Set(dpExclusive.functionCalls.filter(func => !dpExclusive.functions.includes(func.target)).map(func => func.target))]
+
 		return [
 			"files",
 			error > 0 ? "error" : void 0,
@@ -576,9 +611,7 @@ class PackAnalyzer {
 
 			rpMode ? void 0 : "dpExclusive",
 			rpMode ? "rpExclusive" : void 0,
-
 			Object.keys(filetypes).length > 0 ? "filetypes" : void 0,
-			Object.keys(filetypesOther).length > 0 ? "filetypesOther" : void 0,
 
 			Object.keys(commands).length > 0 ? "commands" : void 0,
 			Object.keys(cmdsBehindMacros).length > 0 ? "cmdsBehindMacros" : void 0,
