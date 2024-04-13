@@ -35,7 +35,7 @@ jobs:
         with:
           allowUpdates: true
           artifactErrorsFailBuild: true
-          artifacts: /vscExtension/out/pack-analyzer.vsix
+          artifacts: vscExtension/out/pack-analyzer.vsix
           body: |
             This is an automatically generated **preview** release of the Pack Analyzer VS Code extension.
 
@@ -47,4 +47,4 @@ jobs:
           commit: ${{ github.sha }}
           makeLatest: false
           prerelease: true
-          tag: v${{ env.EXTENSION_VERSION }}-preview
+          tag: ext-v${{ env.EXTENSION_VERSION }}-preview
