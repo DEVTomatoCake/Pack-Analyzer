@@ -28,6 +28,7 @@ jobs:
         run: |
           cd vscExtension
           npm i --omit=optional --include=dev --no-fund --progress=false
+          node build.js
           npm run pack
 
       - name: "🚀 release extension"

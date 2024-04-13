@@ -14,6 +14,21 @@ updates:
         patterns:
           - "@html-parser/eslint-plugin"
           - "@html-parser/parser"
+  - package-ecosystem: "npm"
+    directory: "/vscExtension"
+    schedule:
+      interval: "weekly"
+      day: "saturday"
+      time: "05:00"
+      timezone: "Europe/Berlin"
+    assignees:
+      - "DEVTomatoCake"
+    groups:
+      vscode:
+        patterns:
+          - "@types/node"
+          - "@types/vscode"
+          - "@vscode/vsce"
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
