@@ -496,17 +496,20 @@ class PackAnalyzer {
 		else if (element.item == "error") label = "Scanning errors: " + error
 		else if (element.item == "rpMode") label = "Resource pack mode: " + (rpMode ? "enabled" : "disabled")
 
-		else if (element.item == "dpExclusive") label = "Data pack exclusive"
-		else if (element.item == "rpExclusive") label = "Resource pack exclusive"
+		else if (element.item == "dpExclusive") label = "Data pack"
+		else if (element.parent == "folders") label = element.item + ": " + dpExclusive.folders[element.item]
+		else if (element.parent == "tags") label = element.item + ": " + dpExclusive.tags[element.item]
+		else if (element.item == "scoreboards") label = "Scoreboards: " + dpExclusive.scoreboards
+		else if (element.item == "selectors") label = "Selectors: " + Object.keys(dpExclusive.selectors).length
+		else if (element.parent == "selectors") label = "@" + element.item + ": " + dpExclusive.selectors[element.item]
+
+		else if (element.item == "rpExclusive") label = "Resource pack"
+		else if (element.parent == "rpExclusive") label = element.item + ": " + rpExclusive[element.item]
 
 		else if (element.item == "filetypes") label = "File types: " + Object.keys(filetypes).length
 		else if (element.parent == "filetypes") label = "." + element.item + ": " + filetypes[element.item]
 		else if (element.item == "filetypesOther") label = "Non-pack file types: " + Object.keys(filetypesOther).length
-		else if (element.parent == "filetypesOther") label = "." + element.item + ": " + filetypesOther[element.item]
-
-		else if (element.item == "scoreboards") label = "Scoreboards: " + dpExclusive.scoreboards
-		else if (element.item == "selectors") label = "Selectors: " + Object.keys(dpExclusive.selectors).length
-		else if (element.parent == "selectors") label = "@" + element.item + ": " + dpExclusive.selectors[element.item]
+		else if (element.parent == "filetypesOther") label = element.item + ": " + filetypesOther[element.item]
 
 		else if (element.item == "commands") label = "Commands: " + Object.keys(commands).length
 		else if (element.parent == "commands") {
@@ -531,67 +534,19 @@ class PackAnalyzer {
 		if (element) {
 			const item = element.item
 			if (item == "dpExclusive") return [
-				"folders",
-				"tags",
+				Object.keys(dpExclusive.folders).reduce((a, b) => a + dpExclusive.folders[b], 0) > 0 ? "folders" : void 0,
+				Object.keys(dpExclusive.tags).reduce((a, b) => a + dpExclusive.tags[b], 0) > 0 ? "tags" : void 0,
 				dpExclusive.scoreboards > 0 ? "scoreboards" : void 0,
 				Object.keys(dpExclusive.selectors).reduce((a, b) => a + dpExclusive.selectors[b], 0) > 0 ? "selectors" : void 0,
 				"uncalledFunctions",
 				"missingFunctions"
 			].filter(Boolean).map(child => ({item: child, parent: item}))
-			if (item == "folders") return [
-				"advancements",
-				"banner_pattern",
-				"chat_type",
-				"damage_type",
-				"datapacks",
-				"dimension",
-				"dimension_type",
-				"item_modifiers",
-				"loot_tables",
-				"predicates",
-				"recipes",
-				"structures",
-				"tags",
-				"trim_material",
-				"trim_pattern",
-				"wolf_variant",
-				"worldgen"
-			].filter(Boolean).map(child => ({item: child, parent: item}))
-			if (item == "tags") return [
-				"banner_pattern",
-				"blocks",
-				"cat_variant",
-				"damage_types",
-				"entity_types",
-				"fluids",
-				"functions",
-				"game_events",
-				"instrument",
-				"items",
-				"painting_variant",
-				"point_of_interest_type",
-				"worldgen"
-			].filter(Boolean).map(child => ({item: child, parent: item}))
-			if (item == "selectors") return [
-				dpExclusive.selectors.a > 0 ? "a" : void 0,
-				dpExclusive.selectors.e > 0 ? "e" : void 0,
-				dpExclusive.selectors.p > 0 ? "p" : void 0,
-				dpExclusive.selectors.r > 0 ? "r" : void 0,
-				dpExclusive.selectors.s > 0 ? "s" : void 0
-			].filter(Boolean).map(child => ({item: child, parent: item}))
 
-			if (item == "rpExclusive") return [
-				"atlases",
-				"blockstates",
-				"font",
-				"lang",
-				"models",
-				"particles",
-				"shaders",
-				"sounds",
-				"texts",
-				"textures"
-			].filter(Boolean).map(child => ({item: child, parent: item}))
+			if (item == "folders") return Object.keys(dpExclusive.folders).filter(key => dpExclusive.folders[key] > 0).map(child => ({item: child, parent: item}))
+			if (item == "tags") return Object.keys(dpExclusive.tags).filter(key => dpExclusive.tags[key] > 0).map(child => ({item: child, parent: item}))
+			if (item == "selectors") return Object.keys(dpExclusive.selectors).filter(key => dpExclusive.selectors[key] > 0).map(child => ({item: child, parent: item}))
+
+			if (item == "rpExclusive") return Object.keys(rpExclusive).filter(key => rpExclusive[key] > 0).map(child => ({item: child, parent: item}))
 
 			if (item == "filetypes") return Object.keys(filetypes).map(child => ({item: child, parent: item}))
 			if (item == "filetypesOther") return Object.keys(filetypesOther).map(child => ({item: child, parent: item}))
@@ -619,8 +574,8 @@ class PackAnalyzer {
 			error > 0 ? "error" : void 0,
 			"rpMode",
 
-			"dpExclusive",
-			"rpExclusive",
+			rpMode ? void 0 : "dpExclusive",
+			rpMode ? "rpExclusive" : void 0,
 
 			Object.keys(filetypes).length > 0 ? "filetypes" : void 0,
 			Object.keys(filetypesOther).length > 0 ? "filetypesOther" : void 0,

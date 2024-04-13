@@ -47,4 +47,4 @@ jobs:
           commit: ${{ github.sha }}
           makeLatest: false
           prerelease: true
-          tag: ext-v${{ env.EXTENSION_VERSION }}-preview
+          tag: vsc-v${{ env.EXTENSION_VERSION }}
