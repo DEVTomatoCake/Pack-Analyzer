@@ -38,4 +38,4 @@ jobs:
             You can install it by downloading the `.vsix` file below and installing it in [Visual Studio Code](https://code.visualstudio.com) or in e.g. VSCodium.
 
             Triggering commit:
-            [`${{ github.sha::7 }}`](https://github.com/DEVTomatoCake/Pack-Analyzer/commit/${{ github.sha }}) ${{ github.event.head_commit.message }}
+            [`${{ github.sha }}`](https://github.com/DEVTomatoCake/Pack-Analyzer/commit/${{ github.sha }}) ${{ github.event.head_commit.message }}
