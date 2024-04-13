@@ -21,3 +21,5 @@ updates:
       day: "saturday"
       time: "05:00"
       timezone: "Europe/Berlin"
+    assignees:
+      - "DEVTomatoCake"

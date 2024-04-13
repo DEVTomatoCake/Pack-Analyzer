@@ -115,7 +115,6 @@ async function processEntries(entries) {
 			files++
 
 			const processFile = result => {
-				log("Processing file " + filePath + " (" + result.length + " characters)")
 				done++
 				if (result.trim() == "") return emptyFiles.push(filePath)
 
@@ -264,196 +263,115 @@ async function processEntries(entries) {
 	}
 
 	log("Successfully processed " + done + " files with " + error + " errors")
-	log(JSON.stringify(filetypes, null, "\t"))
-	log(JSON.stringify(filetypesOther, null, "\t"))
-	log(JSON.stringify(dpExclusive, null, "\t"))
-	log(JSON.stringify(cmdsBehindExecute, null, "\t"))
 }
 
-async function mainScan(hasData = false) {
-	files = 0
-	done = 0
-	error = 0
-	rpMode = document.getElementById("radiorp").checked
+async function mainScan() {
+	const uncalledFunctions = dpExclusive.functions.filter(funcName => !dpExclusive.functionCalls.some(func => func.target == funcName))
+	const missingFunctions = [...new Set(dpExclusive.functionCalls.filter(func => !dpExclusive.functions.includes(func.target)).map(func => func.target))]
 
-	filetypes = {}
-	filetypesOther = {}
-	packFiles = []
-	packImages = []
-	commands = {}
-	cmdsBehindExecute = {}
-	cmdsBehindMacros = {}
-	cmdsBehindReturn = {}
-	comments = 0
-	empty = 0
-	emptyFiles = []
-	dpExclusive = {
-		folders: {
-			advancements: 0,
-			loot_tables: 0,
-			recipes: 0,
-			predicates: 0,
-			dimension: 0,
-			dimension_type: 0,
-			worldgen: 0
-		},
-		tags: {
-			banner_pattern: 0,
-			blocks: 0,
-			cat_variant: 0,
-			entity_types: 0,
-			fluids: 0,
-			functions: 0,
-			game_events: 0,
-			instrument: 0,
-			items: 0,
-			painting_variant: 0,
-			point_of_interest_type: 0,
-			worldgen: 0
-		},
-		scoreboards: 0,
-		selectors: {
-			a: 0,
-			e: 0,
-			p: 0,
-			r: 0,
-			s: 0
-		},
-		functions: ["#minecraft:load", "#minecraft:tick"],
-		functionCalls: [{target: "#minecraft:load"}, {target: "#minecraft:tick"}]
-	}
-	rpExclusive = {
-		atlases: 0,
-		blockstates: 0,
-		font: 0,
-		lang: 0,
-		models: 0,
-		particles: 0,
-		shaders: 0,
-		sounds: 0,
-		texts: 0,
-		textures: 0
-	}
+	let html =
+		(packImages.length > 0 ? "<div style='display: flex;'>" + packImages.map(img => "<img src='" + img + "' width='64' height='64'>") + "</div>" : "") +
+		(packFiles.length > 0 ? "<strong>" + (rpMode ? "Resource" : "Data") + "pack" + (packFiles.length == 1 ? "" : "s") + " found:</strong><br>" +
+			packFiles.map(pack => {
+				let oldestFormat = pack.pack.pack_format
+				let newestFormat = pack.pack.pack_format
+				if (pack.pack.supported_formats && typeof pack.pack.supported_formats == "object") {
+					if (Array.isArray(pack.pack.supported_formats)) {
+						oldestFormat = pack.pack.supported_formats[0]
+						newestFormat = pack.pack.supported_formats[1]
+					} else {
+						oldestFormat = pack.pack.supported_formats.min_inclusive
+						newestFormat = pack.pack.supported_formats.max_inclusive
+					}
+				}
 
-	interval = setInterval(() => {
-		document.getElementById("progress").innerText = Math.round(done / files * 100) + "% scanned" + (error > 0 ? " - " + error + " errors" : "")
-		if (done + error == files || hasData) {
-			clearInterval(interval)
-			if (files == 0) return document.getElementById("progress").innerText = "No files found!"
-			document.getElementById("resultButtons").hidden = false
-			if (error == 0) document.getElementById("progress").innerText = ""
-			if (Object.values(filetypes).reduce((a, b) => a + b) == 0) document.getElementById("progress").innerHTML = "No " + (rpMode ? "resource" : "data") + "pack files found!"
+				let description = ""
+				if (pack.pack && pack.pack.description) {
+					if (typeof pack.pack.description == "object") {
+						const desc = Array.isArray(pack.pack.description) ? pack.pack.description : [pack.pack.description]
+						desc.forEach(d => {
+							if (d.text || d.translation) description += d.text || d.translation
+						})
+					} else description = pack.pack.description
+				} else description = "<i>No description</i>"
 
-			const uncalledFunctions = dpExclusive.functions.filter(funcName => !dpExclusive.functionCalls.some(func => func.target == funcName))
-			const missingFunctions = [...new Set(dpExclusive.functionCalls.filter(func => !dpExclusive.functions.includes(func.target)).map(func => func.target))]
+				return "<span class='indented'>" + description.replace(/§[0-9a-flmnor]/gi, "") +
+					(versions.some(ver => (rpMode ? ver.resourcepack_version : ver.datapack_version) == pack.pack.pack_format) ?
+						"<br><span class='indented2'>Supported versions: " +
+						(versions.findLast(ver => (rpMode ? ver.resourcepack_version : ver.datapack_version) == oldestFormat)?.name || "?") +
+						" - " +
+						(versions.find(ver => (rpMode ? ver.resourcepack_version : ver.datapack_version) == newestFormat)?.name || "?") +
+						"</span>"
+					: "") +
+					"</span>" +
+					(pack.features?.enabled?.length > 0 ?
+						"<br><span class='indented2'>Selected internal features: " +
+						pack.features.enabled.map(feature => "<code>" + feature + "</code>").join(", ") + "</span>"
+					: "") +
+					(pack.filter?.block?.length > 0 ? "<br><span class='indented2'>Pack filters:</span><br><small>" + pack.filter.block.map(filter =>
+						"<span class='indented3'>" +
+						(filter.namespace ? "Namespace: <code>" + filter.namespace + "</code>" : "") +
+						(filter.namespace && filter.path ? ", " : "") +
+						(filter.path ? "Path: <code>" + filter.path + "</code>" : "") +
+						"</span>"
+					).join("<br>") + "</small>" : "")
+			}).join("<br>") + "<br>"
+		: "") +
+		(packFiles.length == 0 && (filetypes.fsh || filetypes.vsh || filetypes.xcf || filetypes.glsl) ? "<strong>Shader found</strong><br>" : "") +
 
-			let html =
-				(packImages.length > 0 ? "<div style='display: flex;'>" + packImages.map(img => "<img src='" + img + "' width='64' height='64'>") + "</div>" : "") +
-				(packFiles.length > 0 ? "<strong>" + (rpMode ? "Resource" : "Data") + "pack" + (packFiles.length == 1 ? "" : "s") + " found:</strong><br>" +
-					packFiles.map(pack => {
-						let oldestFormat = pack.pack.pack_format
-						let newestFormat = pack.pack.pack_format
-						if (pack.pack.supported_formats && typeof pack.pack.supported_formats == "object") {
-							if (Array.isArray(pack.pack.supported_formats)) {
-								oldestFormat = pack.pack.supported_formats[0]
-								newestFormat = pack.pack.supported_formats[1]
-							} else {
-								oldestFormat = pack.pack.supported_formats.min_inclusive
-								newestFormat = pack.pack.supported_formats.max_inclusive
-							}
-						}
+		(Object.keys(commands).length > 0 ?
+			"<strong>Total amount of commands: " + localize(Object.keys(commands).reduce((a, b) => a + commands[b], 0)) + "</strong><br>" +
+			"<span class='indented'>Unique command names: " + localize(Object.keys(commands).length) + "</span><br>"
+		: "") +
+		(comments > 0 ? "<span class='indented'>Comments: " + localize(comments) + "</span><br>" : "") +
+		(empty > 0 ? "<span class='indented'>Empty lines: " + localize(empty) + "</span><br>" : "") +
+		"<strong>Pack file types found:</strong><br>" +
+		Object.keys(filetypes).sort((a, b) => filetypes[b] - filetypes[a]).map(type => "<span class='indented'>." + type + ": " + localize(filetypes[type]) + "</span><br>").join("") +
+		(Object.keys(filetypesOther).length > 0 ?
+			"<details><summary>" +
+			"<strong>Non-pack file types found:</strong></summary>" +
+			Object.keys(filetypesOther).sort((a, b) => filetypesOther[b] - filetypesOther[a]).map(type => "<span class='indented'>" + type + ": " + localize(filetypesOther[type]) + "</span><br>").join("") +
+			"</details><br>"
+		: "") +
+		(uncalledFunctions.length > 0 ?
+			"<strong>Uncalled functions:</strong><br>" +
+			uncalledFunctions.map(func => "<span class='indented'>" + func + "</span><br>").join("") +
+			"<br>"
+		: "") +
+		(missingFunctions.length > 0 ?
+			"<strong>Missing functions:</strong><br>" +
+			missingFunctions.map(func => "<span class='indented'>" + func + "</span><br>").join("") +
+			"<br>"
+		: "") +
+		(emptyFiles.length > 0 ?
+			"<strong>Empty files:</strong><br>" +
+			emptyFiles.map(func => "<span class='indented'>" + func + "</span><br>").join("") +
+			"<br>"
+		: "") +
 
-						let description = ""
-						if (pack.pack && pack.pack.description) {
-							if (typeof pack.pack.description == "object") {
-								const desc = Array.isArray(pack.pack.description) ? pack.pack.description : [pack.pack.description]
-								desc.forEach(d => {
-									if (d.text || d.translation) description += d.text || d.translation
-								})
-							} else description = pack.pack.description
-						} else description = "<i>No description</i>"
+		(dpExclusive.scoreboards > 0 ? "<strong>Scoreboards created: " + localize(dpExclusive.scoreboards) + "</strong><br>" : "") +
+		(!rpMode && Object.values(dpExclusive.selectors).reduce((a, b) => a + b) != 0 ? "<strong>Selectors used:</strong><br>" : "") +
+		Object.keys(dpExclusive.selectors).filter(i => dpExclusive.selectors[i] > 0).sort((a, b) => dpExclusive.selectors[b] - dpExclusive.selectors[a])
+			.map(type => "<span class='indented'>@" + type + ": " + localize(dpExclusive.selectors[type]) + "</span><br>").join("") +
+		(!rpMode && Object.values(dpExclusive.folders).reduce((a, b) => a + b) != 0 ? "<strong>Data pack features used:</strong><br>" : "") +
+		Object.keys(dpExclusive.folders).filter(i => dpExclusive.folders[i] > 0).sort((a, b) => dpExclusive.folders[b] - dpExclusive.folders[a])
+			.map(type => "<span class='indented'>" + type + ": " + localize(dpExclusive.folders[type]) + "</span><br>").join("") +
+		(!rpMode && Object.values(dpExclusive.tags).reduce((a, b) => a + b) != 0 ? "<strong>Tags used:</strong><br>" : "") +
+		Object.keys(dpExclusive.tags).filter(i => dpExclusive.tags[i] > 0).sort((a, b) => dpExclusive.tags[b] - dpExclusive.tags[a])
+			.map(type => "<span class='indented'>" + type + ": " + localize(dpExclusive.tags[type]) + "</span><br>").join("") +
 
-						return "<span class='indented'>" + description.replace(/§[0-9a-flmnor]/gi, "") +
-							(versions.some(ver => (rpMode ? ver.resourcepack_version : ver.datapack_version) == pack.pack.pack_format) ?
-								"<br><span class='indented2'>Supported versions: " +
-								(versions.findLast(ver => (rpMode ? ver.resourcepack_version : ver.datapack_version) == oldestFormat)?.name || "?") +
-								" - " +
-								(versions.find(ver => (rpMode ? ver.resourcepack_version : ver.datapack_version) == newestFormat)?.name || "?") +
-								"</span>"
-							: "") +
-							"</span>" +
-							(pack.features?.enabled?.length > 0 ?
-								"<br><span class='indented2'>Selected internal features: " +
-								pack.features.enabled.map(feature => "<code>" + feature + "</code>").join(", ") + "</span>"
-							: "") +
-							(pack.filter?.block?.length > 0 ? "<br><span class='indented2'>Pack filters:</span><br><small>" + pack.filter.block.map(filter =>
-								"<span class='indented3'>" +
-								(filter.namespace ? "Namespace: <code>" + filter.namespace + "</code>" : "") +
-								(filter.namespace && filter.path ? ", " : "") +
-								(filter.path ? "Path: <code>" + filter.path + "</code>" : "") +
-								"</span>"
-							).join("<br>") + "</small>" : "")
-					}).join("<br>") + "<br>"
-				: "") +
-				(packFiles.length == 0 && (filetypes.fsh || filetypes.vsh || filetypes.xcf || filetypes.glsl) ? "<strong>Shader found</strong><br>" : "") +
+		(rpMode && Object.values(rpExclusive).reduce((a, b) => a + b) != 0 ? "<br><strong>Resource pack features used:</strong><br>" : "") +
+		Object.keys(rpExclusive).filter(i => rpExclusive[i] > 0).sort((a, b) => rpExclusive[b] - rpExclusive[a])
+			.map(type => "<span class='indented'>" + type + ": " + localize(rpExclusive[type]) + "</span><br>").join("")
 
-				(Object.keys(commands).length > 0 ?
-					"<strong>Total amount of commands: " + localize(Object.keys(commands).reduce((a, b) => a + commands[b], 0)) + "</strong><br>" +
-					"<span class='indented'>Unique command names: " + localize(Object.keys(commands).length) + "</span><br>"
-				: "") +
-				(comments > 0 ? "<span class='indented'>Comments: " + localize(comments) + "</span><br>" : "") +
-				(empty > 0 ? "<span class='indented'>Empty lines: " + localize(empty) + "</span><br>" : "") +
-				"<strong>Pack file types found:</strong><br>" +
-				Object.keys(filetypes).sort((a, b) => filetypes[b] - filetypes[a]).map(type => "<span class='indented'>." + type + ": " + localize(filetypes[type]) + "</span><br>").join("") +
-				(Object.keys(filetypesOther).length > 0 ?
-					"<details><summary>" +
-					"<strong>Non-pack file types found:</strong></summary>" +
-					Object.keys(filetypesOther).sort((a, b) => filetypesOther[b] - filetypesOther[a]).map(type => "<span class='indented'>" + type + ": " + localize(filetypesOther[type]) + "</span><br>").join("") +
-					"</details><br>"
-				: "") +
-				(uncalledFunctions.length > 0 ?
-					"<strong>Uncalled functions:</strong><br>" +
-					uncalledFunctions.map(func => "<span class='indented'>" + func + "</span><br>").join("") +
-					"<br>"
-				: "") +
-				(missingFunctions.length > 0 ?
-					"<strong>Missing functions:</strong><br>" +
-					missingFunctions.map(func => "<span class='indented'>" + func + "</span><br>").join("") +
-					"<br>"
-				: "") +
-				(emptyFiles.length > 0 ?
-					"<strong>Empty files:</strong><br>" +
-					emptyFiles.map(func => "<span class='indented'>" + func + "</span><br>").join("") +
-					"<br>"
-				: "") +
-
-				(dpExclusive.scoreboards > 0 ? "<strong>Scoreboards created: " + localize(dpExclusive.scoreboards) + "</strong><br>" : "") +
-				(!rpMode && Object.values(dpExclusive.selectors).reduce((a, b) => a + b) != 0 ? "<strong>Selectors used:</strong><br>" : "") +
-				Object.keys(dpExclusive.selectors).filter(i => dpExclusive.selectors[i] > 0).sort((a, b) => dpExclusive.selectors[b] - dpExclusive.selectors[a])
-					.map(type => "<span class='indented'>@" + type + ": " + localize(dpExclusive.selectors[type]) + "</span><br>").join("") +
-				(!rpMode && Object.values(dpExclusive.folders).reduce((a, b) => a + b) != 0 ? "<strong>Data pack features used:</strong><br>" : "") +
-				Object.keys(dpExclusive.folders).filter(i => dpExclusive.folders[i] > 0).sort((a, b) => dpExclusive.folders[b] - dpExclusive.folders[a])
-					.map(type => "<span class='indented'>" + type + ": " + localize(dpExclusive.folders[type]) + "</span><br>").join("") +
-				(!rpMode && Object.values(dpExclusive.tags).reduce((a, b) => a + b) != 0 ? "<strong>Tags used:</strong><br>" : "") +
-				Object.keys(dpExclusive.tags).filter(i => dpExclusive.tags[i] > 0).sort((a, b) => dpExclusive.tags[b] - dpExclusive.tags[a])
-					.map(type => "<span class='indented'>" + type + ": " + localize(dpExclusive.tags[type]) + "</span><br>").join("") +
-
-				(rpMode && Object.values(rpExclusive).reduce((a, b) => a + b) != 0 ? "<br><strong>Resource pack features used:</strong><br>" : "") +
-				Object.keys(rpExclusive).filter(i => rpExclusive[i] > 0).sort((a, b) => rpExclusive[b] - rpExclusive[a])
-					.map(type => "<span class='indented'>" + type + ": " + localize(rpExclusive[type]) + "</span><br>").join("")
-
-			html += "<br>"
-			commands = Object.fromEntries(Object.entries(commands).sort(([, a], [, b]) => b - a))
-			Object.keys(commands).forEach(cmd => {
-				html += cmd + ": " + localize(commands[cmd]) + "<br>"
-				if (cmdsBehindExecute[cmd]) html += "<span class='indented'>Behind execute: " + localize(cmdsBehindExecute[cmd]) +
-					(cmd == "execute" ? "⚠️ <small>(<code>... run execute ...</code> equals <code>... ...</code>)</small>" : "") + "</span><br>"
-				if (cmdsBehindMacros[cmd]) html += "<span class='indented'>Behind macro: " + localize(cmdsBehindMacros[cmd]) + "</span><br>"
-				if (cmdsBehindReturn[cmd]) html += "<span class='indented'>Behind return: " + localize(cmdsBehindReturn[cmd]) + "</span><br>"
-			})
-			document.getElementById("result").innerHTML = html
-		}
-	}, 100)
+	commands = Object.fromEntries(Object.entries(commands).sort(([, a], [, b]) => b - a))
+	Object.keys(commands).forEach(cmd => {
+		html += cmd + ": " + localize(commands[cmd]) + "<br>"
+		if (cmdsBehindExecute[cmd]) html += "<span class='indented'>Behind execute: " + localize(cmdsBehindExecute[cmd]) +
+			(cmd == "execute" ? "⚠️ <small>(<code>... run execute ...</code> equals <code>... ...</code>)</small>" : "") + "</span><br>"
+		if (cmdsBehindMacros[cmd]) html += "<span class='indented'>Behind macro: " + localize(cmdsBehindMacros[cmd]) + "</span><br>"
+		if (cmdsBehindReturn[cmd]) html += "<span class='indented'>Behind return: " + localize(cmdsBehindReturn[cmd]) + "</span><br>"
+	})
 }
 
 const collapsible = new Set([
@@ -464,7 +382,6 @@ const collapsible = new Set([
 	"filetypesOther",
 
 	"commands",
-	"cmdsBehindExecute",
 	"cmdsBehindMacros",
 	"cmdsBehindReturn",
 
@@ -479,120 +396,210 @@ class PackAnalyzer {
 		this.onDidChangeTreeData = this._onDidChangeTreeData.event
 	}
 
+	refresh() {
+		files = 0
+		done = 0
+		error = 0
+		rpMode = false //document.getElementById("radiorp").checked
+
+		filetypes = {}
+		filetypesOther = {}
+		packFiles = []
+		packImages = []
+		commands = {}
+		cmdsBehindExecute = {}
+		cmdsBehindMacros = {}
+		cmdsBehindReturn = {}
+		comments = 0
+		empty = 0
+		emptyFiles = []
+		dpExclusive = {
+			folders: {
+				advancements: 0,
+				loot_tables: 0,
+				recipes: 0,
+				predicates: 0,
+				dimension: 0,
+				dimension_type: 0,
+				worldgen: 0
+			},
+			tags: {
+				banner_pattern: 0,
+				blocks: 0,
+				cat_variant: 0,
+				entity_types: 0,
+				fluids: 0,
+				functions: 0,
+				game_events: 0,
+				instrument: 0,
+				items: 0,
+				painting_variant: 0,
+				point_of_interest_type: 0,
+				worldgen: 0
+			},
+			scoreboards: 0,
+			selectors: {
+				a: 0,
+				e: 0,
+				p: 0,
+				r: 0,
+				s: 0
+			},
+			functions: ["#minecraft:load", "#minecraft:tick"],
+			functionCalls: [{target: "#minecraft:load"}, {target: "#minecraft:tick"}]
+		}
+		rpExclusive = {
+			atlases: 0,
+			blockstates: 0,
+			font: 0,
+			lang: 0,
+			models: 0,
+			particles: 0,
+			shaders: 0,
+			sounds: 0,
+			texts: 0,
+			textures: 0
+		}
+
+		this._onDidChangeTreeData.fire()
+	}
+
 	getTreeItem(element) {
-		log("getTreeItem: " + element)
+		log("getTreeItem: " + JSON.stringify(element))
 
-		let label = element
-		if (element == "files") label = "Scanned files: " + files
-		else if (element == "error") label = "Scanning errors: " + error
-		else if (element == "rpMode") label = "Resource pack mode: " + (rpMode ? "enabled" : "disabled")
-
-		else if (element == "filetypes") label = "File types: " + Object.keys(filetypes).length
-		else if (element == "filetypesOther") label = "Non-pack file types: " + Object.keys(filetypesOther).length
-
-		else if (element == "commands") label = "Commands: " + Object.keys(commands).length
-		else if (element == "cmdsBehindExecute") label = "Commands behind execute: " + Object.keys(cmdsBehindExecute).length
-		else if (element == "cmdsBehindMacros") label = "Commands behind macros: " + Object.keys(cmdsBehindMacros).length
-		else if (element == "cmdsBehindReturn") label = "Commands behind return: " + Object.keys(cmdsBehindReturn).length
-
-		else if (element == "folders") label = "Data pack folders: " + Object.keys(dpExclusive.folders).length
-		else if (element == "tags") label = "Data pack tags: " + Object.keys(dpExclusive.tags).length
-		else if (element == "selectors") label = "Selectors: " + Object.keys(dpExclusive.selectors).length
-
-		else if (element == "dpExclusive") label = "Data pack exclusive"
-		else if (element == "rpExclusive") label = "Resource pack exclusive"
-
-		else if (element == "comments") label = "Comments: " + comments
-		else if (element == "empty") label = "Empty lines: " + empty
-		else if (element == "emptyFiles") label = "Empty files: " + emptyFiles.length
-
+		let label = element.item
 		const treeItem = new vscode.TreeItem(label)
-		if (collapsible.has(element)) treeItem.collapsibleState = vscode.TreeItemCollapsibleState.Collapsed
+
+		if (element.item == "files") label = "Scanned files: " + files
+		else if (element.item == "error") label = "Scanning errors: " + error
+		else if (element.item == "rpMode") label = "Resource pack mode: " + (rpMode ? "enabled" : "disabled")
+
+		else if (element.item == "dpExclusive") label = "Data pack exclusive"
+		else if (element.item == "rpExclusive") label = "Resource pack exclusive"
+
+		else if (element.item == "filetypes") label = "File types: " + Object.keys(filetypes).length
+		else if (element.parent == "filetypes") label = "." + element.item + ": " + filetypes[element.item]
+		else if (element.item == "filetypesOther") label = "Non-pack file types: " + Object.keys(filetypesOther).length
+		else if (element.parent == "filetypesOther") label = "." + element.item + ": " + filetypesOther[element.item]
+
+		else if (element.item == "scoreboards") label = "Scoreboards: " + dpExclusive.scoreboards
+		else if (element.item == "selectors") label = "Selectors: " + Object.keys(dpExclusive.selectors).length
+		else if (element.parent == "selectors") label = "@" + element.item + ": " + dpExclusive.selectors[element.item]
+
+		else if (element.item == "commands") label = "Commands: " + Object.keys(commands).length
+		else if (element.parent == "commands") {
+			label = element.item + ": " + commands[element.item]
+			if (cmdsBehindExecute[element.item]) treeItem.description = "(" + cmdsBehindExecute[element.item] + " behind execute)"
+		} else if (element.item == "cmdsBehindMacros") label = "Commands behind macros: " + Object.keys(cmdsBehindMacros).length
+		else if (element.item == "cmdsBehindReturn") label = "Commands behind return: " + Object.keys(cmdsBehindReturn).length
+
+		else if (element.item == "comments") label = "Comments: " + comments
+		else if (element.item == "empty") label = "Empty lines: " + empty
+		else if (element.item == "emptyFiles") label = "Empty files: " + emptyFiles.length
+
+		treeItem.label = label
+		if (collapsible.has(element.item)) treeItem.collapsibleState = vscode.TreeItemCollapsibleState.Collapsed
 
 		return treeItem
 	}
 
 	async getChildren(element) {
-		log("getChildren: " + element)
+		log("getChildren: " + JSON.stringify(element))
 
-		if (element == "dpExclusive") return [
-			"folders",
-			"tags",
-			"scoreboards",
-			"selectors"
-		]
-		if (element == "folders") return [
-			"advancements",
-			"loot_tables",
-			"recipes",
-			"predicates",
-			"dimension",
-			"dimension_type",
-			"worldgen"
-		]
-		if (element == "tags") return [
-			"banner_pattern",
-			"blocks",
-			"cat_variant",
-			"entity_types",
-			"fluids",
-			"functions",
-			"game_events",
-			"instrument",
-			"items",
-			"painting_variant",
-			"point_of_interest_type",
-			"worldgen"
-		]
-		if (element == "selectors") return [
-			"a", "e", "p", "r", "s"
-		]
+		if (element) {
+			const item = element.item
+			if (item == "dpExclusive") return [
+				"folders",
+				"tags",
+				dpExclusive.scoreboards > 0 ? "scoreboards" : void 0,
+				Object.keys(dpExclusive.selectors).reduce((a, b) => a + dpExclusive.selectors[b], 0) > 0 ? "selectors" : void 0,
+				"uncalledFunctions",
+				"missingFunctions"
+			].filter(Boolean).map(child => ({item: child, parent: item}))
+			if (item == "folders") return [
+				"advancements",
+				"loot_tables",
+				"recipes",
+				"predicates",
+				"dimension",
+				"dimension_type",
+				"worldgen"
+			].filter(Boolean).map(child => ({item: child, parent: item}))
+			if (item == "tags") return [
+				"banner_pattern",
+				"blocks",
+				"cat_variant",
+				"entity_types",
+				"fluids",
+				"functions",
+				"game_events",
+				"instrument",
+				"items",
+				"painting_variant",
+				"point_of_interest_type",
+				"worldgen"
+			].filter(Boolean).map(child => ({item: child, parent: item}))
+			if (item == "selectors") return [
+				dpExclusive.selectors.a > 0 ? "a" : void 0,
+				dpExclusive.selectors.e > 0 ? "e" : void 0,
+				dpExclusive.selectors.p > 0 ? "p" : void 0,
+				dpExclusive.selectors.r > 0 ? "r" : void 0,
+				dpExclusive.selectors.s > 0 ? "s" : void 0
+			].filter(Boolean).map(child => ({item: child, parent: item}))
 
-		if (element == "rpExclusive") return [
-			"atlases",
-			"blockstates",
-			"font",
-			"lang",
-			"models",
-			"particles",
-			"shaders",
-			"sounds",
-			"texts",
-			"textures"
-		]
+			if (item == "rpExclusive") return [
+				"atlases",
+				"blockstates",
+				"font",
+				"lang",
+				"models",
+				"particles",
+				"shaders",
+				"sounds",
+				"texts",
+				"textures"
+			].filter(Boolean).map(child => ({item: child, parent: item}))
 
-		if (element == "filetypes") return Object.keys(filetypes)
-		if (element == "filetypesOther") return Object.keys(filetypesOther)
+			if (item == "filetypes") return Object.keys(filetypes).map(child => ({item: child, parent: item}))
+			if (item == "filetypesOther") return Object.keys(filetypesOther).map(child => ({item: child, parent: item}))
 
-		if (element == "commands") return Object.keys(commands)
-		if (element == "cmdsBehindExecute") return Object.keys(cmdsBehindExecute)
-		if (element == "cmdsBehindMacros") return Object.keys(cmdsBehindMacros)
-		if (element == "cmdsBehindReturn") return Object.keys(cmdsBehindReturn)
+			if (item == "commands") return Object.keys(commands).map(child => ({item: child, parent: item}))
+			if (item == "cmdsBehindMacros") return Object.keys(cmdsBehindMacros).map(child => ({item: child, parent: item}))
+			if (item == "cmdsBehindReturn") return Object.keys(cmdsBehindReturn).map(child => ({item: child, parent: item}))
+		}
 
 		const fileList = await vscode.workspace.findFiles("**/*")
 		log(fileList.length + " files with the following schemes found: " + [...new Set(fileList.map(file => file.scheme))].join(", "))
 		await processEntries(fileList.filter(file => !file.path.includes("/.git/") && !file.path.includes("/.svn/") && !file.path.includes("/node_modules/")).map(file => file.path))
 
+		if (files == 0) {
+			vscode.window.showWarningMessage("No files found in the workspace!")
+			return []
+		}
+		if (Object.values(filetypes).reduce((a, b) => a + b) == 0) {
+			vscode.window.showWarningMessage("No " + (rpMode ? "resource" : "data") + " pack files found in the workspace!")
+			return []
+		}
+
 		return [
 			"files",
-			"error",
+			error > 0 ? "error" : void 0,
 			"rpMode",
 
 			"dpExclusive",
 			"rpExclusive",
 
-			"filetypes",
-			"filetypesOther",
+			Object.keys(filetypes).length > 0 ? "filetypes" : void 0,
+			Object.keys(filetypesOther).length > 0 ? "filetypesOther" : void 0,
 
-			"commands",
-			"cmdsBehindExecute",
-			"cmdsBehindMacros",
-			"cmdsBehindReturn",
+			Object.keys(commands).length > 0 ? "commands" : void 0,
+			Object.keys(cmdsBehindMacros).length > 0 ? "cmdsBehindMacros" : void 0,
+			Object.keys(cmdsBehindReturn).length > 0 ? "cmdsBehindReturn" : void 0,
 
-			"comments",
-			"empty",
-			"emptyFiles"
-		]
+			comments > 0 ? "comments" : void 0,
+			empty > 0 ? "empty" : void 0,
+			emptyFiles > 0 ? "emptyFiles" : void 0
+		].filter(Boolean).map(child => ({item: child}))
 	}
 }
 
@@ -602,7 +609,11 @@ module.exports.activate = context => {
 	)
 	log("Loading extension...")
 
+	const packAnalyzer = new PackAnalyzer()
 	context.subscriptions.push(
-		treeView = vscode.window.registerTreeDataProvider("packAnalyzer", new PackAnalyzer())
+		treeView = vscode.window.registerTreeDataProvider("packAnalyzer", packAnalyzer)
+	)
+	context.subscriptions.push(
+		vscode.commands.registerCommand("packAnalyzer.refresh", () => packAnalyzer.refresh())
 	)
 }

@@ -30,6 +30,25 @@
 		"packstats"
 	],
 	"contributes": {
+		"commands": [
+			{
+				"command": "packAnalyzer.refresh",
+				"title": "Refresh",
+				"icon": {
+					"light": "resources/light/refresh.svg",
+					"dark": "resources/dark/refresh.svg"
+				}
+			}
+		],
+		"menus": {
+			"view/title": [
+				{
+					"command": "packAnalyzer.refresh",
+					"when": "view == packAnalyzer",
+					"group": "navigation"
+				}
+			]
+		},
 		"viewsContainers": {
 			"activitybar": [
 				{
@@ -49,10 +68,6 @@
 		}
 	},
 	"scripts": {
-		"vscode:prepublish": "npm run compile",
-		"compile": "tsc -p ./",
-		"lint": "eslint .",
-		"watch": "tsc -watch -p ./",
 		"pack": "vsce pack -o ./out/pack-analyzer.vsix -t web",
 		"pack-files": "vsce ls",
 		"publish": "vsce publish",

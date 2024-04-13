@@ -1,0 +1,41 @@
+name: Extension preview release
+
+on:
+  workflow_dispatch:
+  push:
+    paths: ["vscExtension/src/*.js"]
+
+jobs:
+  lint:
+    name: Extension preview release
+    runs-on: ubuntu-latest
+    steps:
+      - name: "☁️ checkout repository"
+        uses: actions/checkout@v4
+
+      - name: "🔧 setup node"
+        uses: actions/setup-node@v4
+        with:
+          node-version: 21
+          cache: "npm"
+
+      - name: "🏁 build extension"
+        run: |
+          cd vscExtension
+          npm i --omit=optional --omit=dev --no-fund --progress=false
+          npm run pack
+
+      - name: "🚀 release extension"
+        uses: ncipollo/release-action@2c591bcc8ecdcd2db72b97d6147f871fcd833ba5
+        with:
+          artifacts: vscExtension/*.vsix
+          makeLatest: false
+          artifactErrorsFailBuild: true
+          prerelease: true
+          body: |
+            This is an automatically generated **preview** release of the Pack Analyzer extension.
+
+            You can install it by downloading the `.vsix` file below and installing it in [Visual Studio Code](https://code.visualstudio.com) or in e.g. VSCodium.
+
+            Triggering commit:
+            [`${{ github.sha::7 }}`](https://github.com/DEVTomatoCake/Pack-Analyzer/commit/${{ github.sha }}) ${{ github.event.head_commit.message }}
