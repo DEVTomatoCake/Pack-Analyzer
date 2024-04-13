@@ -3,7 +3,7 @@ name: Extension preview release
 on:
   workflow_dispatch:
   push:
-    paths: ["vscExtension/src/*.js"]
+    paths: ["/.github/workflows/extension-preview-release.yml", "vscExtension/src/*.js"]
 
 jobs:
   lint:
@@ -19,6 +19,11 @@ jobs:
           node-version: 21
           cache: "npm"
 
+      - name: "🛵 set up env vars"
+        run: |
+          echo "SHA_SHORT=$(git rev-parse --short "$GITHUB_SHA")" >> "$GITHUB_ENV"
+          echo "EXTENSION_VERSION=$(node -p -e "require('./vscExtension/package.json').version")" >> "$GITHUB_ENV"
+
       - name: "🏁 build extension"
         run: |
           cd vscExtension
@@ -28,14 +33,17 @@ jobs:
       - name: "🚀 release extension"
         uses: ncipollo/release-action@2c591bcc8ecdcd2db72b97d6147f871fcd833ba5
         with:
-          artifacts: vscExtension/*.vsix
-          makeLatest: false
+          allowUpdates: true
           artifactErrorsFailBuild: true
+          artifacts: vscExtension/*.vsix
+          commit: ${{ github.sha }}
+          makeLatest: false
           prerelease: true
+          tag: v${{ env.EXTENSION_VERSION }}-preview
           body: |
             This is an automatically generated **preview** release of the Pack Analyzer extension.
 
             You can install it by downloading the `.vsix` file below and installing it in [Visual Studio Code](https://code.visualstudio.com) or in e.g. VSCodium.
 
             Triggering commit:
-            [`${{ github.sha }}`](https://github.com/DEVTomatoCake/Pack-Analyzer/commit/${{ github.sha }}) ${{ github.event.head_commit.message }}
+            [`${{ env.SHA_SHORT }}`](https://github.com/DEVTomatoCake/Pack-Analyzer/commit/${{ github.sha }}) ${{ github.event.head_commit.message }}
