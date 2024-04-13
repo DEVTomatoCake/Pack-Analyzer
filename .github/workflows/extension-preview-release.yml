@@ -24,14 +24,11 @@ jobs:
           echo "SHA_SHORT=$(git rev-parse --short "$GITHUB_SHA")" >> "$GITHUB_ENV"
           echo "EXTENSION_VERSION=$(node -p -e "require('./vscExtension/package.json').version")" >> "$GITHUB_ENV"
 
-      - name: "🛸 prepare build"
+      - name: "🏁 build extension"
         run: |
           cd vscExtension
           npm i --omit=optional --include=dev --no-fund --progress=false
           mkdir -p out
-
-      - name: "🏁 build extension"
-        run: |
           node build.js
           npm run pack
 
