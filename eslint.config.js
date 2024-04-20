@@ -131,7 +131,7 @@ const rules = {
 	"@stylistic/js/no-trailing-spaces": 2,
 	"@stylistic/js/max-statements-per-line": 2,
 	"@stylistic/js/max-len": [2, {
-		code: 220
+		code: 210
 	}],
 	"@stylistic/js/quote-props": [2, "as-needed"],
 	"@stylistic/js/quotes": [2, "double", {
@@ -240,7 +240,8 @@ module.exports = [
 		languageOptions: {
 			globals: {
 				...global,
-				...globals.node
+				...globals.node,
+				processFile: "readonly"
 			}
 		},
 		files: ["vscExtension/**/*.js", "eslint.config.js", "minify.js"],

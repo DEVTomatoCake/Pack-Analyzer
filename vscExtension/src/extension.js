@@ -24,7 +24,6 @@ const requestVersions = async () => {
 }
 requestVersions()
 
-let interval
 let files = 0
 let done = 0
 let error = 0
@@ -33,6 +32,7 @@ let rpMode = false
 let filetypes = {}
 let filetypesOther = {}
 let packFiles = []
+// eslint-disable-next-line sonarjs/no-unused-collection
 let packImages = []
 let commands = {}
 let cmdsBehindExecute = {}
@@ -102,175 +102,16 @@ let rpExclusive = {
 
 const localize = str => str.toLocaleString()
 
+/* processFile */
 async function processEntries(entries) {
 	for await (const filePath of entries) {
 		const name = filePath.split("/").pop()
 
-		const ext = name.split(".").pop()
-		if (
-			ext == "mcmeta" || ext == "json" ||
-			(!rpMode && (ext == "mcfunction" || ext == "nbt")) ||
-			(rpMode && (ext == "png" || ext == "icns" || ext == "txt" || ext == "ogg" || ext == "fsh" || ext == "vsh" || ext == "glsl" || ext == "lang" || ext == "properties" || ext == "inc" || ext == "xcf"))
-		) {
-			if (filetypes[ext]) filetypes[ext]++
-			else filetypes[ext] = 1
-		} else {
-			if (filetypesOther[(name.includes(".") ? "." : "") + ext]) filetypesOther[(name.includes(".") ? "." : "") + ext]++
-			else filetypesOther[(name.includes(".") ? "." : "") + ext] = 1
-		}
-
-		if (
-			ext == "mcfunction" || ext == "mcmeta" || (!rpMode && ext == "json" && (filePath.includes("/advancements/") || filePath.includes("/tags/functions/"))) ||
-			ext == "fsh" || ext == "vsh" || ext == "glsl" || name.endsWith("pack.png")
-		) {
-			files++
-
-			const processFile = result => {
-				done++
-				if (result.trim() == "") return emptyFiles.push(filePath)
-
-				if (!rpMode && ext == "mcfunction") {
-					const fileLocation = /data\/([-a-z0-9_.]+)\/functions\/([-a-z0-9_./]+)\.mcfunction/i.exec(filePath)
-					if (fileLocation && !dpExclusive.functions.includes(fileLocation[1] + ":" + fileLocation[2])) dpExclusive.functions.push(fileLocation[1] + ":" + fileLocation[2])
-
-					for (let line of result.split("\n")) {
-						line = line.trim()
-						if (line.startsWith("#")) comments++
-						if (line == "") empty++
-						if (line.startsWith("#") || line == "") continue
-						const splitted = line.split(" ")
-
-						let cmd = splitted[0]
-						if (cmd.startsWith("$")) {
-							cmd = cmd.slice(1)
-							if (cmdsBehindMacros[cmd]) cmdsBehindMacros[cmd]++
-							else cmdsBehindMacros[cmd] = 1
-						}
-
-						if (commands[cmd]) commands[cmd]++
-						else commands[cmd] = 1
-
-						if (cmd == "execute") {
-							const matches = / run ([a-z_:]{2,})/g.exec(line)
-							if (matches) matches.forEach(match => {
-								const cmdBehind = match.replace("run ", "").trim()
-
-								if (cmdsBehindExecute[cmdBehind]) cmdsBehindExecute[cmdBehind]++
-								else cmdsBehindExecute[cmdBehind] = 1
-								if (commands[cmdBehind]) commands[cmdBehind]++
-								else commands[cmdBehind] = 1
-
-								if (cmdBehind == "return") {
-									const returnCmd = / run return run ([a-z_:]{2,})/g.exec(line)
-									if (returnCmd && returnCmd[1]) {
-										if (cmdsBehindReturn[returnCmd[1]]) cmdsBehindReturn[returnCmd[1]]++
-										else cmdsBehindReturn[returnCmd[1]] = 1
-									}
-								}
-							})
-						} else if (cmd == "return") {
-							const returnCmd = / run return run ([a-z_:]{2,})/g.exec(line)
-							if (returnCmd && returnCmd[1]) {
-								if (cmdsBehindReturn[returnCmd[1]]) cmdsBehindReturn[returnCmd[1]]++
-								else cmdsBehindReturn[returnCmd[1]] = 1
-							}
-						}
-						if (fileLocation && (cmd == "function" || line.includes(" function ") || line.includes("/function "))) {
-							const func = /function ((#?[-a-z0-9_.]+):)?([-a-z0-9_./]+)/i.exec(line)
-							if (func && func[3]) dpExclusive.functionCalls.push({
-								source: fileLocation[1] + ":" + fileLocation[2],
-								target: (func[2] || "minecraft") + ":" + func[3]
-							})
-						}
-
-						if (/scoreboard objectives add \w+ \w+( .+)?$/.test(line)) dpExclusive.scoreboards++
-
-						splitted.forEach(arg => {
-							if (arg.startsWith("@")) {
-								arg = arg.slice(1)
-								if (arg.startsWith("a")) dpExclusive.selectors.a++
-								else if (arg.startsWith("e")) dpExclusive.selectors.e++
-								else if (arg.startsWith("p")) dpExclusive.selectors.p++
-								else if (arg.startsWith("r")) dpExclusive.selectors.r++
-								else if (arg.startsWith("s")) dpExclusive.selectors.s++
-							}
-						})
-					}
-				} else if (ext == "mcmeta") {
-					if (name == "pack.mcmeta") {
-						try {
-							packFiles.push(JSON.parse(result))
-						} catch (e) {
-							console.warn("Could not parse pack.mcmeta: " + filePath, e)
-							error++
-						}
-					}
-				} else if (name.endsWith("pack.png") && !result.includes(">")) packImages.push(result)
-				else if (rpMode && (ext == "fsh" || ext == "vsh" || ext == "glsl")) {
-					for (let line of result.split("\n")) {
-						line = line.trim()
-						if (line.startsWith("//") || line.startsWith("/*")) comments++
-						if (line == "") empty++
-						if (line.startsWith("//") || line.startsWith("/*") || line == "") continue
-
-						const cmd = line.match(/^[a-z_#0-9]+/i)?.[0]
-						if (cmd && cmd != "{" && cmd != "}") {
-							if (commands[cmd]) commands[cmd]++
-							else commands[cmd] = 1
-						}
-					}
-				} else if (!rpMode && ext == "json") {
-					if (filePath.includes("/advancements/")) {
-						const fileLocation = /data\/([-a-z0-9_.]+)\/advancements\/([-a-z0-9_./]+)\.json/i.exec(filePath)
-
-						try {
-							const parsed = JSON.parse(result)
-							if (parsed.rewards && parsed.rewards.function) dpExclusive.functionCalls.push({
-								source: "(Advancement) " + fileLocation[1] + ":" + fileLocation[2],
-								target: parsed.rewards.function.includes(":") ? parsed.rewards.function : "minecraft:" + parsed.rewards.function
-							})
-						} catch (e) {
-							console.warn("Unable to analyze advancement: " + filePath, e)
-						}
-					} else if (filePath.includes("/tags/functions/")) {
-						const fileLocation = /data\/([-a-z0-9_.]+)\/tags\/functions\/([-a-z0-9_./]+)\.json/i.exec(filePath)
-						if (fileLocation && !dpExclusive.functions.includes("#" + fileLocation[1] + ":" + fileLocation[2])) dpExclusive.functions.push("#" + fileLocation[1] + ":" + fileLocation[2])
-
-						try {
-							const parsed = JSON.parse(result)
-							if (parsed.values) parsed.values.forEach(func => {
-								if (typeof func == "object") {
-									if (func.required === false) return
-									func = func.id
-								}
-
-								dpExclusive.functionCalls.push({
-									source: "#" + fileLocation[1] + ":" + fileLocation[2],
-									target: func.includes(":") ? func : "minecraft:" + func
-								})
-							})
-						} catch (e) {
-							console.warn("Unable to analyze function tag: " + filePath, e)
-						}
-					}
-				}
-			}
-
+		await processFile(filePath, name, async processContent => {
 			const content = await vscode.workspace.fs.readFile(vscode.Uri.file(filePath))
 			const decoder = new TextDecoder()
-			processFile(decoder.decode(content))
-		}
-		if (!rpMode && ext == "json") {
-			Object.keys(dpExclusive.folders).forEach(type => {
-				if (filePath.includes("/" + type + "/")) dpExclusive.folders[type]++
-			})
-			Object.keys(dpExclusive.tags).forEach(type => {
-				if (filePath.includes("/tags/" + type + "/")) dpExclusive.tags[type]++
-			})
-		} else if (rpMode)
-			Object.keys(rpExclusive).forEach(type => {
-				if (filePath.includes("/" + type + "/")) rpExclusive[type]++
-			})
+			processContent(decoder.decode(content))
+		})
 	}
 
 	log("Successfully processed " + done + " files with " + error + " errors")
@@ -278,7 +119,6 @@ async function processEntries(entries) {
 
 async function mainScan() {
 	let html =
-		(packImages.length > 0 ? "<div style='display: flex;'>" + packImages.map(img => "<img src='" + img + "' width='64' height='64'>") + "</div>" : "") +
 		(packFiles.length > 0 ? "<strong>" + (rpMode ? "Resource" : "Data") + "pack" + (packFiles.length == 1 ? "" : "s") + " found:</strong><br>" +
 			packFiles.map(pack => {
 				let oldestFormat = pack.pack.pack_format
@@ -293,18 +133,7 @@ async function mainScan() {
 					}
 				}
 
-				let description = ""
-				if (pack.pack && pack.pack.description) {
-					if (typeof pack.pack.description == "object") {
-						const desc = Array.isArray(pack.pack.description) ? pack.pack.description : [pack.pack.description]
-						desc.forEach(d => {
-							if (d.text || d.translation) description += d.text || d.translation
-						})
-					} else description = pack.pack.description
-				} else description = "<i>No description</i>"
-
-				return "<span class='indented'>" + description.replace(/§[0-9a-flmnor]/gi, "") +
-					(versions.some(ver => (rpMode ? ver.resourcepack_version : ver.datapack_version) == pack.pack.pack_format) ?
+				return (versions.some(ver => (rpMode ? ver.resourcepack_version : ver.datapack_version) == pack.pack.pack_format) ?
 						"<br><span class='indented2'>Supported versions: " +
 						(versions.findLast(ver => (rpMode ? ver.resourcepack_version : ver.datapack_version) == oldestFormat)?.name || "?") +
 						" - " +
@@ -367,6 +196,8 @@ async function mainScan() {
 }
 
 const collapsible = new Set([
+	"packs",
+
 	"dpExclusive",
 	"rpExclusive",
 
@@ -486,12 +317,30 @@ class PackAnalyzer {
 		else if (element.item == "error") treeItem.label = "Scanning errors: " + localize(error)
 		else if (element.item == "rpMode") treeItem.label = "Resource pack mode: " + (rpMode ? "enabled" : "disabled")
 
-		else if (element.item == "dpExclusive") {
+		else if (element.item == "packs") {
+			log(JSON.stringify(packFiles))
+			treeItem.label = "Packs: " + localize(packFiles.length)
+		} else if (element.parent == "packs") {
+			log(JSON.stringify(packFiles))
+			const pack = packFiles[element.item]
+			let description = ""
+			if (pack.pack && pack.pack.description) {
+				if (typeof pack.pack.description == "object") {
+					const desc = Array.isArray(pack.pack.description) ? pack.pack.description : [pack.pack.description]
+					desc.forEach(d => {
+						if (d.text || d.translation) description += d.text || d.translation
+					})
+				} else description = pack.pack.description
+			} else description = "Pack #" + (element.item + 1)
+
+			treeItem.label = description.replace(/§[0-9a-flmnor]/gi, "")
+		} else if (element.item == "dpExclusive") {
 			treeItem.label = "Data pack"
 			treeItem.iconPath = iconUrl("{DPICON|mcfunction}")
 		} else if (element.item == "tags") {
 			treeItem.label = "Tags"
-			treeItem.description = "(" + localize(Object.values(dpExclusive.tags).reduce((a, b) => a + b)) + " total, " + localize(Object.keys(dpExclusive.tags).length) + " unique)"
+			treeItem.description = "(" + localize(Object.values(dpExclusive.tags).reduce((a, b) => a + b)) + " total, " +
+				localize(Object.keys(dpExclusive.tags).filter(key => dpExclusive.tags[key] > 0).length) + " unique)"
 			treeItem.iconPath = iconUrl("{DPICON|tags}")
 		} else if (element.parent == "tags") {
 			treeItem.label = element.item + ": " + localize(dpExclusive.tags[element.item])
@@ -565,6 +414,8 @@ class PackAnalyzer {
 
 		if (element) {
 			const item = element.item
+			if (item == "packs") return packFiles.map((pack, i) => ({item: i, parent: item}))
+
 			if (item == "dpExclusive") return [
 				Object.keys(dpExclusive.tags).reduce((a, b) => a + dpExclusive.tags[b], 0) > 0 ? "tags" : void 0,
 				dpExclusive.scoreboards > 0 ? "scoreboards" : void 0,
@@ -608,6 +459,7 @@ class PackAnalyzer {
 			"files",
 			error > 0 ? "error" : void 0,
 			"rpMode",
+			"packs",
 
 			rpMode ? void 0 : "dpExclusive",
 			rpMode ? "rpExclusive" : void 0,

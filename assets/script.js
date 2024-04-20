@@ -376,6 +376,172 @@ function createImage() {
 	}
 }
 
+const processFile = async (filePath = "", name = "", loadContentCallback = () => {}) => {
+	const ext = name.split(".").pop()
+	if (
+		ext == "mcmeta" || ext == "json" ||
+		(!rpMode && (ext == "mcfunction" || ext == "nbt")) ||
+		(rpMode && (ext == "png" || ext == "icns" || ext == "txt" || ext == "ogg" || ext == "fsh" || ext == "vsh" || ext == "glsl" || ext == "lang" || ext == "properties" || ext == "inc" || ext == "xcf"))
+	) {
+		if (filetypes[ext]) filetypes[ext]++
+		else filetypes[ext] = 1
+	} else {
+		if (filetypesOther[(name.includes(".") ? "." : "") + ext]) filetypesOther[(name.includes(".") ? "." : "") + ext]++
+		else filetypesOther[(name.includes(".") ? "." : "") + ext] = 1
+	}
+
+	if (
+		ext == "mcfunction" || ext == "mcmeta" || (!rpMode && ext == "json" && (filePath.includes("/advancements/") || filePath.includes("/tags/functions/"))) ||
+		ext == "fsh" || ext == "vsh" || ext == "glsl" || name.endsWith("pack.png")
+	) {
+		files++
+
+		const processContent = result => {
+			done++
+			if (result.trim() == "") return emptyFiles.push(filePath)
+
+			if (!rpMode && ext == "mcfunction") {
+				const fileLocation = /data\/([-a-z0-9_.]+)\/functions\/([-a-z0-9_./]+)\.mcfunction/i.exec(filePath)
+				if (fileLocation && !dpExclusive.functions.includes(fileLocation[1] + ":" + fileLocation[2])) dpExclusive.functions.push(fileLocation[1] + ":" + fileLocation[2])
+
+				for (let line of result.split("\n")) {
+					line = line.trim()
+					if (line.startsWith("#")) comments++
+					if (line == "") empty++
+					if (line.startsWith("#") || line == "") continue
+					const splitted = line.split(" ")
+
+					let cmd = splitted[0]
+					if (cmd.startsWith("$")) {
+						cmd = cmd.slice(1)
+						if (cmdsBehindMacros[cmd]) cmdsBehindMacros[cmd]++
+						else cmdsBehindMacros[cmd] = 1
+					}
+
+					if (commands[cmd]) commands[cmd]++
+					else commands[cmd] = 1
+
+					if (cmd == "execute") {
+						const matches = / run ([a-z_:]{2,})/g.exec(line)
+						if (matches) matches.forEach(match => {
+							const cmdBehind = match.replace("run ", "").trim()
+
+							if (cmdsBehindExecute[cmdBehind]) cmdsBehindExecute[cmdBehind]++
+							else cmdsBehindExecute[cmdBehind] = 1
+							if (commands[cmdBehind]) commands[cmdBehind]++
+							else commands[cmdBehind] = 1
+
+							if (cmdBehind == "return") {
+								const returnCmd = / run return run ([a-z_:]{2,})/g.exec(line)
+								if (returnCmd && returnCmd[1]) {
+									if (cmdsBehindReturn[returnCmd[1]]) cmdsBehindReturn[returnCmd[1]]++
+									else cmdsBehindReturn[returnCmd[1]] = 1
+								}
+							}
+						})
+					} else if (cmd == "return") {
+						const returnCmd = / run return run ([a-z_:]{2,})/g.exec(line)
+						if (returnCmd && returnCmd[1]) {
+							if (cmdsBehindReturn[returnCmd[1]]) cmdsBehindReturn[returnCmd[1]]++
+							else cmdsBehindReturn[returnCmd[1]] = 1
+						}
+					}
+					if (fileLocation && (cmd == "function" || line.includes(" function ") || line.includes("/function "))) {
+						const func = /function ((#?[-a-z0-9_.]+):)?([-a-z0-9_./]+)/i.exec(line)
+						if (func && func[3]) dpExclusive.functionCalls.push({
+							source: fileLocation[1] + ":" + fileLocation[2],
+							target: (func[2] || "minecraft") + ":" + func[3]
+						})
+					}
+
+					if (/scoreboard objectives add \w+ \w+( .+)?$/.test(line)) dpExclusive.scoreboards++
+
+					splitted.forEach(arg => {
+						if (arg.startsWith("@")) {
+							arg = arg.slice(1)
+							if (arg.startsWith("a")) dpExclusive.selectors.a++
+							else if (arg.startsWith("e")) dpExclusive.selectors.e++
+							else if (arg.startsWith("p")) dpExclusive.selectors.p++
+							else if (arg.startsWith("r")) dpExclusive.selectors.r++
+							else if (arg.startsWith("s")) dpExclusive.selectors.s++
+						}
+					})
+				}
+			} else if (ext == "mcmeta") {
+				if (name == "pack.mcmeta") {
+					try {
+						packFiles.push(JSON.parse(result))
+					} catch (e) {
+						console.warn("Could not parse pack.mcmeta: " + filePath, e)
+						error++
+					}
+				}
+			} else if (name.endsWith("pack.png") && !result.includes(">")) packImages.push(result)
+			else if (rpMode && (ext == "fsh" || ext == "vsh" || ext == "glsl")) {
+				for (let line of result.split("\n")) {
+					line = line.trim()
+					if (line.startsWith("//") || line.startsWith("/*")) comments++
+					if (line == "") empty++
+					if (line.startsWith("//") || line.startsWith("/*") || line == "") continue
+
+					const cmd = line.match(/^[a-z_#0-9]+/i)?.[0]
+					if (cmd && cmd != "{" && cmd != "}") {
+						if (commands[cmd]) commands[cmd]++
+						else commands[cmd] = 1
+					}
+				}
+			} else if (!rpMode && ext == "json") {
+				if (filePath.includes("/advancements/")) {
+					const fileLocation = /data\/([-a-z0-9_.]+)\/advancements\/([-a-z0-9_./]+)\.json/i.exec(filePath)
+
+					try {
+						const parsed = JSON.parse(result)
+						if (parsed.rewards && parsed.rewards.function) dpExclusive.functionCalls.push({
+							source: "(Advancement) " + fileLocation[1] + ":" + fileLocation[2],
+							target: parsed.rewards.function.includes(":") ? parsed.rewards.function : "minecraft:" + parsed.rewards.function
+						})
+					} catch (e) {
+						console.warn("Unable to analyze advancement: " + filePath, e)
+					}
+				} else if (filePath.includes("/tags/functions/")) {
+					const fileLocation = /data\/([-a-z0-9_.]+)\/tags\/functions\/([-a-z0-9_./]+)\.json/i.exec(filePath)
+					if (fileLocation && !dpExclusive.functions.includes("#" + fileLocation[1] + ":" + fileLocation[2])) dpExclusive.functions.push("#" + fileLocation[1] + ":" + fileLocation[2])
+
+					try {
+						const parsed = JSON.parse(result)
+						if (parsed.values) parsed.values.forEach(func => {
+							if (typeof func == "object") {
+								if (func.required === false) return
+								func = func.id
+							}
+
+							dpExclusive.functionCalls.push({
+								source: "#" + fileLocation[1] + ":" + fileLocation[2],
+								target: func.includes(":") ? func : "minecraft:" + func
+							})
+						})
+					} catch (e) {
+						console.warn("Unable to analyze function tag: " + filePath, e)
+					}
+				}
+			}
+		}
+
+		await loadContentCallback(processContent, ext)
+	}
+	if (!rpMode && ext == "json") {
+		Object.keys(dpExclusive.folders).forEach(type => {
+			if (filePath.includes("/" + type + "/")) dpExclusive.folders[type]++
+		})
+		Object.keys(dpExclusive.tags).forEach(type => {
+			if (filePath.includes("/tags/" + type + "/")) dpExclusive.tags[type]++
+		})
+	} else if (rpMode)
+		Object.keys(rpExclusive).forEach(type => {
+			if (filePath.includes("/" + type + "/")) rpExclusive[type]++
+		})
+}
+
 async function processEntries(entries) {
 	for await (const entry of entries) {
 		const filePath = entry.webkitRelativePath || entry.name
@@ -386,182 +552,22 @@ async function processEntries(entries) {
 		}
 		if (entry.name.endsWith("/") && entry.content == "") continue
 
-		const ext = entry.name.split(".").pop()
-		if (
-			ext == "mcmeta" || ext == "json" ||
-			(!rpMode && (ext == "mcfunction" || ext == "nbt")) ||
-			(rpMode && (ext == "png" || ext == "icns" || ext == "txt" || ext == "ogg" || ext == "fsh" || ext == "vsh" || ext == "glsl" || ext == "lang" || ext == "properties" || ext == "inc" || ext == "xcf"))
-		) {
-			if (filetypes[ext]) filetypes[ext]++
-			else filetypes[ext] = 1
-		} else {
-			if (filetypesOther[(entry.name.includes(".") ? "." : "") + ext]) filetypesOther[(entry.name.includes(".") ? "." : "") + ext]++
-			else filetypesOther[(entry.name.includes(".") ? "." : "") + ext] = 1
-		}
-
-		if (
-			ext == "mcfunction" || ext == "mcmeta" || (!rpMode && ext == "json" && (filePath.includes("/advancements/") || filePath.includes("/tags/functions/"))) ||
-			ext == "fsh" || ext == "vsh" || ext == "glsl" || entry.name.endsWith("pack.png")
-		) {
-			files++
-
-			const processFile = result => {
-				done++
-				if (result.trim() == "") return emptyFiles.push(filePath)
-
-				if (!rpMode && ext == "mcfunction") {
-					const fileLocation = /data\/([-a-z0-9_.]+)\/functions\/([-a-z0-9_./]+)\.mcfunction/i.exec(filePath)
-					if (fileLocation && !dpExclusive.functions.includes(fileLocation[1] + ":" + fileLocation[2])) dpExclusive.functions.push(fileLocation[1] + ":" + fileLocation[2])
-
-					for (let line of result.split("\n")) {
-						line = line.trim()
-						if (line.startsWith("#")) comments++
-						if (line == "") empty++
-						if (line.startsWith("#") || line == "") continue
-						const splitted = line.split(" ")
-
-						let cmd = splitted[0]
-						if (cmd.startsWith("$")) {
-							cmd = cmd.slice(1)
-							if (cmdsBehindMacros[cmd]) cmdsBehindMacros[cmd]++
-							else cmdsBehindMacros[cmd] = 1
-						}
-
-						if (commands[cmd]) commands[cmd]++
-						else commands[cmd] = 1
-
-						if (cmd == "execute") {
-							const matches = / run ([a-z_:]{2,})/g.exec(line)
-							if (matches) matches.forEach(match => {
-								const cmdBehind = match.replace("run ", "").trim()
-
-								if (cmdsBehindExecute[cmdBehind]) cmdsBehindExecute[cmdBehind]++
-								else cmdsBehindExecute[cmdBehind] = 1
-								if (commands[cmdBehind]) commands[cmdBehind]++
-								else commands[cmdBehind] = 1
-
-								if (cmdBehind == "return") {
-									const returnCmd = / run return run ([a-z_:]{2,})/g.exec(line)
-									if (returnCmd && returnCmd[1]) {
-										if (cmdsBehindReturn[returnCmd[1]]) cmdsBehindReturn[returnCmd[1]]++
-										else cmdsBehindReturn[returnCmd[1]] = 1
-									}
-								}
-							})
-						} else if (cmd == "return") {
-							const returnCmd = / run return run ([a-z_:]{2,})/g.exec(line)
-							if (returnCmd && returnCmd[1]) {
-								if (cmdsBehindReturn[returnCmd[1]]) cmdsBehindReturn[returnCmd[1]]++
-								else cmdsBehindReturn[returnCmd[1]] = 1
-							}
-						}
-						if (fileLocation && (cmd == "function" || line.includes(" function ") || line.includes("/function "))) {
-							const func = /function ((#?[-a-z0-9_.]+):)?([-a-z0-9_./]+)/i.exec(line)
-							if (func && func[3]) dpExclusive.functionCalls.push({
-								source: fileLocation[1] + ":" + fileLocation[2],
-								target: (func[2] || "minecraft") + ":" + func[3]
-							})
-						}
-
-						if (/scoreboard objectives add \w+ \w+( .+)?$/.test(line)) dpExclusive.scoreboards++
-
-						splitted.forEach(arg => {
-							if (arg.startsWith("@")) {
-								arg = arg.slice(1)
-								if (arg.startsWith("a")) dpExclusive.selectors.a++
-								else if (arg.startsWith("e")) dpExclusive.selectors.e++
-								else if (arg.startsWith("p")) dpExclusive.selectors.p++
-								else if (arg.startsWith("r")) dpExclusive.selectors.r++
-								else if (arg.startsWith("s")) dpExclusive.selectors.s++
-							}
-						})
-					}
-				} else if (ext == "mcmeta") {
-					if (entry.name == "pack.mcmeta") {
-						try {
-							packFiles.push(JSON.parse(result))
-						} catch (e) {
-							console.warn("Could not parse pack.mcmeta: " + filePath, e)
-							error++
-						}
-					}
-				} else if (entry.name.endsWith("pack.png") && !result.includes(">")) packImages.push(result)
-				else if (rpMode && (ext == "fsh" || ext == "vsh" || ext == "glsl")) {
-					for (let line of result.split("\n")) {
-						line = line.trim()
-						if (line.startsWith("//") || line.startsWith("/*")) comments++
-						if (line == "") empty++
-						if (line.startsWith("//") || line.startsWith("/*") || line == "") continue
-
-						const cmd = line.match(/^[a-z_#0-9]+/i)?.[0]
-						if (cmd && cmd != "{" && cmd != "}") {
-							if (commands[cmd]) commands[cmd]++
-							else commands[cmd] = 1
-						}
-					}
-				} else if (!rpMode && ext == "json") {
-					if (filePath.includes("/advancements/")) {
-						const fileLocation = /data\/([-a-z0-9_.]+)\/advancements\/([-a-z0-9_./]+)\.json/i.exec(filePath)
-
-						try {
-							const parsed = JSON.parse(result)
-							if (parsed.rewards && parsed.rewards.function) dpExclusive.functionCalls.push({
-								source: "(Advancement) " + fileLocation[1] + ":" + fileLocation[2],
-								target: parsed.rewards.function.includes(":") ? parsed.rewards.function : "minecraft:" + parsed.rewards.function
-							})
-						} catch (e) {
-							console.warn("Unable to analyze advancement: " + filePath, e)
-						}
-					} else if (filePath.includes("/tags/functions/")) {
-						const fileLocation = /data\/([-a-z0-9_.]+)\/tags\/functions\/([-a-z0-9_./]+)\.json/i.exec(filePath)
-						if (fileLocation && !dpExclusive.functions.includes("#" + fileLocation[1] + ":" + fileLocation[2])) dpExclusive.functions.push("#" + fileLocation[1] + ":" + fileLocation[2])
-
-						try {
-							const parsed = JSON.parse(result)
-							if (parsed.values) parsed.values.forEach(func => {
-								if (typeof func == "object") {
-									if (func.required === false) return
-									func = func.id
-								}
-
-								dpExclusive.functionCalls.push({
-									source: "#" + fileLocation[1] + ":" + fileLocation[2],
-									target: func.includes(":") ? func : "minecraft:" + func
-								})
-							})
-						} catch (e) {
-							console.warn("Unable to analyze function tag: " + filePath, e)
-						}
-					}
-				}
-			}
-
-			if ("content" in entry) processFile(entry.content)
+		processFile(filePath, entry.name, async (processContent, ext) => {
+			if ("content" in entry) processContent(entry.content)
 			else {
 				const reader = new FileReader()
 				if (ext == "png") reader.readAsDataURL(entry)
-				else entry.text().then(processFile)
+				else entry.text().then(processContent)
 
 				reader.onload = () => {
-					processFile(reader.result)
+					processContent(reader.result)
 				}
 				reader.onerror = e => {
 					console.warn("Could not read file: " + filePath, e)
 					error++
 				}
 			}
-		}
-		if (!rpMode && ext == "json") {
-			Object.keys(dpExclusive.folders).forEach(type => {
-				if (filePath.includes("/" + type + "/")) dpExclusive.folders[type]++
-			})
-			Object.keys(dpExclusive.tags).forEach(type => {
-				if (filePath.includes("/tags/" + type + "/")) dpExclusive.tags[type]++
-			})
-		} else if (rpMode)
-			Object.keys(rpExclusive).forEach(type => {
-				if (filePath.includes("/" + type + "/")) rpExclusive[type]++
-			})
+		})
 	}
 }
 
@@ -722,7 +728,8 @@ async function mainScan(hasData = false) {
 				(Object.keys(filetypesOther).length > 0 ?
 					"<details><summary>" +
 					"<strong>Non-pack file types found:</strong></summary>" +
-					Object.keys(filetypesOther).sort((a, b) => filetypesOther[b] - filetypesOther[a]).map(type => "<span class='indented'>" + type + ": " + localize(filetypesOther[type]) + "</span><br>").join("") +
+					Object.keys(filetypesOther).sort((a, b) => filetypesOther[b] - filetypesOther[a])
+						.map(type => "<span class='indented'>" + type + ": " + localize(filetypesOther[type]) + "</span><br>").join("") +
 					"</details><br>"
 				: "") +
 				(uncalledFunctions.length > 0 ?
