@@ -75,7 +75,7 @@
 		"@stylistic/eslint-plugin-js": "^1.7.0",
 		"@types/node": "^20.12.7",
 		"@types/vscode": "^1.88.0",
-		"@vscode/vsce": "^2.25.0",
+		"@vscode/vsce": "^2.26.0",
 		"eslint": "^8.57.0",
 		"eslint-plugin-sonarjs": "^0.25.1",
 		"eslint-plugin-unicorn": "^52.0.0"
