@@ -22,7 +22,7 @@
     "@stylistic/eslint-plugin-js": "^1.8.0",
     "eslint": "^8.57.0",
     "eslint-plugin-html": "^8.1.1",
-    "eslint-plugin-sonarjs": "^0.25.1",
+    "eslint-plugin-sonarjs": "^1.0.0",
     "eslint-plugin-unicorn": "^52.0.0",
     "globals": "^15.1.0"
   }
