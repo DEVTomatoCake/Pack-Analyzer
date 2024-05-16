@@ -15,10 +15,10 @@ jobs:
       - name: "🔧 setup node"
         uses: actions/setup-node@v4
         with:
-          node-version: 21
+          node-version: 22
           cache: "npm"
 
-      - name: "🛸 install eslint html plugins"
+      - name: "🛸 install ESLint plugins"
         run: npm i --omit=optional --include=dev --no-fund --progress=false
 
       - name: "🔍 lint code"

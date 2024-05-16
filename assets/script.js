@@ -58,15 +58,20 @@ let dpExclusive = {
 	},
 	tags: {
 		banner_pattern: 0,
-		blocks: 0,
+		block: 0,
+		blocks: 0, // Before 24w19a
 		cat_variant: 0,
 		damage_types: 0,
-		entity_types: 0,
-		fluids: 0,
+		entity_type: 0,
+		entity_types: 0, // Before 24w19a
+		fluid: 0,
+		fluids: 0, // Before 24w19a
 		functions: 0,
-		game_events: 0,
+		game_event: 0,
+		game_events: 0, // Before 24w19a
 		instrument: 0,
-		items: 0,
+		item: 0,
+		items: 0, // Before 24w19a
 		painting_variant: 0,
 		point_of_interest_type: 0,
 		worldgen: 0
@@ -80,7 +85,9 @@ let dpExclusive = {
 		s: 0
 	},
 	functions: ["#minecraft:load", "#minecraft:tick"],
-	functionCalls: [{target: "#minecraft:load"}, {target: "#minecraft:tick"}]
+	functionCalls: [{target: "#minecraft:load"}, {target: "#minecraft:tick"}],
+	attributesAdded: [],
+	attributesRemoved: []
 }
 let rpExclusive = {
 	atlases: 0,
@@ -93,6 +100,16 @@ let rpExclusive = {
 	sounds: 0,
 	texts: 0,
 	textures: 0
+}
+
+const openDialog = dialog => {
+	dialog.style.display = "block"
+	dialog.getElementsByClassName("close")[0].onclick = function() {
+		dialog.style.display = "none"
+	}
+	window.onclick = function(event) {
+		if (event.target == dialog) dialog.style.display = "none"
+	}
 }
 
 window.addEventListener("DOMContentLoaded", () => {
@@ -206,7 +223,13 @@ window.addEventListener("drop", async event => {
 })
 window.addEventListener("paste", async event => {
 	event.preventDefault()
-	if (event.clipboardData.files.length == 0) return
+	if (event.clipboardData.files.length == 0) {
+		if (event.clipboardData.items.length > 0) event.clipboardData.items[0].getAsString(str => {
+			selected = [{name: "clipboard.mcfunction", content: str}]
+			mainScan()
+		})
+		return
+	}
 
 	const fileList = event.clipboardData.files
 	if (fileList[0].name.endsWith(".zip")) handleZip(fileList[0])
@@ -228,16 +251,6 @@ window.addEventListener("paste", async event => {
 })
 
 const localize = string => string.toLocaleString()
-
-function openDialog(dialog) {
-	dialog.style.display = "block"
-	dialog.getElementsByClassName("close")[0].onclick = function() {
-		dialog.style.display = "none"
-	}
-	window.onclick = function(event) {
-		if (event.target == dialog) dialog.style.display = "none"
-	}
-}
 
 async function share(type) {
 	let content = ""
@@ -439,13 +452,23 @@ const processFile = async (filePath = "", name = "", loadContentCallback = () =>
 								}
 							}
 						})
-					} else if (cmd == "return") {
+					} else if (cmd == "scoreboard" && /scoreboard objectives add \w+ \w+( .+)?$/.test(line)) dpExclusive.scoreboards++
+					else if (cmd == "return") {
 						const returnCmd = / run return run ([a-z_:]{2,})/g.exec(line)
 						if (returnCmd && returnCmd[1]) {
 							if (cmdsBehindReturn[returnCmd[1]]) cmdsBehindReturn[returnCmd[1]]++
 							else cmdsBehindReturn[returnCmd[1]] = 1
 						}
+					} else if (cmd == "attribute") {
+						const matchesAdd = /^attribute \S+ [\w.]+ modifier add ([-\w]+) /.exec(line)
+						if (matchesAdd && matchesAdd[1]) {
+							if (!dpExclusive.attributesAdded.includes(matchesAdd[1])) dpExclusive.attributesAdded.push(matchesAdd[1])
+						} else {
+							const matchesRemove = /^attribute \S+ [\w.]+ modifier remove ([-\w]+)$/.exec(line)
+							if (matchesRemove && matchesRemove[1] && !dpExclusive.attributesRemoved.includes(matchesRemove[1])) dpExclusive.attributesRemoved.push(matchesRemove[1])
+						}
 					}
+
 					if (fileLocation && (cmd == "function" || line.includes(" function ") || line.includes("/function "))) {
 						const func = /function ((#?[-a-z0-9_.]+):)?([-a-z0-9_./]+)/i.exec(line)
 						if (func && func[3]) dpExclusive.functionCalls.push({
@@ -454,16 +477,14 @@ const processFile = async (filePath = "", name = "", loadContentCallback = () =>
 						})
 					}
 
-					if (/scoreboard objectives add \w+ \w+( .+)?$/.test(line)) dpExclusive.scoreboards++
-
 					splitted.forEach(arg => {
 						if (arg.startsWith("@")) {
-							arg = arg.slice(1)
-							if (arg.startsWith("a")) dpExclusive.selectors.a++
-							else if (arg.startsWith("e")) dpExclusive.selectors.e++
-							else if (arg.startsWith("p")) dpExclusive.selectors.p++
-							else if (arg.startsWith("r")) dpExclusive.selectors.r++
-							else if (arg.startsWith("s")) dpExclusive.selectors.s++
+							const type = arg.charAt(1)
+							if (type == "a") dpExclusive.selectors.a++
+							else if (type == "e") dpExclusive.selectors.e++
+							else if (type == "p") dpExclusive.selectors.p++
+							else if (type == "r") dpExclusive.selectors.r++
+							else if (type == "s") dpExclusive.selectors.s++
 						}
 					})
 				}
@@ -614,15 +635,20 @@ async function mainScan(hasData = false) {
 			},
 			tags: {
 				banner_pattern: 0,
-				blocks: 0,
+				block: 0,
+				blocks: 0, // Before 24w19a
 				cat_variant: 0,
 				damage_types: 0,
-				entity_types: 0,
-				fluids: 0,
+				entity_type: 0,
+				entity_types: 0, // Before 24w19a
+				fluid: 0,
+				fluids: 0, // Before 24w19a
 				functions: 0,
-				game_events: 0,
+				game_event: 0,
+				game_events: 0, // Before 24w19a
 				instrument: 0,
-				items: 0,
+				item: 0,
+				items: 0, // Before 24w19a
 				painting_variant: 0,
 				point_of_interest_type: 0,
 				worldgen: 0
@@ -636,7 +662,9 @@ async function mainScan(hasData = false) {
 				s: 0
 			},
 			functions: ["#minecraft:load", "#minecraft:tick"],
-			functionCalls: [{target: "#minecraft:load"}, {target: "#minecraft:tick"}]
+			functionCalls: [{target: "#minecraft:load"}, {target: "#minecraft:tick"}],
+			attributesAdded: [],
+			attributesRemoved: []
 		}
 		rpExclusive = {
 			atlases: 0,
@@ -665,6 +693,9 @@ async function mainScan(hasData = false) {
 
 			const uncalledFunctions = dpExclusive.functions.filter(funcName => !dpExclusive.functionCalls.some(func => func.target == funcName))
 			const missingFunctions = [...new Set(dpExclusive.functionCalls.filter(func => !dpExclusive.functions.includes(func.target)).map(func => func.target))]
+
+			const unaddedAttributes = dpExclusive.attributesAdded.filter(attr => !dpExclusive.attributesRemoved.includes(attr))
+			const unremovedAttributes = dpExclusive.attributesRemoved.filter(attr => !dpExclusive.attributesAdded.includes(attr))
 
 			const versions = localStorage.getItem("mcVersions") ? JSON.parse(localStorage.getItem("mcVersions")) : []
 			let html =
@@ -740,6 +771,16 @@ async function mainScan(hasData = false) {
 				(missingFunctions.length > 0 ?
 					"<strong>Missing functions:</strong><br>" +
 					missingFunctions.map(func => "<span class='indented'>" + func + "</span><br>").join("") +
+					"<br>"
+				: "") +
+				(unaddedAttributes.length > 0 ?
+					"<strong>Attribute UUIDs added but not removed (using /attribute):</strong><br>" +
+					unaddedAttributes.map(attr => "<span class='indented'>" + attr + "</span><br>").join("") +
+					"<br>"
+				: "") +
+				(unremovedAttributes.length > 0 ?
+					"<strong>Attribute UUIDs removed but not added (using /attribute):</strong><br>" +
+					unremovedAttributes.map(attr => "<span class='indented'>" + attr + "</span><br>").join("") +
 					"<br>"
 				: "") +
 				(emptyFiles.length > 0 ?

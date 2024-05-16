@@ -63,15 +63,20 @@ let dpExclusive = {
 	},
 	tags: {
 		banner_pattern: 0,
-		blocks: 0,
+		block: 0,
+		blocks: 0, // Before 24w19a
 		cat_variant: 0,
 		damage_types: 0,
-		entity_types: 0,
-		fluids: 0,
+		entity_type: 0,
+		entity_types: 0, // Before 24w19a
+		fluid: 0,
+		fluids: 0, // Before 24w19a
 		functions: 0,
-		game_events: 0,
+		game_event: 0,
+		game_events: 0, // Before 24w19a
 		instrument: 0,
-		items: 0,
+		item: 0,
+		items: 0, // Before 24w19a
 		painting_variant: 0,
 		point_of_interest_type: 0,
 		worldgen: 0
@@ -85,7 +90,9 @@ let dpExclusive = {
 		s: 0
 	},
 	functions: ["#minecraft:load", "#minecraft:tick"],
-	functionCalls: [{target: "#minecraft:load"}, {target: "#minecraft:tick"}]
+	functionCalls: [{target: "#minecraft:load"}, {target: "#minecraft:tick"}],
+	attributesAdded: [],
+	attributesRemoved: []
 }
 let rpExclusive = {
 	atlases: 0,
@@ -266,15 +273,20 @@ class PackAnalyzer {
 			},
 			tags: {
 				banner_pattern: 0,
-				blocks: 0,
+				block: 0,
+				blocks: 0, // Before 24w19a
 				cat_variant: 0,
 				damage_types: 0,
-				entity_types: 0,
-				fluids: 0,
+				entity_type: 0,
+				entity_types: 0, // Before 24w19a
+				fluid: 0,
+				fluids: 0, // Before 24w19a
 				functions: 0,
-				game_events: 0,
+				game_event: 0,
+				game_events: 0, // Before 24w19a
 				instrument: 0,
-				items: 0,
+				item: 0,
+				items: 0, // Before 24w19a
 				painting_variant: 0,
 				point_of_interest_type: 0,
 				worldgen: 0
@@ -288,7 +300,9 @@ class PackAnalyzer {
 				s: 0
 			},
 			functions: ["#minecraft:load", "#minecraft:tick"],
-			functionCalls: [{target: "#minecraft:load"}, {target: "#minecraft:tick"}]
+			functionCalls: [{target: "#minecraft:load"}, {target: "#minecraft:tick"}],
+			attributesAdded: [],
+			attributesRemoved: []
 		}
 		rpExclusive = {
 			atlases: 0,
