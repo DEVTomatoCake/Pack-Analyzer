@@ -234,11 +234,20 @@ class PackAnalyzer {
 		this.onDidChangeTreeData = this._onDidChangeTreeData.event
 	}
 
-	refresh() {
+	async refresh() {
 		files = 0
 		done = 0
 		error = 0
-		rpMode = false //document.getElementById("radiorp").checked
+
+		rpMode = false
+		try {
+			if (await vscode.workspace.fs.readDirectory("assets") && !await vscode.workspace.fs.readDirectory("data")) {
+				rpMode = true
+				log("Resource pack mode enabled")
+			}
+		} catch (e) {
+			log("Resource pack mode disabled (" + e.message + ")")
+		}
 
 		filetypes = {}
 		filetypesOther = {}

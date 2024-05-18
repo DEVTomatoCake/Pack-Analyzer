@@ -9428,8 +9428,8 @@ https://github.com/nodeca/pako/blob/main/LICENSE
 	  //---
 
 	  if (state.wsize || (_out !== strm.avail_out && state.mode < BAD &&
-						  (state.mode < CHECK || flush !== Z_FINISH))) {
-		updatewindow(strm, strm.output, strm.next_out, _out - strm.avail_out)
+						 (state.mode < CHECK || flush !== Z_FINISH))) {
+		updatewindow(strm, strm.output, strm.next_out, _out - strm.avail_out);
 	  }
 	  _in -= strm.avail_in;
 	  _out -= strm.avail_out;
@@ -9481,7 +9481,6 @@ https://github.com/nodeca/pako/blob/main/LICENSE
 
 	  var state;
 	  var dictid;
-	  var ret;
 
 	  /* check state */
 	  if (!strm /* == Z_NULL */ || !strm.state /* == Z_NULL */) { return Z_STREAM_ERROR; }
@@ -9502,7 +9501,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
 	  }
 	  /* copy dictionary to window using updatewindow(), which will amend the
 	   existing dictionary if appropriate */
-	  ret = updatewindow(strm, dictionary, dictLength, dictLength);
+	  updatewindow(strm, dictionary, dictLength, dictLength);
 	  state.havedict = 1;
 	  // Tracev((stderr, "inflate:   dictionary set\n"));
 	  return Z_OK;
