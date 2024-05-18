@@ -112,6 +112,147 @@ const openDialog = dialog => {
 	}
 }
 
+const encode = s => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;")
+const localize = str => typeof str == "number" ? str.toLocaleString() : encode(str) + " (Please report if you see this)"
+
+const createImage = () => {
+	const canvas = document.getElementById("shareImage")
+	canvas.style.display = "block"
+	const ctx = canvas.getContext("2d")
+	ctx.clearRect(0, 0, canvas.width, canvas.height)
+	ctx.fillStyle = "white"
+	ctx.fillRect(0, 0, canvas.width, canvas.height)
+
+	const drawing = new Image()
+	drawing.src = "./assets/images/generated_background.png"
+	drawing.onload = () => {
+		ctx.globalAlpha = 0.3
+		ctx.drawImage(drawing, 0, 0)
+		ctx.globalAlpha = 1
+
+		let x = 20
+		let y = 1
+		const lineHeight = 21
+		const maxWidth = 400
+		ctx.font = lineHeight - 1 + "px Arial"
+		ctx.fillStyle = "black"
+
+		if (packFiles.length > 0) {
+			ctx.fillText(packFiles.length + " " + (rpMode ? "Resource" : "Data") + "pack" + (packFiles.length == 1 ? "" : "s") + " found", x, y++ * lineHeight, maxWidth)
+			packFiles.forEach(pack => {
+				if (pack.features?.enabled?.length > 0) {
+					ctx.fillText("Selected internal features:", x + 30, y++ * lineHeight, maxWidth)
+					pack.features.enabled.forEach(feature => ctx.fillText(feature, x + 60, y++ * lineHeight, maxWidth))
+				}
+				if (pack.filter?.block?.length > 0) {
+					ctx.fillText("Pack filters:", x + 60, y++ * lineHeight, maxWidth)
+					pack.filter.block.forEach(filter => {
+						if (filter.namespace) ctx.fillText("Namespace: " + filter.namespace, x + 90, y++ * lineHeight, maxWidth)
+						if (filter.path) ctx.fillText("Path: " + filter.path, x + 90, y++ * lineHeight, maxWidth)
+					})
+				}
+			})
+		}
+		if (packFiles.length == 0 && (filetypes.fsh || filetypes.vsh || filetypes.xcf || filetypes.glsl)) ctx.fillText("Shader found:", x, y++ * lineHeight, maxWidth)
+		if (Object.keys(commands).length > 0) {
+			ctx.fillText("Total amount of commands: " + localize(Object.keys(commands).reduce((a, b) => a + commands[b], 0)), x, y++ * lineHeight, maxWidth)
+			ctx.fillText("Unique commands: " + localize(Object.keys(commands).length), x + 30, y++ * lineHeight, maxWidth)
+		}
+		if (comments > 0) ctx.fillText("Comments: " + localize(comments), x + 30, y++ * lineHeight, maxWidth)
+		if (empty > 0) ctx.fillText("Empty lines: " + localize(empty), x + 30, y++ * lineHeight, maxWidth)
+		ctx.fillText((Object.keys(filetypes).length > 2 ? "Top 3 p" : "P") + "ack file types found:", x, y++ * lineHeight, maxWidth)
+		Object.keys(filetypes).sort((a, b) => filetypes[b] - filetypes[a]).slice(0, 3).forEach(type => ctx.fillText("." + type + ": " + localize(filetypes[type]), x + 30, y++ * lineHeight, maxWidth))
+
+		if (dpExclusive.scoreboards > 0) ctx.fillText("Scoreboards created: " + localize(dpExclusive.scoreboards), x, y++ * lineHeight, maxWidth)
+		if (!rpMode && Object.values(dpExclusive.selectors).reduce((a, b) => a + b) != 0) {
+			ctx.fillText((Object.keys(dpExclusive.selectors).filter(i => dpExclusive.selectors[i] > 0).length > 2 ? "Top 3 s" : "S") + "electors used:", x, y++ * lineHeight, maxWidth)
+			Object.keys(dpExclusive.selectors).filter(i => dpExclusive.selectors[i] > 0).sort((a, b) => dpExclusive.selectors[b] - dpExclusive.selectors[a]).slice(0, 3)
+				.forEach(type => ctx.fillText("@" + type + ": " + localize(dpExclusive.selectors[type]), x + 30, y++ * lineHeight, maxWidth))
+		}
+		if (!rpMode && Object.values(dpExclusive.folders).reduce((a, b) => a + b) != 0) {
+			ctx.fillText("Data pack features used:", x, y++ * lineHeight, maxWidth)
+			Object.keys(dpExclusive.folders).filter(i => dpExclusive.folders[i] > 0).sort((a, b) => dpExclusive.folders[b] - dpExclusive.folders[a])
+				.forEach(type => ctx.fillText(type + ": " + localize(dpExclusive.folders[type]), x + 30, y++ * lineHeight, maxWidth))
+		}
+		if (rpMode && Object.values(rpExclusive).reduce((a, b) => a + b) != 0) {
+			ctx.fillText("Resource pack features used:", x, y++ * lineHeight, maxWidth)
+			Object.keys(rpExclusive).filter(i => !isNaN(i) && rpExclusive[i] > 0).sort((a, b) => rpExclusive[b] - rpExclusive[a])
+				.forEach(type => ctx.fillText(type + ": " + localize(rpExclusive[type]), x + 30, y++ * lineHeight, maxWidth))
+		}
+
+		x = 450
+		y = 3
+		ctx.font = "28px Arial"
+		ctx.fillText((Object.keys(commands).length > 5 ? "Top c" : "C") + "ommands", x, 40, maxWidth)
+		ctx.font = "20px Arial"
+
+		commands = Object.fromEntries(Object.entries(commands).sort(([, a], [, b]) => b - a))
+		Object.keys(commands).slice(0, 5).forEach(cmd => {
+			ctx.fillText(cmd + ": " + localize(commands[cmd]), x, y++ * lineHeight, maxWidth)
+			if (cmdsBehindExecute[cmd]) ctx.fillText("Behind execute: " + localize(cmdsBehindExecute[cmd]), x + 30, y++ * lineHeight, maxWidth)
+			if (cmdsBehindMacros[cmd]) ctx.fillText("Behind macro: " + localize(cmdsBehindMacros[cmd]), x + (cmdsBehindExecute[cmd] ? 90 : 30), y++ * lineHeight, maxWidth)
+		})
+	}
+}
+
+const share = async type => {
+	let content = ""
+	if (type == "txt") content = document.getElementById("result").innerText
+	else if (type == "json" || type == "link") {
+		content = JSON.stringify({
+			files,
+			done,
+			error,
+			rpMode,
+
+			filetypes,
+			filetypesOther,
+			packFiles,
+			commands,
+			cmdsBehindExecute,
+			cmdsBehindMacros,
+			cmdsBehindReturn,
+			comments,
+			empty,
+			emptyFiles,
+			dpExclusive,
+			rpExclusive
+		}, null, type == "json" ? "\t" : void 0)
+
+		if (type == "link") {
+			const name = Math.random().toString(36).slice(8)
+
+			const res = await fetch("https://sh0rt.zip", {
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json",
+					Accept: "application/json",
+					"User-Agent": "TomatoCake Pack-Analyzer"
+				},
+				body: JSON.stringify({
+					name,
+					date: Date.now() + 1000 * 60 * 60 * 24 * 30,
+					url: location.href + "?data=" + encodeURIComponent(content)
+				})
+			})
+
+			const json = await res.json()
+			if (res.ok) {
+				document.getElementById("share-link").href = "https://sh0rt.zip/" + name
+				document.getElementById("share-link").innerText = "https://sh0rt.zip/" + name
+				document.getElementById("share-img").src = "https://sh0rt.zip/qr/" + name
+				openDialog(document.getElementById("shareDialog"))
+			} else alert("Couldn't create link: " + json.error)
+			return
+		}
+	} else if (type == "png") return createImage()
+
+	const download = document.createElement("a")
+	download.download = "export." + type
+	download.href = "data:application/" + type + "," + encodeURIComponent(content)
+	download.click()
+}
+
 window.addEventListener("DOMContentLoaded", () => {
 	if (localStorage.getItem("theme") == "light") document.body.classList.add("light")
 	else if (window.matchMedia("(prefers-color-scheme: light)").matches) {
@@ -146,7 +287,7 @@ window.addEventListener("DOMContentLoaded", () => {
 	document.getElementById("clear-results").addEventListener("click", () => {
 		document.getElementById("progress").innerText = ""
 		document.getElementById("result").innerHTML = ""
-		document.getElementById("resultButtons").hidden = true
+		document.getElementById("resultButtons").setAttribute("hidden", "")
 		document.getElementById("shareImage").style.display = "none"
 		if (interval) clearInterval(interval)
 	})
@@ -249,145 +390,6 @@ window.addEventListener("paste", async event => {
 		mainScan()
 	}
 })
-
-const localize = string => string.toLocaleString()
-
-async function share(type) {
-	let content = ""
-	if (type == "txt") content = document.getElementById("result").innerText
-	else if (type == "json" || type == "link") {
-		content = JSON.stringify({
-			files,
-			done,
-			error,
-			rpMode,
-
-			filetypes,
-			filetypesOther,
-			packFiles,
-			commands,
-			cmdsBehindExecute,
-			cmdsBehindMacros,
-			cmdsBehindReturn,
-			comments,
-			empty,
-			emptyFiles,
-			dpExclusive,
-			rpExclusive
-		}, null, type == "json" ? "\t" : void 0)
-
-		if (type == "link") {
-			const name = Math.random().toString(36).slice(8)
-
-			const res = await fetch("https://sh0rt.zip", {
-				method: "POST",
-				headers: {
-					"Content-Type": "application/json",
-					Accept: "application/json",
-					"User-Agent": "TomatoCake Pack-Analyzer"
-				},
-				body: JSON.stringify({
-					name,
-					date: Date.now() + 1000 * 60 * 60 * 24 * 30,
-					url: location.href + "?data=" + encodeURIComponent(content)
-				})
-			})
-
-			const json = await res.json()
-			if (res.ok) {
-				document.getElementById("share-link").href = "https://sh0rt.zip/" + name
-				document.getElementById("share-link").innerText = "https://sh0rt.zip/" + name
-				document.getElementById("share-img").src = "https://sh0rt.zip/qr/" + name
-				openDialog(document.getElementById("shareDialog"))
-			} else alert("Couldn't create link: " + json.error)
-			return
-		}
-	} else if (type == "png") return createImage()
-
-	const download = document.createElement("a")
-	download.download = "export." + type
-	download.href = "data:application/" + type + "," + encodeURIComponent(content)
-	download.click()
-}
-function createImage() {
-	const canvas = document.getElementById("shareImage")
-	canvas.style.display = "block"
-	const ctx = canvas.getContext("2d")
-	ctx.clearRect(0, 0, canvas.width, canvas.height)
-	ctx.fillStyle = "white"
-	ctx.fillRect(0, 0, canvas.width, canvas.height)
-
-	const drawing = new Image()
-	drawing.src = "./assets/images/generated_background.png"
-	drawing.onload = () => {
-		ctx.globalAlpha = 0.3
-		ctx.drawImage(drawing, 0, 0)
-		ctx.globalAlpha = 1
-
-		let x = 20
-		let y = 1
-		const lineHeight = 21
-		const maxWidth = 400
-		ctx.font = lineHeight - 1 + "px Arial"
-		ctx.fillStyle = "black"
-
-		if (packFiles.length > 0) {
-			ctx.fillText(packFiles.length + " " + (rpMode ? "Resource" : "Data") + "pack" + (packFiles.length == 1 ? "" : "s") + " found", x, y++ * lineHeight, maxWidth)
-			packFiles.forEach(pack => {
-				if (pack.features?.enabled?.length > 0) {
-					ctx.fillText("Selected internal features:", x + 30, y++ * lineHeight, maxWidth)
-					pack.features.enabled.forEach(feature => ctx.fillText(feature, x + 60, y++ * lineHeight, maxWidth))
-				}
-				if (pack.filter?.block?.length > 0) {
-					ctx.fillText("Pack filters:", x + 60, y++ * lineHeight, maxWidth)
-					pack.filter.block.forEach(filter => {
-						if (filter.namespace) ctx.fillText("Namespace: " + filter.namespace, x + 90, y++ * lineHeight, maxWidth)
-						if (filter.path) ctx.fillText("Path: " + filter.path, x + 90, y++ * lineHeight, maxWidth)
-					})
-				}
-			})
-		}
-		if (packFiles.length == 0 && (filetypes.fsh || filetypes.vsh || filetypes.xcf || filetypes.glsl)) ctx.fillText("Shader found:", x, y++ * lineHeight, maxWidth)
-		if (Object.keys(commands).length > 0) {
-			ctx.fillText("Total amount of commands: " + localize(Object.keys(commands).reduce((a, b) => a + commands[b], 0)), x, y++ * lineHeight, maxWidth)
-			ctx.fillText("Unique commands: " + localize(Object.keys(commands).length), x + 30, y++ * lineHeight, maxWidth)
-		}
-		if (comments > 0) ctx.fillText("Comments: " + localize(comments), x + 30, y++ * lineHeight, maxWidth)
-		if (empty > 0) ctx.fillText("Empty lines: " + localize(empty), x + 30, y++ * lineHeight, maxWidth)
-		ctx.fillText((Object.keys(filetypes).length > 2 ? "Top 3 p" : "P") + "ack file types found:", x, y++ * lineHeight, maxWidth)
-		Object.keys(filetypes).sort((a, b) => filetypes[b] - filetypes[a]).slice(0, 3).forEach(type => ctx.fillText("." + type + ": " + localize(filetypes[type]), x + 30, y++ * lineHeight, maxWidth))
-
-		if (dpExclusive.scoreboards > 0) ctx.fillText("Scoreboards created: " + localize(dpExclusive.scoreboards), x, y++ * lineHeight, maxWidth)
-		if (!rpMode && Object.values(dpExclusive.selectors).reduce((a, b) => a + b) != 0) {
-			ctx.fillText((Object.keys(dpExclusive.selectors).filter(i => dpExclusive.selectors[i] > 0).length > 2 ? "Top 3 s" : "S") + "electors used:", x, y++ * lineHeight, maxWidth)
-			Object.keys(dpExclusive.selectors).filter(i => dpExclusive.selectors[i] > 0).sort((a, b) => dpExclusive.selectors[b] - dpExclusive.selectors[a]).slice(0, 3)
-				.forEach(type => ctx.fillText("@" + type + ": " + localize(dpExclusive.selectors[type]), x + 30, y++ * lineHeight, maxWidth))
-		}
-		if (!rpMode && Object.values(dpExclusive.folders).reduce((a, b) => a + b) != 0) {
-			ctx.fillText("Data pack features used:", x, y++ * lineHeight, maxWidth)
-			Object.keys(dpExclusive.folders).filter(i => dpExclusive.folders[i] > 0).sort((a, b) => dpExclusive.folders[b] - dpExclusive.folders[a])
-				.forEach(type => ctx.fillText(type + ": " + localize(dpExclusive.folders[type]), x + 30, y++ * lineHeight, maxWidth))
-		}
-		if (rpMode && Object.values(rpExclusive).reduce((a, b) => a + b) != 0) {
-			ctx.fillText("Resource pack features used:", x, y++ * lineHeight, maxWidth)
-			Object.keys(rpExclusive).filter(i => !isNaN(i) && rpExclusive[i] > 0).sort((a, b) => rpExclusive[b] - rpExclusive[a])
-				.forEach(type => ctx.fillText(type + ": " + localize(rpExclusive[type]), x + 30, y++ * lineHeight, maxWidth))
-		}
-
-		x = 450
-		y = 3
-		ctx.font = "28px Arial"
-		ctx.fillText((Object.keys(commands).length > 5 ? "Top c" : "C") + "ommands", x, 40, maxWidth)
-		ctx.font = "20px Arial"
-
-		commands = Object.fromEntries(Object.entries(commands).sort(([, a], [, b]) => b - a))
-		Object.keys(commands).slice(0, 5).forEach(cmd => {
-			ctx.fillText(cmd + ": " + localize(commands[cmd]), x, y++ * lineHeight, maxWidth)
-			if (cmdsBehindExecute[cmd]) ctx.fillText("Behind execute: " + localize(cmdsBehindExecute[cmd]), x + 30, y++ * lineHeight, maxWidth)
-			if (cmdsBehindMacros[cmd]) ctx.fillText("Behind macro: " + localize(cmdsBehindMacros[cmd]), x + (cmdsBehindExecute[cmd] ? 90 : 30), y++ * lineHeight, maxWidth)
-		})
-	}
-}
 
 const processFile = async (filePath = "", name = "", loadContentCallback = () => {}) => {
 	const ext = name.split(".").pop()
@@ -687,7 +689,7 @@ async function mainScan(hasData = false) {
 		if (done + error == files || hasData) {
 			clearInterval(interval)
 			if (files == 0) return document.getElementById("progress").innerText = "No files found!"
-			document.getElementById("resultButtons").hidden = false
+			document.getElementById("resultButtons").removeAttribute("hidden")
 			if (error == 0) document.getElementById("progress").innerText = ""
 			if (Object.values(filetypes).reduce((a, b) => a + b) == 0) document.getElementById("progress").innerHTML = "No " + (rpMode ? "resource" : "data") + "pack files found!"
 
@@ -724,24 +726,24 @@ async function mainScan(hasData = false) {
 							} else description = pack.pack.description
 						} else description = "<i>No description</i>"
 
-						return "<span class='indented'>" + description.replace(/§[0-9a-flmnor]/gi, "") +
+						return "<span class='indented'>" + encode(description.replace(/§[0-9a-flmnor]/g, "")) +
 							(versions.some(ver => (rpMode ? ver.resourcepack_version : ver.datapack_version) == pack.pack.pack_format) ?
 								"<br><span class='indented2'>Supported versions: " +
-								(versions.findLast(ver => (rpMode ? ver.resourcepack_version : ver.datapack_version) == oldestFormat)?.name || "?") +
+								encode(versions.findLast(ver => (rpMode ? ver.resourcepack_version : ver.datapack_version) == oldestFormat)?.name || "?") +
 								" - " +
-								(versions.find(ver => (rpMode ? ver.resourcepack_version : ver.datapack_version) == newestFormat)?.name || "?") +
+								encode(versions.find(ver => (rpMode ? ver.resourcepack_version : ver.datapack_version) == newestFormat)?.name || "?") +
 								"</span>"
 							: "") +
 							"</span>" +
 							(pack.features?.enabled?.length > 0 ?
 								"<br><span class='indented2'>Selected internal features: " +
-								pack.features.enabled.map(feature => "<code>" + feature + "</code>").join(", ") + "</span>"
+								pack.features.enabled.map(feature => "<code>" + encode(feature) + "</code>").join(", ") + "</span>"
 							: "") +
 							(pack.filter?.block?.length > 0 ? "<br><span class='indented2'>Pack filters:</span><br><small>" + pack.filter.block.map(filter =>
 								"<span class='indented3'>" +
-								(filter.namespace ? "Namespace: <code>" + filter.namespace + "</code>" : "") +
+								(filter.namespace ? "Namespace: <code>" + encode(filter.namespace) + "</code>" : "") +
 								(filter.namespace && filter.path ? ", " : "") +
-								(filter.path ? "Path: <code>" + filter.path + "</code>" : "") +
+								(filter.path ? "Path: <code>" + encode(filter.path) + "</code>" : "") +
 								"</span>"
 							).join("<br>") + "</small>" : "")
 					}).join("<br>") + "<br>"
@@ -755,54 +757,54 @@ async function mainScan(hasData = false) {
 				(comments > 0 ? "<span class='indented'>Comments: " + localize(comments) + "</span><br>" : "") +
 				(empty > 0 ? "<span class='indented'>Empty lines: " + localize(empty) + "</span><br>" : "") +
 				"<strong>Pack file types found:</strong><br>" +
-				Object.keys(filetypes).sort((a, b) => filetypes[b] - filetypes[a]).map(type => "<span class='indented'>." + type + ": " + localize(filetypes[type]) + "</span><br>").join("") +
+				Object.keys(filetypes).sort((a, b) => filetypes[b] - filetypes[a]).map(type => "<span class='indented'>." + encode(type) + ": " + localize(filetypes[type]) + "</span><br>").join("") +
 				(Object.keys(filetypesOther).length > 0 ?
 					"<details><summary>" +
 					"<strong>Non-pack file types found:</strong></summary>" +
 					Object.keys(filetypesOther).sort((a, b) => filetypesOther[b] - filetypesOther[a])
-						.map(type => "<span class='indented'>" + type + ": " + localize(filetypesOther[type]) + "</span><br>").join("") +
+						.map(type => "<span class='indented'>" + encode(type) + ": " + localize(filetypesOther[type]) + "</span><br>").join("") +
 					"</details><br>"
 				: "") +
 				(uncalledFunctions.length > 0 ?
 					"<strong>Uncalled functions:</strong><br>" +
-					uncalledFunctions.map(func => "<span class='indented'>" + func + "</span><br>").join("") +
+					uncalledFunctions.map(func => "<span class='indented'>" + encode(func) + "</span><br>").join("") +
 					"<br>"
 				: "") +
 				(missingFunctions.length > 0 ?
 					"<strong>Missing functions:</strong><br>" +
-					missingFunctions.map(func => "<span class='indented'>" + func + "</span><br>").join("") +
+					missingFunctions.map(func => "<span class='indented'>" + encode(func) + "</span><br>").join("") +
 					"<br>"
 				: "") +
 				(unaddedAttributes.length > 0 ?
 					"<strong>Attribute UUIDs added but not removed (using /attribute):</strong><br>" +
-					unaddedAttributes.map(attr => "<span class='indented'>" + attr + "</span><br>").join("") +
+					unaddedAttributes.map(attr => "<span class='indented'>" + encode(attr) + "</span><br>").join("") +
 					"<br>"
 				: "") +
 				(unremovedAttributes.length > 0 ?
 					"<strong>Attribute UUIDs removed but not added (using /attribute):</strong><br>" +
-					unremovedAttributes.map(attr => "<span class='indented'>" + attr + "</span><br>").join("") +
+					unremovedAttributes.map(attr => "<span class='indented'>" + encode(attr) + "</span><br>").join("") +
 					"<br>"
 				: "") +
 				(emptyFiles.length > 0 ?
 					"<strong>Empty files:</strong><br>" +
-					emptyFiles.map(func => "<span class='indented'>" + func + "</span><br>").join("") +
+					emptyFiles.map(func => "<span class='indented'>" + encode(func) + "</span><br>").join("") +
 					"<br>"
 				: "") +
 
 				(dpExclusive.scoreboards > 0 ? "<strong>Scoreboards created: " + localize(dpExclusive.scoreboards) + "</strong><br>" : "") +
 				(!rpMode && Object.values(dpExclusive.selectors).reduce((a, b) => a + b) != 0 ? "<strong>Selectors used:</strong><br>" : "") +
 				Object.keys(dpExclusive.selectors).filter(i => dpExclusive.selectors[i] > 0).sort((a, b) => dpExclusive.selectors[b] - dpExclusive.selectors[a])
-					.map(type => "<span class='indented'>@" + type + ": " + localize(dpExclusive.selectors[type]) + "</span><br>").join("") +
+					.map(type => "<span class='indented'>@" + encode(type) + ": " + localize(dpExclusive.selectors[type]) + "</span><br>").join("") +
 				(!rpMode && Object.values(dpExclusive.folders).reduce((a, b) => a + b) != 0 ? "<strong>Data pack features used:</strong><br>" : "") +
 				Object.keys(dpExclusive.folders).filter(i => dpExclusive.folders[i] > 0).sort((a, b) => dpExclusive.folders[b] - dpExclusive.folders[a])
-					.map(type => "<span class='indented'>" + type + ": " + localize(dpExclusive.folders[type]) + "</span><br>").join("") +
+					.map(type => "<span class='indented'>" + encode(type) + ": " + localize(dpExclusive.folders[type]) + "</span><br>").join("") +
 				(!rpMode && Object.values(dpExclusive.tags).reduce((a, b) => a + b) != 0 ? "<strong>Tags used:</strong><br>" : "") +
 				Object.keys(dpExclusive.tags).filter(i => dpExclusive.tags[i] > 0).sort((a, b) => dpExclusive.tags[b] - dpExclusive.tags[a])
-					.map(type => "<span class='indented'>" + type + ": " + localize(dpExclusive.tags[type]) + "</span><br>").join("") +
+					.map(type => "<span class='indented'>" + encode(type) + ": " + localize(dpExclusive.tags[type]) + "</span><br>").join("") +
 
 				(rpMode && Object.values(rpExclusive).reduce((a, b) => a + b) != 0 ? "<br><strong>Resource pack features used:</strong><br>" : "") +
 				Object.keys(rpExclusive).filter(i => rpExclusive[i] > 0).sort((a, b) => rpExclusive[b] - rpExclusive[a])
-					.map(type => "<span class='indented'>" + type + ": " + localize(rpExclusive[type]) + "</span><br>").join("")
+					.map(type => "<span class='indented'>" + encode(type) + ": " + localize(rpExclusive[type]) + "</span><br>").join("")
 
 			html += "<br>"
 			commands = Object.fromEntries(Object.entries(commands).sort(([, a], [, b]) => b - a))

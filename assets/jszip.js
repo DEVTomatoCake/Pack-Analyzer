@@ -12,7 +12,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
 
 // Modified by TomatoCake from https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.js (sha512-3FKAKNDHbfUwAgW45wNAvfgJDDdNoTi5PZWU7ak3Xm0X8u0LbDBWZEyPklRebTZ8r+p0M2KIJWDYZQjDPyYQEA==)
 
-(function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.JSZip = f()}})(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
+(function(f){if (typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if (typeof define==="function"&&define.amd){define([],f)}else{var g;if (typeof window!=="undefined"){g=window}else if (typeof global!=="undefined"){g=global}else if (typeof self!=="undefined"){g=self}else{g=this}g.JSZip = f()}})(function(){return (function e(t,n,r){function s(o,u){if (!n[o]){if (!t[o]){var a=typeof require=="function"&&require;if (!u&&a)return a(o,!0);if (i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 	"use strict";
 	var utils = require("./utils");
 	var support = require("./support");
@@ -24,7 +24,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
 	exports.encode = function(input) {
 		var output = [];
 		var chr1, chr2, chr3, enc1, enc2, enc3, enc4;
-		var i = 0, len = input.length, remainingBytes = len;
+		var i = 0, len = input.length, remainingBytes;
 
 		var isArray = utils.getTypeOf(input) !== "string";
 		while (i < input.length) {
@@ -73,10 +73,10 @@ https://github.com/nodeca/pako/blob/main/LICENSE
 		input = input.replace(/[^A-Za-z0-9+/=]/g, "");
 
 		var totalLength = input.length * 3 / 4;
-		if(input.charAt(input.length - 1) === _keyStr.charAt(64)) {
+		if (input.charAt(input.length - 1) === _keyStr.charAt(64)) {
 			totalLength--;
 		}
-		if(input.charAt(input.length - 2) === _keyStr.charAt(64)) {
+		if (input.charAt(input.length - 2) === _keyStr.charAt(64)) {
 			totalLength--;
 		}
 		if (totalLength % 1 !== 0) {
@@ -284,7 +284,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
 
 		var isArray = utils.getTypeOf(input) !== "string";
 
-		if(isArray) {
+		if (isArray) {
 			return crc32(crc|0, input, input.length, 0);
 		} else {
 			return crc32str(crc|0, input, input.length, 0);
@@ -531,12 +531,12 @@ https://github.com/nodeca/pako/blob/main/LICENSE
 			// dos or unix, we set the dos dir flag
 			extFileAttr |= 0x00010;
 		}
-		if(platform === "UNIX") {
+		if (platform === "UNIX") {
 			versionMadeBy = 0x031E; // UNIX, version 3.0
 			extFileAttr |= generateUnixExternalFileAttr(file.unixPermissions, dir);
 		} else { // DOS or other, fallback to DOS
 			versionMadeBy = 0x0014; // DOS, version 2.0
-			extFileAttr |= generateDosExternalFileAttr(file.dosPermissions, dir);
+			extFileAttr |= generateDosExternalFileAttr(file.dosPermissions);
 		}
 
 		// date
@@ -583,8 +583,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
 				unicodePathExtraField;
 		}
 
-		if(useUTF8ForComment) {
-
+		if (useUTF8ForComment) {
 			unicodeCommentExtraField =
 				// Version
 				decToHex(1, 1) +
@@ -763,7 +762,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
 		var entriesCount = this.entriesCount;
 		var remainingFiles = this._sources.length;
 
-		if(this.accumulate) {
+		if (this.accumulate) {
 			this.contentBuffer.push(chunk);
 		} else {
 			this.bytesWritten += chunk.data.length;
@@ -789,7 +788,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
 		var streamedContent = this.streamFiles && !streamInfo["file"].dir;
 
 		// don't stream folders (because they don't have any content)
-		if(streamedContent) {
+		if (streamedContent) {
 			var record = generateZipParts(streamInfo, streamedContent, false, this.currentSourceOffset, this.zipPlatform, this.encodeFileName);
 			this.push({
 				data : record.fileRecord,
@@ -811,7 +810,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
 		var record = generateZipParts(streamInfo, streamedContent, true, this.currentSourceOffset, this.zipPlatform, this.encodeFileName);
 
 		this.dirRecords.push(record.dirRecord);
-		if(streamedContent) {
+		if (streamedContent) {
 			// after the streamed file, we put data descriptors
 			this.push({
 				data : generateDataDescriptors(streamInfo),
@@ -878,7 +877,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
 		});
 		previous.on("end", function () {
 			self.closedSource(self.previous.streamInfo);
-			if(self._sources.length) {
+			if (self._sources.length) {
 				self.prepareNextSource();
 			} else {
 				self.end();
@@ -894,7 +893,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
 	 * @see GenericWorker.resume
 	 */
 	ZipFileWorker.prototype.resume = function () {
-		if(!GenericWorker.prototype.resume.call(this)) {
+		if (!GenericWorker.prototype.resume.call(this)) {
 			return false;
 		}
 
@@ -913,7 +912,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
 	 */
 	ZipFileWorker.prototype.error = function (e) {
 		var sources = this._sources;
-		if(!GenericWorker.prototype.error.call(this, e)) {
+		if (!GenericWorker.prototype.error.call(this, e)) {
 			return false;
 		}
 		for(var i = 0; i < sources.length; i++) {
@@ -1007,11 +1006,11 @@ https://github.com/nodeca/pako/blob/main/LICENSE
 	 */
 	function JSZip() {
 		// if this constructor is used without `new`, it adds `new` before itself:
-		if(!(this instanceof JSZip)) {
+		if (!(this instanceof JSZip)) {
 			return new JSZip();
 		}
 
-		if(arguments.length) {
+		if (arguments.length) {
 			throw new Error("The constructor with parameters has been removed in JSZip 3.0, please check the upgrade guide.");
 		}
 
@@ -1183,14 +1182,14 @@ https://github.com/nodeca/pako/blob/main/LICENSE
 				});
 			})
 			.on("error", function (e) {
-				if(self.isPaused) {
+				if (self.isPaused) {
 					this.generatedError = e;
 				} else {
 					self.error(e);
 				}
 			})
 			.on("end", function () {
-				if(self.isPaused) {
+				if (self.isPaused) {
 					self._upstreamEnded = true;
 				} else {
 					self.end();
@@ -1198,18 +1197,18 @@ https://github.com/nodeca/pako/blob/main/LICENSE
 			});
 	};
 	NodejsStreamInputAdapter.prototype.pause = function () {
-		if(!GenericWorker.prototype.pause.call(this)) {
+		if (!GenericWorker.prototype.pause.call(this)) {
 			return false;
 		}
 		this._stream.pause();
 		return true;
 	};
 	NodejsStreamInputAdapter.prototype.resume = function () {
-		if(!GenericWorker.prototype.resume.call(this)) {
+		if (!GenericWorker.prototype.resume.call(this)) {
 			return false;
 		}
 
-		if(this._upstreamEnded) {
+		if (this._upstreamEnded) {
 			this.end();
 		} else {
 			this._stream.resume();
@@ -1245,7 +1244,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
 			if (!self.push(data)) {
 				self._helper.pause();
 			}
-			if(updateCb) {
+			if (updateCb) {
 				updateCb(meta);
 			}
 		})
@@ -1401,7 +1400,6 @@ https://github.com/nodeca/pako/blob/main/LICENSE
 			o.binary = true;
 			data = "";
 			o.compression = "STORE";
-			dataType = "string";
 		}
 
 		/*
@@ -1593,7 +1591,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
 	 */
 	ArrayReader.prototype.readData = function(size) {
 		this.checkOffset(size);
-		if(size === 0) {
+		if (size === 0) {
 			return [];
 		}
 		var result = this.data.slice(this.zero + this.index, this.zero + this.index + size);
@@ -1795,7 +1793,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
 	 */
 	Uint8ArrayReader.prototype.readData = function(size) {
 		this.checkOffset(size);
-		if(size === 0) {
+		if (size === 0) {
 			// in IE10, when using subarray(idx, idx), we get the array [0x00] instead of [].
 			return new Uint8Array(0);
 		}
@@ -1920,7 +1918,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
 	 * @see GenericWorker.processChunk
 	 */
 	DataLengthProbe.prototype.processChunk = function (chunk) {
-		if(chunk) {
+		if (chunk) {
 			var length = this.streamInfo[this.propName] || 0;
 			this.streamInfo[this.propName] = length + chunk.data.length;
 		}
@@ -1960,7 +1958,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
 			self.data = data;
 			self.max = data && data.length || 0;
 			self.type = utils.getTypeOf(data);
-			if(!self.isPaused) {
+			if (!self.isPaused) {
 				self._tickAndRepeat();
 			}
 		}, function (e) {
@@ -1982,7 +1980,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
 	 * @see GenericWorker.resume
 	 */
 	DataWorker.prototype.resume = function () {
-		if(!GenericWorker.prototype.resume.call(this)) {
+		if (!GenericWorker.prototype.resume.call(this)) {
 			return false;
 		}
 
@@ -1998,11 +1996,11 @@ https://github.com/nodeca/pako/blob/main/LICENSE
 	 */
 	DataWorker.prototype._tickAndRepeat = function() {
 		this._tickScheduled = false;
-		if(this.isPaused || this.isFinished) {
+		if (this.isPaused || this.isFinished) {
 			return;
 		}
 		this._tick();
-		if(!this.isFinished) {
+		if (!this.isFinished) {
 			utils.delay(this._tickAndRepeat, [], this);
 			this._tickScheduled = true;
 		}
@@ -2013,7 +2011,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
 	 */
 	DataWorker.prototype._tick = function() {
 
-		if(this.isPaused || this.isFinished) {
+		if (this.isPaused || this.isFinished) {
 			return false;
 		}
 
@@ -2126,7 +2124,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
 				return false;
 			}
 
-			if(this.isPaused) {
+			if (this.isPaused) {
 				this.generatedError = e;
 			} else {
 				this.isFinished = true;
@@ -2136,7 +2134,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
 				// in the workers chain exploded in the middle of the chain,
 				// the error event will go downward but we also need to notify
 				// workers upward that there has been an error.
-				if(this.previous) {
+				if (this.previous) {
 					this.previous.error(e);
 				}
 
@@ -2216,12 +2214,12 @@ https://github.com/nodeca/pako/blob/main/LICENSE
 		 * @return {Boolean} true if this call paused the worker, false otherwise.
 		 */
 		pause : function () {
-			if(this.isPaused || this.isFinished) {
+			if (this.isPaused || this.isFinished) {
 				return false;
 			}
 			this.isPaused = true;
 
-			if(this.previous) {
+			if (this.previous) {
 				this.previous.pause();
 			}
 			return true;
@@ -2231,18 +2229,18 @@ https://github.com/nodeca/pako/blob/main/LICENSE
 		 * @return {Boolean} true if this call resumed the worker, false otherwise.
 		 */
 		resume : function () {
-			if(!this.isPaused || this.isFinished) {
+			if (!this.isPaused || this.isFinished) {
 				return false;
 			}
 			this.isPaused = false;
 
 			// if true, the worker tried to resume but failed
 			var withError = false;
-			if(this.generatedError) {
+			if (this.generatedError) {
 				this.error(this.generatedError);
 				withError = true;
 			}
-			if(this.previous) {
+			if (this.previous) {
 				this.previous.resume();
 			}
 
@@ -2400,7 +2398,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
 			helper
 				.on("data", function (data, meta) {
 					dataArray.push(data);
-					if(updateCallback) {
+					if (updateCallback) {
 						updateCallback(meta);
 					}
 				})
@@ -2477,7 +2475,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
 		on : function (evt, fn) {
 			var self = this;
 
-			if(evt === "data") {
+			if (evt === "data") {
 				this._worker.on(evt, function (chunk) {
 					fn.call(self, chunk.data, chunk.meta);
 				});
@@ -2588,7 +2586,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
 	for (var i=0; i<256; i++) {
 		_utf8len[i] = (i >= 252 ? 6 : i >= 248 ? 5 : i >= 240 ? 4 : i >= 224 ? 3 : i >= 192 ? 2 : 1);
 	}
-	_utf8len[254]=_utf8len[254]=1; // Invalid sequence start
+	_utf8len[254] = 1; // Invalid sequence start
 
 	// convert string to array (typed, when possible)
 	var string2buf = function (str) {
@@ -2716,7 +2714,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
 
 		// shrinkBuf(utf16buf, out)
 		if (utf16buf.length !== out) {
-			if(utf16buf.subarray) {
+			if (utf16buf.subarray) {
 				utf16buf = utf16buf.subarray(0, out);
 			} else {
 				utf16buf.length = out;
@@ -2782,7 +2780,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
 
 		// 1st step, re-use what's left of the previous chunk
 		if (this.leftOver && this.leftOver.length) {
-			if(support.uint8array) {
+			if (support.uint8array) {
 				var previousData = data;
 				data = new Uint8Array(previousData.length + this.leftOver.length);
 				data.set(this.leftOver, 0);
@@ -2815,7 +2813,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
 	 * @see GenericWorker.flush
 	 */
 	Utf8DecodeWorker.prototype.flush = function () {
-		if(this.leftOver && this.leftOver.length) {
+		if (this.leftOver && this.leftOver.length) {
 			this.push({
 				data : exports.utf8decode(this.leftOver),
 				meta : {}
@@ -3756,12 +3754,12 @@ https://github.com/nodeca/pako/blob/main/LICENSE
 			// but some unknown platform could set it as a compatibility flag.
 			this.dir = this.externalFileAttributes & 0x0010 ? true : false;
 
-			if(madeBy === MADE_BY_DOS) {
+			if (madeBy === MADE_BY_DOS) {
 				// first 6 bits (0 to 5)
 				this.dosPermissions = this.externalFileAttributes & 0x3F;
 			}
 
-			if(madeBy === MADE_BY_UNIX) {
+			if (madeBy === MADE_BY_UNIX) {
 				this.unixPermissions = (this.externalFileAttributes >> 16) & 0xFFFF;
 				// the octal permissions are in (this.unixPermissions & 0x01FF).toString(8);
 			}
@@ -4009,7 +4007,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
 				return this._data.getCompressedWorker();
 			} else {
 				var result = this._decompressWorker();
-				if(!this._dataBinary) {
+				if (!this._dataBinary) {
 					result = result.pipe(new utf8.Utf8EncodeWorker());
 				}
 				return CompressedObject.createWorkerFrom(result, compression, compressionOptions);
@@ -5358,7 +5356,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
 	for (var q = 0; q < 256; q++) {
 	  _utf8len[q] = (q >= 252 ? 6 : q >= 248 ? 5 : q >= 240 ? 4 : q >= 224 ? 3 : q >= 192 ? 2 : 1);
 	}
-	_utf8len[254] = _utf8len[254] = 1; // Invalid sequence start
+	_utf8len[254] = 1; // Invalid sequence start
 
 
 	// convert string to array (typed, when possible)
@@ -6361,7 +6359,6 @@ https://github.com/nodeca/pako/blob/main/LICENSE
 			  s.strstart++;
 			  /*** INSERT_STRING(s, s.strstart, hash_head); ***/
 			  s.ins_h = ((s.ins_h << s.hash_shift) ^ s.window[s.strstart + MIN_MATCH - 1]) & s.hash_mask;
-			  hash_head = s.prev[s.strstart & s.w_mask] = s.head[s.ins_h];
 			  s.head[s.ins_h] = s.strstart;
 			  /***/
 			  /* strstart never exceeds WSIZE-MAX_MATCH, so there are
@@ -6508,7 +6505,6 @@ https://github.com/nodeca/pako/blob/main/LICENSE
 			if (++s.strstart <= max_insert) {
 			  /*** INSERT_STRING(s, s.strstart, hash_head); ***/
 			  s.ins_h = ((s.ins_h << s.hash_shift) ^ s.window[s.strstart + MIN_MATCH - 1]) & s.hash_mask;
-			  hash_head = s.prev[s.strstart & s.w_mask] = s.head[s.ins_h];
 			  s.head[s.ins_h] = s.strstart;
 			  /***/
 			}
@@ -6558,7 +6554,6 @@ https://github.com/nodeca/pako/blob/main/LICENSE
 	  if (s.match_available) {
 		//Tracevv((stderr,"%c", s->window[s->strstart-1]));
 		/*** _tr_tally_lit(s, s.window[s.strstart-1], bflush); ***/
-		bflush = trees._tr_tally(s, 0, s.window[s.strstart - 1]);
 
 		s.match_available = 0;
 	  }
@@ -8939,7 +8934,6 @@ https://github.com/nodeca/pako/blob/main/LICENSE
 			for (;;) {
 			  here = state.lencode[hold & ((1 << state.lenbits) - 1)];/*BITS(state.lenbits)*/
 			  here_bits = here >>> 24;
-			  here_op = (here >>> 16) & 0xff;
 			  here_val = here & 0xffff;
 
 			  if ((here_bits) <= bits) { break; }
@@ -9435,10 +9429,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
 
 	  if (state.wsize || (_out !== strm.avail_out && state.mode < BAD &&
 						  (state.mode < CHECK || flush !== Z_FINISH))) {
-		if (updatewindow(strm, strm.output, strm.next_out, _out - strm.avail_out)) {
-		  state.mode = MEM;
-		  return Z_MEM_ERROR;
-		}
+		updatewindow(strm, strm.output, strm.next_out, _out - strm.avail_out)
 	  }
 	  _in -= strm.avail_in;
 	  _out -= strm.avail_out;
@@ -9459,7 +9450,6 @@ https://github.com/nodeca/pako/blob/main/LICENSE
 	}
 
 	function inflateEnd(strm) {
-
 	  if (!strm || !strm.state /*|| strm->zfree == (free_func)0*/) {
 		return Z_STREAM_ERROR;
 	  }
@@ -9513,10 +9503,6 @@ https://github.com/nodeca/pako/blob/main/LICENSE
 	  /* copy dictionary to window using updatewindow(), which will amend the
 	   existing dictionary if appropriate */
 	  ret = updatewindow(strm, dictionary, dictLength, dictLength);
-	  if (ret) {
-		state.mode = MEM;
-		return Z_MEM_ERROR;
-	  }
 	  state.havedict = 1;
 	  // Tracev((stderr, "inflate:   dictionary set\n"));
 	  return Z_OK;
@@ -10027,7 +10013,6 @@ https://github.com/nodeca/pako/blob/main/LICENSE
 	var REPZ_11_138 = 18;
 	/* repeat a zero length 11-138 times  (7 bits of repeat count) */
 
-	/* eslint-disable comma-spacing,array-bracket-spacing */
 	var extra_lbits =   /* extra bits for each length code */
 	  [0,0,0,0,0,0,0,0,1,1,1,1,2,2,2,2,3,3,3,3,4,4,4,4,5,5,5,5,0];
 
@@ -10039,7 +10024,6 @@ https://github.com/nodeca/pako/blob/main/LICENSE
 
 	var bl_order =
 	  [16,17,18,0,8,7,9,6,10,5,11,4,12,3,13,2,14,1,15];
-	/* eslint-enable comma-spacing,array-bracket-spacing */
 
 	/* The lengths of the bit length codes are sent in order of decreasing
 	 * probability, to avoid transmitting the lengths for unused bit length codes.

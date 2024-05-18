@@ -14,7 +14,7 @@
 		"url": "https://github.com/DEVTomatoCake/Pack-Analyzer.git"
 	},
 	"engines": {
-		"vscode": "^1.88.0"
+		"vscode": "^1.89.0"
 	},
 	"categories": [
 		"Other"

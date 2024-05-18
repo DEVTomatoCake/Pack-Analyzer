@@ -485,7 +485,7 @@ class PackAnalyzer {
 
 			comments > 0 ? "comments" : void 0,
 			empty > 0 ? "empty" : void 0,
-			emptyFiles > 0 ? "emptyFiles" : void 0
+			emptyFiles.length > 0 ? "emptyFiles" : void 0
 		].filter(Boolean).map(child => ({item: child}))
 	}
 }
