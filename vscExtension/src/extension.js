@@ -132,14 +132,14 @@ const processEntries = async entries => {
 		matchWholeWord: true,
 		isCaseSensitive: true
 	}))
-	log("Search for @a executed")*/
+	log("Search for @a executed")
 
 	log(await vscode.commands.executeCommand("workbench.action.findInFiles", {
 		searchString: "@a",
 		matchWholeWord: true,
 		isCaseSensitive: true
 	}))
-	log("Search 2 for @a executed")
+	log("Search 2 for @a executed")*/
 }
 
 const mainScan = async () => {
@@ -377,7 +377,7 @@ class PackAnalyzer {
 		} else if (element.parent == "selectors") {
 			treeItem.label = "@" + element.item + ": " + localize(dpExclusive.selectors[element.item])
 			treeItem.iconPath = iconUrl("{DPICON|mcfunction}")
-			treeItem.command = {
+			/*treeItem.command = {
 				command: "editor.actions.findWithArgs",
 				title: "Find",
 				arguments: [{
@@ -385,7 +385,7 @@ class PackAnalyzer {
 					matchWholeWord: true,
 					isCaseSensitive: true
 				}]
-			}
+			}*/
 		} else if (element.item == "rpExclusive") {
 			treeItem.label = "Resource pack"
 			treeItem.iconPath = iconUrl("{DPICON|assets}")
