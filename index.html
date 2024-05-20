@@ -56,49 +56,45 @@
 			<canvas id="shareImage" width="955" height="500"></canvas>
 			<p id="result"></p>
 
-			<div id="aboutDialog" class="dialog">
-				<div class="dialog-content">
-					<span class="close">&times;</span>
-					<h1>About</h1>
+			<dialog id="aboutDialog">
+				<span class="close">&times;</span>
+				<h1>About</h1>
 
-					<p>
-						Made in HTML, plain JavaScript and CSS, this site allows you to get usage stats from your Minecraft data and resource packs.
-						It also allows analyzing of whole worlds and shaders.
-						<br>
-						Everything is done locally, no data ever gets sent to any server (except for anonymous Cloudflare statistics).
-					</p>
-
-					<p>
-						Developed by: <a href="https://discord.com/users/581146486646243339" target="_blank" rel="noopener">TomatoCake</a>
-					</p>
-					<p>
-						Inspired by: <a href="https://github.com/ErrorCraft/FunctionAnalyser" target="_blank" rel="noopener">ErrorCrafts FunctionAnalyser</a>
-					</p>
-					<p>
-						Uses <a href="https://github.com/misode/mcmeta" target="_blank" rel="noopener">misodes mcmeta</a> to get a list of all Minecraft versions with their respective pack formats.
-					</p>
-					<p>
-						GitHub: <a href="https://github.com/DEVTomatoCake/Pack-Analyzer" target="_blank" rel="noopener">https://github.com/DEVTomatoCake/Pack-Analyzer</a>
-					</p>
-					<p>
-						Support/Feedback:
-						<a href="https://discord.gg/JXVDQFf" target="_blank" rel="noopener">Vanilla Minigames Discord</a> or
-						<a href="https://github.com/DEVTomatoCake/Pack-Analyzer/issues" target="_blank" rel="noopener">GitHub</a>
-					</p>
-				</div>
-			</div>
-
-			<div id="shareDialog" class="dialog">
-				<div class="dialog-content">
-					<span class="close">&times;</span>
-					<h1>Share the results as link</h1>
-
-					<a id="share-link" href="https://sh0rt.zip"></a>
+				<p>
+					Made in HTML, plain JavaScript and CSS, this site allows you to get usage stats from your Minecraft data and resource packs.
+					It also allows analyzing of whole worlds and shaders.
 					<br>
-					<br>
-					<img id="share-img" width="180" height="180" alt="QR code for sharing">
-				</div>
-			</div>
+					Everything is done locally, no data ever gets sent to any server (except for anonymous Cloudflare statistics).
+				</p>
+
+				<p>
+					Developed by: <a href="https://discord.com/users/581146486646243339" target="_blank" rel="noopener">TomatoCake</a>
+				</p>
+				<p>
+					Inspired by: <a href="https://github.com/ErrorCraft/FunctionAnalyser" target="_blank" rel="noopener">ErrorCrafts FunctionAnalyser</a>
+				</p>
+				<p>
+					Uses <a href="https://github.com/misode/mcmeta" target="_blank" rel="noopener">misodes mcmeta</a> to get a list of all Minecraft versions with their respective pack formats.
+				</p>
+				<p>
+					GitHub: <a href="https://github.com/DEVTomatoCake/Pack-Analyzer" target="_blank" rel="noopener">https://github.com/DEVTomatoCake/Pack-Analyzer</a>
+				</p>
+				<p>
+					Support/Feedback:
+					<a href="https://discord.gg/JXVDQFf" target="_blank" rel="noopener">Vanilla Minigames Discord</a> or
+					<a href="https://github.com/DEVTomatoCake/Pack-Analyzer/issues" target="_blank" rel="noopener">GitHub</a>
+				</p>
+			</dialog>
+
+			<dialog id="shareDialog">
+				<span class="close">&times;</span>
+				<h1>Share the results as link</h1>
+
+				<a id="share-link" href="https://sh0rt.zip"></a>
+				<br>
+				<br>
+				<img id="share-img" width="180" height="180" alt="QR code for sharing">
+			</dialog>
 		</main>
 	</body>
 </html>

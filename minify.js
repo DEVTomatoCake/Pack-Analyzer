@@ -95,7 +95,7 @@ const minifyFile = async (path, options = {}) => {
 	})
 }
 
-async function main() {
+const main = async () => {
 	await minifyFile("./assets/script.js")
 	await minifyFile("./assets/jszip.js", {
 		mangle: {

@@ -50,8 +50,11 @@ let dpExclusive = {
 		datapacks: 0,
 		dimension: 0,
 		dimension_type: 0,
+		enchantment: 0,
+		enchantment_provider: 0,
 		item_modifiers: 0,
 		loot_tables: 0,
+		painting_variant: 0,
 		predicates: 0,
 		recipes: 0,
 		structures: 0,
@@ -101,6 +104,7 @@ let rpExclusive = {
 	lang: 0,
 	models: 0,
 	particles: 0,
+	resourcepacks: 0,
 	shaders: 0,
 	sounds: 0,
 	texts: 0,
@@ -110,7 +114,7 @@ let rpExclusive = {
 const localize = str => str.toLocaleString()
 
 /* processFile */
-async function processEntries(entries) {
+const processEntries = async entries => {
 	for await (const filePath of entries) {
 		const name = filePath.split("/").pop()
 
@@ -122,11 +126,25 @@ async function processEntries(entries) {
 	}
 
 	log("Successfully processed " + done + " files with " + error + " errors")
+
+	/*log(await vscode.commands.executeCommand("editor.actions.findWithArgs", {
+		searchString: "@a",
+		matchWholeWord: true,
+		isCaseSensitive: true
+	}))
+	log("Search for @a executed")*/
+
+	log(await vscode.commands.executeCommand("workbench.action.findInFiles", {
+		searchString: "@a",
+		matchWholeWord: true,
+		isCaseSensitive: true
+	}))
+	log("Search 2 for @a executed")
 }
 
-async function mainScan() {
+const mainScan = async () => {
 	let html =
-		(packFiles.length > 0 ? "<strong>" + (rpMode ? "Resource" : "Data") + "pack" + (packFiles.length == 1 ? "" : "s") + " found:</strong><br>" +
+		(packFiles.length > 0 ? "<strong>" + (rpMode ? "Resource" : "Data") + " pack" + (packFiles.length == 1 ? "" : "s") + " found:</strong><br>" +
 			packFiles.map(pack => {
 				let oldestFormat = pack.pack.pack_format
 				let newestFormat = pack.pack.pack_format
@@ -163,40 +181,20 @@ async function mainScan() {
 		: "") +
 		(packFiles.length == 0 && (filetypes.fsh || filetypes.vsh || filetypes.xcf || filetypes.glsl) ? "<strong>Shader found</strong><br>" : "") +
 
-		"<strong>Pack file types found:</strong><br>" +
-		Object.keys(filetypes).sort((a, b) => filetypes[b] - filetypes[a]).map(type => "<span class='indented'>." + type + ": " + localize(filetypes[type]) + "</span><br>").join("") +
 		(Object.keys(filetypesOther).length > 0 ?
 			"<details><summary>" +
 			"<strong>Non-pack file types found:</strong></summary>" +
 			Object.keys(filetypesOther).sort((a, b) => filetypesOther[b] - filetypesOther[a]).map(type => "<span class='indented'>" + type + ": " + localize(filetypesOther[type]) + "</span><br>").join("") +
 			"</details><br>"
 		: "") +
-		(emptyFiles.length > 0 ?
-			"<strong>Empty files:</strong><br>" +
-			emptyFiles.map(func => "<span class='indented'>" + func + "</span><br>").join("") +
-			"<br>"
-		: "") +
 
-		(dpExclusive.scoreboards > 0 ? "<strong>Scoreboards created: " + localize(dpExclusive.scoreboards) + "</strong><br>" : "") +
-		(!rpMode && Object.values(dpExclusive.selectors).reduce((a, b) => a + b) != 0 ? "<strong>Selectors used:</strong><br>" : "") +
-		Object.keys(dpExclusive.selectors).filter(i => dpExclusive.selectors[i] > 0).sort((a, b) => dpExclusive.selectors[b] - dpExclusive.selectors[a])
-			.map(type => "<span class='indented'>@" + type + ": " + localize(dpExclusive.selectors[type]) + "</span><br>").join("") +
 		(!rpMode && Object.values(dpExclusive.folders).reduce((a, b) => a + b) != 0 ? "<strong>Data pack features used:</strong><br>" : "") +
 		Object.keys(dpExclusive.folders).filter(i => dpExclusive.folders[i] > 0).sort((a, b) => dpExclusive.folders[b] - dpExclusive.folders[a])
-			.map(type => "<span class='indented'>" + type + ": " + localize(dpExclusive.folders[type]) + "</span><br>").join("") +
-		(!rpMode && Object.values(dpExclusive.tags).reduce((a, b) => a + b) != 0 ? "<strong>Tags used:</strong><br>" : "") +
-		Object.keys(dpExclusive.tags).filter(i => dpExclusive.tags[i] > 0).sort((a, b) => dpExclusive.tags[b] - dpExclusive.tags[a])
-			.map(type => "<span class='indented'>" + type + ": " + localize(dpExclusive.tags[type]) + "</span><br>").join("") +
-
-		(rpMode && Object.values(rpExclusive).reduce((a, b) => a + b) != 0 ? "<br><strong>Resource pack features used:</strong><br>" : "") +
-		Object.keys(rpExclusive).filter(i => rpExclusive[i] > 0).sort((a, b) => rpExclusive[b] - rpExclusive[a])
-			.map(type => "<span class='indented'>" + type + ": " + localize(rpExclusive[type]) + "</span><br>").join("")
+			.map(type => "<span class='indented'>" + type + ": " + localize(dpExclusive.folders[type]) + "</span><br>").join("")
 
 	commands = Object.fromEntries(Object.entries(commands).sort(([, a], [, b]) => b - a))
 	Object.keys(commands).forEach(cmd => {
 		html += cmd + ": " + localize(commands[cmd]) + "<br>"
-		if (cmdsBehindExecute[cmd]) html += "<span class='indented'>Behind execute: " + localize(cmdsBehindExecute[cmd]) +
-			(cmd == "execute" ? "⚠️ <small>(<code>... run execute ...</code> equals <code>... ...</code>)</small>" : "") + "</span><br>"
 		if (cmdsBehindMacros[cmd]) html += "<span class='indented'>Behind macro: " + localize(cmdsBehindMacros[cmd]) + "</span><br>"
 		if (cmdsBehindReturn[cmd]) html += "<span class='indented'>Behind return: " + localize(cmdsBehindReturn[cmd]) + "</span><br>"
 	})
@@ -269,8 +267,11 @@ class PackAnalyzer {
 				datapacks: 0,
 				dimension: 0,
 				dimension_type: 0,
+				enchantment: 0,
+				enchantment_provider: 0,
 				item_modifiers: 0,
 				loot_tables: 0,
+				painting_variant: 0,
 				predicates: 0,
 				recipes: 0,
 				structures: 0,
@@ -320,6 +321,7 @@ class PackAnalyzer {
 			lang: 0,
 			models: 0,
 			particles: 0,
+			resourcepacks: 0,
 			shaders: 0,
 			sounds: 0,
 			texts: 0,
@@ -375,6 +377,15 @@ class PackAnalyzer {
 		} else if (element.parent == "selectors") {
 			treeItem.label = "@" + element.item + ": " + localize(dpExclusive.selectors[element.item])
 			treeItem.iconPath = iconUrl("{DPICON|mcfunction}")
+			treeItem.command = {
+				command: "editor.actions.findWithArgs",
+				title: "Find",
+				arguments: [{
+					searchString: "@" + element.item,
+					matchWholeWord: true,
+					isCaseSensitive: true
+				}]
+			}
 		} else if (element.item == "rpExclusive") {
 			treeItem.label = "Resource pack"
 			treeItem.iconPath = iconUrl("{DPICON|assets}")

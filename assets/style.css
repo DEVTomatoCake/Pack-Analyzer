@@ -121,53 +121,20 @@ summary {
 	cursor: pointer;
 }
 
-.dialog {
-	position: fixed;
-	display: none;
-	z-index: 1;
-	left: 0;
-	top: 0;
-	padding-top: 100px;
-	width: 100%;
-	height: 100%;
-	overflow: auto;
-	background-color: var(--dialog-shadow);
-	transition: .3s;
+dialog {
+	max-width: 90%;
 }
 
-.dialog-content {
-	position: relative;
-	margin: auto;
-	width: 75%;
-	padding: 20px;
-	box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
-	animation-name: animateDialog;
-	animation-duration: 0.4s;
-	background-color: var(--dialog-bg);
-	border-radius: 5px;
-}
-
-@keyframes animateDialog {
-	from {
-		width: 0;
-		opacity: 0;
-	}
-	to {
-		width: 75%;
-		opacity: 1;
-	}
-}
-
-.close {
+dialog .close {
 	color: #AAA;
 	float: right;
 	font-size: 28px;
-	font-weight: bold;
+	font-weight: 700;
 	transition: .2s;
-}
-.close:hover, .close:focus {
-	color: black;
 	cursor: pointer;
+}
+dialog .close:hover, dialog .close:focus {
+	color: #000;
 }
 
 a:link {

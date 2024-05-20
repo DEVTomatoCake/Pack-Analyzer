@@ -45,8 +45,11 @@ let dpExclusive = {
 		datapacks: 0,
 		dimension: 0,
 		dimension_type: 0,
+		enchantment: 0,
+		enchantment_provider: 0,
 		item_modifiers: 0,
 		loot_tables: 0,
+		painting_variant: 0,
 		predicates: 0,
 		recipes: 0,
 		structures: 0,
@@ -96,20 +99,11 @@ let rpExclusive = {
 	lang: 0,
 	models: 0,
 	particles: 0,
+	resourcepacks: 0,
 	shaders: 0,
 	sounds: 0,
 	texts: 0,
 	textures: 0
-}
-
-const openDialog = dialog => {
-	dialog.style.display = "block"
-	dialog.getElementsByClassName("close")[0].onclick = function() {
-		dialog.style.display = "none"
-	}
-	window.onclick = function(event) {
-		if (event.target == dialog) dialog.style.display = "none"
-	}
 }
 
 const encode = s => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;")
@@ -134,11 +128,11 @@ const createImage = () => {
 		let y = 1
 		const lineHeight = 21
 		const maxWidth = 400
-		ctx.font = lineHeight - 1 + "px Arial"
+		ctx.font = (lineHeight - 1) + "px Arial"
 		ctx.fillStyle = "black"
 
 		if (packFiles.length > 0) {
-			ctx.fillText(packFiles.length + " " + (rpMode ? "Resource" : "Data") + "pack" + (packFiles.length == 1 ? "" : "s") + " found", x, y++ * lineHeight, maxWidth)
+			ctx.fillText(packFiles.length + " " + (rpMode ? "Resource" : "Data") + " pack" + (packFiles.length == 1 ? "" : "s") + " found", x, y++ * lineHeight, maxWidth)
 			packFiles.forEach(pack => {
 				if (pack.features?.enabled?.length > 0) {
 					ctx.fillText("Selected internal features:", x + 30, y++ * lineHeight, maxWidth)
@@ -232,16 +226,16 @@ const share = async type => {
 				body: JSON.stringify({
 					name,
 					date: Date.now() + 1000 * 60 * 60 * 24 * 30,
-					url: location.href + "?data=" + encodeURIComponent(content)
+					url: (location.protocol == "https:" ? location.href : "https://pack-analyzer.pages.dev/") + "?data=" + encodeURIComponent(content)
 				})
 			})
 
 			const json = await res.json()
 			if (res.ok) {
-				document.getElementById("share-link").href = "https://sh0rt.zip/" + name
-				document.getElementById("share-link").innerText = "https://sh0rt.zip/" + name
+				document.getElementById("share-link").href = encode(json.uri)
+				document.getElementById("share-link").innerText = json.uri
 				document.getElementById("share-img").src = "https://sh0rt.zip/qr/" + name
-				openDialog(document.getElementById("shareDialog"))
+				document.getElementById("shareDialog").showModal()
 			} else alert("Couldn't create link: " + json.error)
 			return
 		}
@@ -252,144 +246,6 @@ const share = async type => {
 	download.href = "data:application/" + type + "," + encodeURIComponent(content)
 	download.click()
 }
-
-window.addEventListener("DOMContentLoaded", () => {
-	if (localStorage.getItem("theme") == "light") document.body.classList.add("light")
-	else if (window.matchMedia("(prefers-color-scheme: light)").matches) {
-		document.body.classList.add("light")
-		localStorage.setItem("theme", "light")
-	}
-
-	const params = new URLSearchParams(location.search)
-	if (params.has("data")) {
-		const parsed = JSON.parse(params.get("data"))
-		files = parsed.files
-		done = parsed.done
-		error = parsed.error
-		rpMode = parsed.rpMode
-		document.getElementById("radiorp").checked = rpMode
-
-		filetypes = parsed.filetypes
-		packFiles = parsed.packFiles
-		commands = parsed.commands
-		cmdsBehindExecute = parsed.cmdsBehindExecute
-		cmdsBehindMacros = parsed.cmdsBehindMacros
-		cmdsBehindReturn = parsed.cmdsBehindReturn
-		comments = parsed.comments
-		empty = parsed.empty
-		emptyFiles = parsed.emptyFiles
-		dpExclusive = parsed.dpExclusive
-		rpExclusive = parsed.rpExclusive
-
-		mainScan(true)
-	}
-
-	document.getElementById("clear-results").addEventListener("click", () => {
-		document.getElementById("progress").innerText = ""
-		document.getElementById("result").innerHTML = ""
-		document.getElementById("resultButtons").setAttribute("hidden", "")
-		document.getElementById("shareImage").style.display = "none"
-		if (interval) clearInterval(interval)
-	})
-	document.getElementById("toggle-theme").addEventListener("click", () => {
-		localStorage.setItem("theme", document.body.classList.toggle("light") ? "light" : "dark")
-	})
-	document.getElementById("about-button").addEventListener("click", () => openDialog(document.getElementById("aboutDialog")))
-
-	document.getElementById("select-folder").addEventListener("click", () => {
-		if (interval) clearInterval(interval)
-		selected = null
-
-		const input = document.createElement("input")
-		input.type = "file"
-		input.webkitdirectory = true
-		input.onchange = e => {
-			selected = e.target.files
-			mainScan()
-		}
-		if ("showPicker" in HTMLInputElement.prototype) input.showPicker()
-		else input.click()
-	})
-	document.getElementById("select-zip").addEventListener("click", () => {
-		if (interval) clearInterval(interval)
-
-		const input = document.createElement("input")
-		input.type = "file"
-		input.accept = ".zip"
-		input.onchange = e => handleZip(e.target.files[0])
-
-		if ("showPicker" in HTMLInputElement.prototype) input.showPicker()
-		else input.click()
-	})
-
-	for (const elem of document.getElementsByClassName("share")) elem.addEventListener("click", () => share(elem.dataset.type))
-
-	if (location.protocol == "https:" && "serviceWorker" in navigator) navigator.serviceWorker.register("/serviceworker.js")
-})
-
-window.addEventListener("dragover", event => {
-	event.stopPropagation()
-	event.preventDefault()
-	event.dataTransfer.dropEffect = "copy"
-})
-window.addEventListener("drop", async event => {
-	event.stopPropagation()
-	event.preventDefault()
-	const fileList = event.dataTransfer.files
-	if (fileList.length == 0) return
-
-	const dropElement = document.createElement("div")
-	dropElement.id = "drop"
-	dropElement.style.left = event.clientX + "px"
-	dropElement.style.top = event.clientY + "px"
-	document.body.appendChild(dropElement)
-	dropElement.addEventListener("animationend", () => dropElement.remove())
-
-	if (fileList[0].name.endsWith(".zip")) handleZip(fileList[0])
-	else {
-		selected = []
-		for await (const file of Object.values(fileList)) {
-			try {
-				selected.push({
-					name: file.name,
-					content: await file.text()
-				})
-			} catch (e) {
-				console.error(e)
-				alert("Couldn't read file: " + file.name + "\nYour browser may not support reading files/folders by dropping them on a website, try using the buttons above.")
-			}
-		}
-		mainScan()
-	}
-})
-window.addEventListener("paste", async event => {
-	event.preventDefault()
-	if (event.clipboardData.files.length == 0) {
-		if (event.clipboardData.items.length > 0) event.clipboardData.items[0].getAsString(str => {
-			selected = [{name: "clipboard.mcfunction", content: str}]
-			mainScan()
-		})
-		return
-	}
-
-	const fileList = event.clipboardData.files
-	if (fileList[0].name.endsWith(".zip")) handleZip(fileList[0])
-	else {
-		selected = []
-		for await (const file of Object.values(fileList)) {
-			try {
-				selected.push({
-					name: file.name,
-					content: await file.text()
-				})
-			} catch (e) {
-				console.error(e)
-				alert("Couldn't read file: " + file.name + "\nYour browser may not support reading files/folders from the clipboard, try using the buttons above.")
-			}
-		}
-		mainScan()
-	}
-})
 
 const processFile = async (filePath = "", name = "", loadContentCallback = () => {}) => {
 	const ext = name.split(".").pop()
@@ -407,7 +263,7 @@ const processFile = async (filePath = "", name = "", loadContentCallback = () =>
 
 	if (
 		ext == "mcfunction" || ext == "mcmeta" || (!rpMode && ext == "json" && (filePath.includes("/advancements/") || filePath.includes("/tags/functions/"))) ||
-		ext == "fsh" || ext == "vsh" || ext == "glsl" || name.endsWith("pack.png")
+		ext == "fsh" || ext == "vsh" || ext == "glsl" || name.endsWith("/pack.png")
 	) {
 		files++
 
@@ -565,7 +421,7 @@ const processFile = async (filePath = "", name = "", loadContentCallback = () =>
 		})
 }
 
-async function processEntries(entries) {
+const processEntries = async entries => {
 	for await (const entry of entries) {
 		const filePath = entry.webkitRelativePath || entry.name
 		if (filePath.includes("/.git/") || filePath.includes("/.svn/")) continue
@@ -594,7 +450,7 @@ async function processEntries(entries) {
 	}
 }
 
-async function mainScan(hasData = false) {
+const mainScan = async (hasData = false) => {
 	if (interval) clearInterval(interval)
 	document.getElementById("result").innerHTML = ""
 
@@ -624,8 +480,11 @@ async function mainScan(hasData = false) {
 				datapacks: 0,
 				dimension: 0,
 				dimension_type: 0,
+				enchantment: 0,
+				enchantment_provider: 0,
 				item_modifiers: 0,
 				loot_tables: 0,
+				painting_variant: 0,
 				predicates: 0,
 				recipes: 0,
 				structures: 0,
@@ -675,6 +534,7 @@ async function mainScan(hasData = false) {
 			lang: 0,
 			models: 0,
 			particles: 0,
+			resourcepacks: 0,
 			shaders: 0,
 			sounds: 0,
 			texts: 0,
@@ -691,7 +551,7 @@ async function mainScan(hasData = false) {
 			if (files == 0) return document.getElementById("progress").innerText = "No files found!"
 			document.getElementById("resultButtons").removeAttribute("hidden")
 			if (error == 0) document.getElementById("progress").innerText = ""
-			if (Object.values(filetypes).reduce((a, b) => a + b) == 0) document.getElementById("progress").innerHTML = "No " + (rpMode ? "resource" : "data") + "pack files found!"
+			if (Object.values(filetypes).reduce((a, b) => a + b) == 0) document.getElementById("progress").innerHTML = "No " + (rpMode ? "resource" : "data") + " pack files found!"
 
 			const uncalledFunctions = dpExclusive.functions.filter(funcName => !dpExclusive.functionCalls.some(func => func.target == funcName))
 			const missingFunctions = [...new Set(dpExclusive.functionCalls.filter(func => !dpExclusive.functions.includes(func.target)).map(func => func.target))]
@@ -702,7 +562,7 @@ async function mainScan(hasData = false) {
 			const versions = localStorage.getItem("mcVersions") ? JSON.parse(localStorage.getItem("mcVersions")) : []
 			let html =
 				(packImages.length > 0 ? "<div style='display: flex;'>" + packImages.map(img => "<img src='" + img + "' width='64' height='64'>") + "</div>" : "") +
-				(packFiles.length > 0 ? "<strong>" + (rpMode ? "Resource" : "Data") + "pack" + (packFiles.length == 1 ? "" : "s") + " found:</strong><br>" +
+				(packFiles.length > 0 ? "<strong>" + (rpMode ? "Resource" : "Data") + " pack" + (packFiles.length == 1 ? "" : "s") + " found:</strong><br>" +
 					packFiles.map(pack => {
 						let oldestFormat = pack.pack.pack_format
 						let newestFormat = pack.pack.pack_format
@@ -820,7 +680,7 @@ async function mainScan(hasData = false) {
 	}, 100)
 }
 
-function handleZip(file) {
+const handleZip = file => {
 	selected = []
 
 	new JSZip().loadAsync(file).then(async zip => {
@@ -833,3 +693,150 @@ function handleZip(file) {
 		mainScan()
 	})
 }
+
+window.addEventListener("DOMContentLoaded", () => {
+	if (localStorage.getItem("theme") == "light") document.body.classList.add("light")
+	else if (window.matchMedia("(prefers-color-scheme: light)").matches) {
+		document.body.classList.add("light")
+		localStorage.setItem("theme", "light")
+	}
+
+	const params = new URLSearchParams(location.search)
+	if (params.has("data")) {
+		const parsed = JSON.parse(params.get("data"))
+		files = parsed.files
+		done = parsed.done
+		error = parsed.error
+		rpMode = parsed.rpMode
+		document.getElementById("radiorp").checked = rpMode
+
+		filetypes = parsed.filetypes
+		packFiles = parsed.packFiles
+		commands = parsed.commands
+		cmdsBehindExecute = parsed.cmdsBehindExecute
+		cmdsBehindMacros = parsed.cmdsBehindMacros
+		cmdsBehindReturn = parsed.cmdsBehindReturn
+		comments = parsed.comments
+		empty = parsed.empty
+		emptyFiles = parsed.emptyFiles
+		dpExclusive = parsed.dpExclusive
+		rpExclusive = parsed.rpExclusive
+
+		mainScan(true)
+	}
+
+	document.getElementById("clear-results").addEventListener("click", () => {
+		document.getElementById("progress").innerText = ""
+		document.getElementById("result").innerHTML = ""
+		document.getElementById("resultButtons").setAttribute("hidden", "")
+		document.getElementById("shareImage").style.display = "none"
+		if (interval) clearInterval(interval)
+	})
+	document.getElementById("toggle-theme").addEventListener("click", () => {
+		localStorage.setItem("theme", document.body.classList.toggle("light") ? "light" : "dark")
+	})
+
+	document.getElementById("select-folder").addEventListener("click", () => {
+		if (interval) clearInterval(interval)
+		selected = null
+
+		const input = document.createElement("input")
+		input.type = "file"
+		input.webkitdirectory = true
+		input.onchange = e => {
+			selected = e.target.files
+			mainScan()
+		}
+		if ("showPicker" in HTMLInputElement.prototype) input.showPicker()
+		else input.click()
+	})
+	document.getElementById("select-zip").addEventListener("click", () => {
+		if (interval) clearInterval(interval)
+
+		const input = document.createElement("input")
+		input.type = "file"
+		input.accept = ".zip"
+		input.onchange = e => handleZip(e.target.files[0])
+
+		if ("showPicker" in HTMLInputElement.prototype) input.showPicker()
+		else input.click()
+	})
+
+	document.getElementById("about-button").addEventListener("click", () => {
+		document.getElementById("aboutDialog").showModal()
+	})
+	for (const elem of document.querySelectorAll("dialog .close")) {
+		elem.addEventListener("click", () => elem.closest("dialog").close())
+		elem.addEventListener("keydown", e => {
+			if (e.key == "Enter") elem.closest("dialog").close()
+		})
+	}
+
+	for (const elem of document.getElementsByClassName("share")) elem.addEventListener("click", () => share(elem.dataset.type))
+
+	if (location.protocol == "https:" && "serviceWorker" in navigator) navigator.serviceWorker.register("/serviceworker.js")
+})
+
+window.addEventListener("dragover", event => {
+	event.stopPropagation()
+	event.preventDefault()
+	event.dataTransfer.dropEffect = "copy"
+})
+window.addEventListener("drop", async event => {
+	event.stopPropagation()
+	event.preventDefault()
+	const fileList = event.dataTransfer.files
+	if (fileList.length == 0) return
+
+	const dropElement = document.createElement("div")
+	dropElement.id = "drop"
+	dropElement.style.left = event.clientX + "px"
+	dropElement.style.top = event.clientY + "px"
+	document.body.appendChild(dropElement)
+	dropElement.addEventListener("animationend", () => dropElement.remove())
+
+	if (fileList[0].name.endsWith(".zip")) handleZip(fileList[0])
+	else {
+		selected = []
+		for await (const file of Object.values(fileList)) {
+			try {
+				selected.push({
+					name: file.name,
+					content: await file.text()
+				})
+			} catch (e) {
+				console.error(e)
+				alert("Couldn't read file: " + file.name + "\nYour browser may not support reading files/folders by dropping them on a website, try using the buttons above.")
+			}
+		}
+		mainScan()
+	}
+})
+window.addEventListener("paste", async event => {
+	event.preventDefault()
+	if (event.clipboardData.files.length == 0) {
+		if (event.clipboardData.items.length > 0) event.clipboardData.items[0].getAsString(str => {
+			selected = [{name: "clipboard.mcfunction", content: str}]
+			mainScan()
+		})
+		return
+	}
+
+	const fileList = event.clipboardData.files
+	if (fileList[0].name.endsWith(".zip")) handleZip(fileList[0])
+	else {
+		selected = []
+		for await (const file of Object.values(fileList)) {
+			try {
+				selected.push({
+					name: file.name,
+					content: await file.text()
+				})
+			} catch (e) {
+				console.error(e)
+				alert("Couldn't read file: " + file.name + "\nYour browser may not support reading files/folders from the clipboard, try using the buttons above.")
+			}
+		}
+		mainScan()
+	}
+})
