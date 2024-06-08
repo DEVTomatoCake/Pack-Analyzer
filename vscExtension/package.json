@@ -73,9 +73,9 @@
 	},
 	"devDependencies": {
 		"@stylistic/eslint-plugin-js": "^2.1.0",
-		"@types/node": "^20.13.0",
-		"@types/vscode": "^1.89.0",
-		"@vscode/vsce": "^2.26.1",
+		"@types/node": "^20.14.2",
+		"@types/vscode": "^1.90.0",
+		"@vscode/vsce": "^2.27.0",
 		"eslint": "^9.4.0",
 		"eslint-plugin-sonarjs": "^1.0.3",
 		"eslint-plugin-unicorn": "^53.0.0"
