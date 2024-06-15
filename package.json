@@ -14,7 +14,7 @@
   },
   "dependencies": {
     "clean-css": "^5.3.3",
-    "uglify-js": "^3.17.4"
+    "uglify-js": "^3.18.0"
   },
   "devDependencies": {
     "@html-eslint/eslint-plugin": "^0.24.1",
