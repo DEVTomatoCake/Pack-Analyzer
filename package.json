@@ -17,7 +17,7 @@
     "uglify-js": "^3.18.0"
   },
   "devDependencies": {
-    "@html-eslint/eslint-plugin": "^0.24.1",
+    "@html-eslint/eslint-plugin": "^0.25.0",
     "@html-eslint/parser": "^0.25.0",
     "@stylistic/eslint-plugin-js": "^2.2.2",
     "eslint": "^9.5.0",
