@@ -10,10 +10,13 @@ updates:
     assignees:
       - "DEVTomatoCake"
     groups:
-      eslint-html-parser:
+      eslint:
         patterns:
           - "@html-parser/eslint-plugin"
           - "@html-parser/parser"
+          - "@stylistic/eslint-plugin-js"
+          - "eslint"
+          - "eslint-plugin-*"
   - package-ecosystem: "npm"
     directory: "/vscExtension"
     schedule:
