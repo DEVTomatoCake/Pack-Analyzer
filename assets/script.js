@@ -38,7 +38,8 @@ let empty = 0
 let emptyFiles = []
 let dpExclusive = {
 	folders: {
-		advancements: 0,
+		advancement: 0,
+		advancements: 0, // Before 1.21
 		banner_pattern: 0,
 		chat_type: 0,
 		damage_type: 0,
@@ -47,12 +48,17 @@ let dpExclusive = {
 		dimension_type: 0,
 		enchantment: 0,
 		enchantment_provider: 0,
+		jukebox_song: 0,
 		item_modifiers: 0,
-		loot_tables: 0,
+		loot_table: 0,
+		loot_tables: 0, // Before 1.21
 		painting_variant: 0,
-		predicates: 0,
-		recipes: 0,
-		structures: 0,
+		predicate: 0,
+		predicates: 0, // Before 1.21
+		recipe: 0,
+		recipes: 0, // Before 1.21
+		structure: 0,
+		structures: 0, // Before 1.21
 		tags: 0,
 		trim_material: 0,
 		trim_pattern: 0,
@@ -62,19 +68,22 @@ let dpExclusive = {
 	tags: {
 		banner_pattern: 0,
 		block: 0,
-		blocks: 0, // Before 24w19a
+		blocks: 0, // Before 1.21
 		cat_variant: 0,
-		damage_types: 0,
+		damage_type: 0,
+		damage_types: 0, // Before 1.21
+		enchantment: 0,
 		entity_type: 0,
-		entity_types: 0, // Before 24w19a
+		entity_types: 0, // Before 1.21
 		fluid: 0,
-		fluids: 0, // Before 24w19a
-		functions: 0,
+		fluids: 0, // Before 1.21
+		function: 0,
+		functions: 0, // Before 1.21
 		game_event: 0,
-		game_events: 0, // Before 24w19a
+		game_events: 0, // Before 1.21
 		instrument: 0,
 		item: 0,
-		items: 0, // Before 24w19a
+		items: 0, // Before 1.21
 		painting_variant: 0,
 		point_of_interest_type: 0,
 		worldgen: 0
@@ -473,7 +482,8 @@ const mainScan = async (hasData = false) => {
 		emptyFiles = []
 		dpExclusive = {
 			folders: {
-				advancements: 0,
+				advancement: 0,
+				advancements: 0, // Before 1.21
 				banner_pattern: 0,
 				chat_type: 0,
 				damage_type: 0,
@@ -482,12 +492,17 @@ const mainScan = async (hasData = false) => {
 				dimension_type: 0,
 				enchantment: 0,
 				enchantment_provider: 0,
+				jukebox_song: 0,
 				item_modifiers: 0,
-				loot_tables: 0,
+				loot_table: 0,
+				loot_tables: 0, // Before 1.21
 				painting_variant: 0,
-				predicates: 0,
-				recipes: 0,
-				structures: 0,
+				predicate: 0,
+				predicates: 0, // Before 1.21
+				recipe: 0,
+				recipes: 0, // Before 1.21
+				structure: 0,
+				structures: 0, // Before 1.21
 				tags: 0,
 				trim_material: 0,
 				trim_pattern: 0,
@@ -497,19 +512,22 @@ const mainScan = async (hasData = false) => {
 			tags: {
 				banner_pattern: 0,
 				block: 0,
-				blocks: 0, // Before 24w19a
+				blocks: 0, // Before 1.21
 				cat_variant: 0,
-				damage_types: 0,
+				damage_type: 0,
+				damage_types: 0, // Before 1.21
+				enchantment: 0,
 				entity_type: 0,
-				entity_types: 0, // Before 24w19a
+				entity_types: 0, // Before 1.21
 				fluid: 0,
-				fluids: 0, // Before 24w19a
-				functions: 0,
+				fluids: 0, // Before 1.21
+				function: 0,
+				functions: 0, // Before 1.21
 				game_event: 0,
-				game_events: 0, // Before 24w19a
+				game_events: 0, // Before 1.21
 				instrument: 0,
 				item: 0,
-				items: 0, // Before 24w19a
+				items: 0, // Before 1.21
 				painting_variant: 0,
 				point_of_interest_type: 0,
 				worldgen: 0
