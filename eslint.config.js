@@ -198,6 +198,8 @@ const rules = {
 	"unicorn/text-encoding-identifier-case": 2,
 	"unicorn/no-await-in-promise-methods": 2,
 	"unicorn/no-single-promise-in-promise-methods": 2,
+	"unicorn/no-negation-in-equality-check": 2,
+	"unicorn/no-length-as-slice-end": 2,
 
 	"sonarjs/no-extra-arguments": 2,
 	"sonarjs/no-empty-collection": 2,
