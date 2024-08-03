@@ -73,8 +73,8 @@
 	},
 	"devDependencies": {
 		"@stylistic/eslint-plugin-js": "^2.6.1",
-		"@types/node": "^20.14.12",
-		"@types/vscode": "^1.91.0",
+		"@types/node": "^22.1.0",
+		"@types/vscode": "^1.92.0",
 		"@vscode/vsce": "^2.31.1",
 		"eslint": "^9.8.0",
 		"eslint-plugin-sonarjs": "^1.0.4",
